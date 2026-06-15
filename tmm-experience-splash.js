@@ -1,5 +1,6 @@
 (() => {
   const handledSplashes = new WeakSet();
+  const handledPricingSections = new WeakSet();
 
   const resetCircleShellPadding = (splash) => {
     splash.closest(".wb-p-5")?.classList.add("tmm-experience-shell-reset");
@@ -206,10 +207,66 @@
     });
   };
 
+  const formatPrice = (value) => {
+    return value === "0" ? "$0" : `$${value}`;
+  };
+
+  const updatePricingSection = (section, billingCycle) => {
+    section.dataset.billing = billingCycle;
+
+    section.querySelectorAll(".tmm-pricing__toggle-button").forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.billingToggle === billingCycle));
+    });
+
+    section.querySelectorAll(".tmm-pricing-card").forEach((card) => {
+      const price = card.querySelector(".tmm-pricing-card__price");
+      const period = card.querySelector(".tmm-pricing-card__period");
+      const priceValue = card.dataset[`${billingCycle}Price`];
+      const periodValue = card.dataset[`${billingCycle}Period`];
+
+      if (!price || !period || !priceValue || !periodValue) {
+        return;
+      }
+
+      price.classList.add("is-changing");
+
+      window.setTimeout(() => {
+        price.textContent = formatPrice(priceValue);
+        period.textContent = periodValue;
+        price.classList.remove("is-changing");
+      }, 120);
+    });
+  };
+
+  const setupPricingSections = (root = document) => {
+    root.querySelectorAll(".tmm-pricing").forEach((section) => {
+      if (handledPricingSections.has(section)) {
+        return;
+      }
+
+      handledPricingSections.add(section);
+      updatePricingSection(section, section.dataset.billing || "monthly");
+
+      section.querySelectorAll(".tmm-pricing__toggle-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          updatePricingSection(section, button.dataset.billingToggle || "monthly");
+        });
+      });
+    });
+  };
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => completeExperienceSplash(), { once: true });
+    document.addEventListener(
+      "DOMContentLoaded",
+      () => {
+        completeExperienceSplash();
+        setupPricingSections();
+      },
+      { once: true }
+    );
   } else {
     completeExperienceSplash();
+    setupPricingSections();
   }
 
   new MutationObserver((mutations) => {
@@ -217,6 +274,7 @@
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1) {
           completeExperienceSplash(node);
+          setupPricingSections(node);
         }
       });
     });
