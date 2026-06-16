@@ -9,8 +9,8 @@
   --tmm-experience-tagline-duration: 1350ms;
   --tmm-experience-logo-delay: 80ms;
   --tmm-experience-word-delay: 760ms;
-  --tmm-experience-tagline-delay: 1340ms;
-  --tmm-experience-auto-advance-delay: 2800ms;
+  --tmm-experience-tagline-delay: 1650ms;
+  --tmm-experience-auto-advance-delay: 4200ms;
   --tmm-experience-auto-advance-duration: 1500ms;
   --tmm-experience-mobile-exit-duration: 1200ms;
 }
