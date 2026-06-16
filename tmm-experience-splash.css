@@ -18,8 +18,8 @@
   --tmm-secondary-button-bg: var(--tmm-color-fresh-white);
   --tmm-secondary-button-border: var(--tmm-color-electric-red);
   --tmm-secondary-button-text: var(--tmm-color-electric-red);
-  --tmm-dot-active-bg: var(--tmm-color-electric-red);
-  --tmm-dot-inactive-bg: color-mix(in srgb, var(--tmm-color-linen) 74%, var(--tmm-color-light-sage));
+  --tmm-dot-active-bg: var(--tmm-color-light-sage);
+  --tmm-dot-inactive-bg: color-mix(in srgb, var(--tmm-color-linen) 54%, var(--tmm-color-light-sage));
   --tmm-experience-logo-width: clamp(230px, 64.8vw, 285px);
   --tmm-experience-section-height: clamp(560px, 64vw, 760px);
   --tmm-experience-ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -252,7 +252,6 @@
   border: 1px solid color-mix(in srgb, var(--tmm-color-electric-red) 18%, transparent);
   border-radius: 999px;
   background: var(--tmm-color-fresh-white);
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--tmm-color-black) 5%, transparent);
 }
 
 .tmm-pricing__toggle::before {
@@ -265,7 +264,6 @@
   height: calc(100% - 8px);
   border-radius: 999px;
   background: var(--tmm-color-electric-red);
-  box-shadow: 0 6px 16px color-mix(in srgb, var(--tmm-color-electric-red) 22%, transparent);
   transform: translateX(0);
   transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -455,12 +453,6 @@
 
 .tmm-pricing-card__button:active {
   transform: scale(0.985);
-}
-
-.tmm-pricing-card__button--secondary {
-  border-color: var(--tmm-secondary-button-border);
-  background: var(--tmm-secondary-button-bg);
-  color: var(--tmm-secondary-button-text);
 }
 
 .tmm-pricing__dots {
