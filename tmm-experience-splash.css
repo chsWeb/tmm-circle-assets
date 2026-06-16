@@ -1,6 +1,16 @@
 :root {
-  --tmm-experience-bg: #841517;
-  --tmm-experience-text: #f9f9f9;
+  --tmm-color-fresh-white: #f9f9f9;
+  --tmm-color-linen: #efebe0;
+  --tmm-color-sand: #eae4d6;
+  --tmm-color-cream: #f4eddb;
+  --tmm-color-black: #0f0f0f;
+  --tmm-color-charcoal: #2d2d2d;
+  --tmm-color-light-sage: #b2aa96;
+  --tmm-color-brand-primary: #841517;
+  --tmm-color-deep-brown: #5e0d11;
+  --tmm-color-electric-red: #d11934;
+  --tmm-experience-bg: var(--tmm-color-brand-primary);
+  --tmm-experience-text: var(--tmm-color-fresh-white);
   --tmm-experience-logo-width: clamp(230px, 64.8vw, 285px);
   --tmm-experience-section-height: clamp(560px, 64vw, 760px);
   --tmm-experience-ease: cubic-bezier(0.16, 1, 0.3, 1);
