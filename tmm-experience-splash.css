@@ -284,17 +284,31 @@
 }
 
 .tmm-pricing__plans {
-  display: grid;
+  display: flex;
   gap: 14px;
+  margin-inline: -18px;
+  overflow-x: auto;
+  padding: 2px 18px 10px;
+  scroll-padding-inline: 18px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tmm-pricing__plans::-webkit-scrollbar {
+  display: none;
 }
 
 .tmm-pricing-card {
   display: grid;
+  flex: 0 0 calc(100% - 52px);
   gap: 18px;
+  min-width: 0;
   padding: 20px;
   border: 1px solid rgb(132 21 23 / 12%);
   border-radius: 8px;
   background: #ffffff;
+  scroll-snap-align: start;
 }
 
 .tmm-pricing-card--featured {
@@ -431,7 +445,30 @@
 }
 
 .tmm-pricing__dots {
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.tmm-pricing__dot {
+  appearance: none;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(132 21 23 / 24%);
+  cursor: pointer;
+  transition:
+    width 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 260ms ease;
+}
+
+.tmm-pricing__dot[aria-current="true"] {
+  width: 22px;
+  background: #841517;
 }
 
 @media (min-width: 768px) {
@@ -449,58 +486,21 @@
   }
 
   .tmm-pricing__plans {
+    display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: stretch;
-  }
-}
-
-@media (max-width: 767px) {
-  .tmm-pricing__plans {
-    display: flex;
-    gap: 14px;
-    margin-inline: -18px;
-    overflow-x: auto;
-    padding: 2px 18px 10px;
-    scroll-padding-inline: 18px;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .tmm-pricing__plans::-webkit-scrollbar {
-    display: none;
+    margin-inline: 0;
+    overflow: visible;
+    padding: 0;
+    scroll-snap-type: none;
   }
 
   .tmm-pricing-card {
-    flex: 0 0 calc(100% - 52px);
-    min-width: 0;
-    scroll-snap-align: start;
+    flex: initial;
+    scroll-snap-align: none;
   }
 
   .tmm-pricing__dots {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding-top: 2px;
-  }
-
-  .tmm-pricing__dot {
-    appearance: none;
-    width: 8px;
-    height: 8px;
-    padding: 0;
-    border: 0;
-    border-radius: 999px;
-    background: rgb(132 21 23 / 24%);
-    cursor: pointer;
-    transition:
-      width 260ms cubic-bezier(0.16, 1, 0.3, 1),
-      background 260ms ease;
-  }
-
-  .tmm-pricing__dot[aria-current="true"] {
-    width: 22px;
-    background: #841517;
+    display: none;
   }
 }
