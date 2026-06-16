@@ -26,10 +26,10 @@
   box-sizing: border-box;
   display: flex;
   min-height: var(--tmm-experience-section-height);
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   overflow: hidden;
-  padding: clamp(48px, 17.3vw, 76px) 24px;
+  padding: clamp(72px, 18vh, 138px) 24px clamp(48px, 12vh, 76px);
   background: var(--tmm-experience-bg);
   color: var(--tmm-experience-text);
   text-align: center;
@@ -45,7 +45,6 @@
   display: grid;
   justify-items: center;
   width: min(100%, 440px);
-  transform: translateY(clamp(12px, 3.6vw, 16px));
 }
 
 .tmm-experience-splash__brand {
@@ -81,7 +80,7 @@
 
 .tmm-experience-splash__tagline {
   width: min(100%, 304px);
-  margin-top: clamp(43px, 10.9vw, 48px);
+  margin-top: clamp(58px, 9vh, 92px);
   color: var(--tmm-experience-text);
   font-family: "Work Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: clamp(25px, 6.82vw, 30px);
