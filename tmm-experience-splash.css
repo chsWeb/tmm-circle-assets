@@ -529,7 +529,7 @@
     gap: 12px;
   }
 
-  .tmm-pricing__header > div {
+  .tmm-pricing__header > div:not(.tmm-pricing__toggle) {
     order: 1;
   }
 
