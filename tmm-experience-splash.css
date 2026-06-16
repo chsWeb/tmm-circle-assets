@@ -503,3 +503,45 @@
     display: none;
   }
 }
+
+@media (max-width: 767px) {
+  .tmm-pricing {
+    padding-top: 40px;
+  }
+
+  .tmm-pricing__inner {
+    gap: 20px;
+  }
+
+  .tmm-pricing__header {
+    gap: 12px;
+  }
+
+  .tmm-pricing__header > div {
+    order: 1;
+  }
+
+  .tmm-pricing__lede {
+    order: 2;
+  }
+
+  .tmm-pricing__toggle {
+    order: 3;
+    width: min(100%, 312px);
+  }
+
+  .tmm-pricing__title {
+    font-size: clamp(1.75rem, 7.4vw, 2.55rem);
+    line-height: 1.06;
+  }
+
+  .tmm-pricing__toggle-button {
+    min-height: 38px;
+    font-size: 0.88rem;
+  }
+
+  .tmm-pricing-card__button {
+    min-height: 42px;
+    font-size: 0.94rem;
+  }
+}
