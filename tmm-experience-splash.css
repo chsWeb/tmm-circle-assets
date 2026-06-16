@@ -343,6 +343,18 @@
   border-color: color-mix(in srgb, var(--tmm-color-electric-red) 38%, transparent);
 }
 
+.tmm-pricing--fresh-body {
+  background: var(--tmm-color-fresh-white);
+}
+
+.tmm-pricing--fresh-body .tmm-pricing-card {
+  background: var(--tmm-color-linen);
+}
+
+.tmm-pricing--fresh-body .tmm-pricing-card__features li::before {
+  background: currentColor;
+}
+
 .tmm-pricing-card__top {
   display: grid;
   gap: 10px;
