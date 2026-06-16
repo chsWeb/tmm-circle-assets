@@ -148,11 +148,14 @@
 }
 
 .tmm-welcome {
+  position: relative;
+  isolation: isolate;
   box-sizing: border-box;
   display: grid;
   min-height: 100svh;
   place-items: center;
-  padding: clamp(72px, 12vh, 112px) 22px;
+  overflow: hidden;
+  padding: clamp(92px, 14vh, 132px) 22px;
   background: var(--tmm-color-fresh-white);
   color: var(--tmm-body-copy-color);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -166,24 +169,38 @@
 }
 
 .tmm-welcome__inner {
+  position: relative;
+  z-index: 2;
   display: grid;
   justify-items: center;
-  width: min(100%, 620px);
+  width: min(100%, 460px);
+}
+
+.tmm-welcome__eyebrow {
+  margin: 0 0 10px;
+  color: var(--tmm-color-electric-red);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.1;
+  text-transform: uppercase;
 }
 
 .tmm-welcome__title {
   margin: 0;
   color: var(--tmm-heading-color);
-  font-size: clamp(36px, 8.8vw, 68px);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 48px;
   font-weight: 700;
-  line-height: 0.98;
+  line-height: 0.9;
+  text-wrap: balance;
 }
 
 .tmm-welcome__copy {
-  width: min(100%, 430px);
-  margin: 18px 0 0;
+  width: min(100%, 390px);
+  margin: 24px 0 0;
   color: var(--tmm-body-copy-color);
-  font-size: clamp(18px, 4.4vw, 24px);
+  font-size: 18px;
   line-height: 1.35;
 }
 
@@ -191,9 +208,10 @@
   display: inline-flex;
   min-height: 48px;
   align-items: center;
+  gap: 8px;
   justify-content: center;
-  margin-top: 30px;
-  padding: 13px 28px;
+  margin-top: 32px;
+  padding: 14px 30px;
   border: 1px solid var(--tmm-primary-button-bg);
   border-radius: 999px;
   background: var(--tmm-primary-button-bg);
@@ -220,12 +238,132 @@
 
 .tmm-welcome__login {
   margin-top: 18px;
-  color: var(--tmm-color-electric-red);
+  color: color-mix(in srgb, var(--tmm-color-charcoal) 72%, var(--tmm-color-light-sage));
   font-size: 14px;
   font-weight: 650;
   line-height: 1.35;
+}
+
+.tmm-welcome__login a {
+  color: var(--tmm-color-electric-red);
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+
+.tmm-welcome__collage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.tmm-welcome__photo {
+  position: absolute;
+  width: 96px;
+  aspect-ratio: 1;
+  margin: 0;
+  overflow: hidden;
+  padding: 5px;
+  border-radius: 6px;
+  background: var(--tmm-color-fresh-white);
+  box-shadow: 0 16px 38px color-mix(in srgb, var(--tmm-color-black) 15%, transparent);
+}
+
+.tmm-welcome__photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  object-fit: cover;
+}
+
+.tmm-welcome__photo--top-left {
+  top: 18px;
+  left: -18px;
+  transform: rotate(-6deg);
+}
+
+.tmm-welcome__photo--top-right {
+  top: 40px;
+  right: -18px;
+  transform: rotate(5deg);
+}
+
+.tmm-welcome__photo--bottom-left {
+  bottom: 24px;
+  left: -12px;
+  transform: rotate(3deg);
+}
+
+.tmm-welcome__photo--bottom-right {
+  right: -12px;
+  bottom: 26px;
+  transform: rotate(-4deg);
+}
+
+.tmm-welcome__photo--mid-left {
+  top: 50%;
+  left: -92px;
+  transform: translateY(-50%) rotate(4deg);
+}
+
+.tmm-welcome__photo--mid-right {
+  top: 50%;
+  right: -92px;
+  transform: translateY(-50%) rotate(-5deg);
+}
+
+@media (min-width: 768px) {
+  .tmm-welcome__title {
+    font-size: 76px;
+  }
+
+  .tmm-welcome__copy {
+    font-size: 22px;
+  }
+
+  .tmm-welcome__photo {
+    width: 142px;
+  }
+
+  .tmm-welcome__photo--top-left {
+    top: 42px;
+    left: 52px;
+  }
+
+  .tmm-welcome__photo--top-right {
+    top: 66px;
+    right: 64px;
+  }
+
+  .tmm-welcome__photo--bottom-left {
+    bottom: 62px;
+    left: 78px;
+  }
+
+  .tmm-welcome__photo--bottom-right {
+    right: 78px;
+    bottom: 66px;
+  }
+
+  .tmm-welcome__photo--mid-left {
+    left: 26px;
+  }
+
+  .tmm-welcome__photo--mid-right {
+    right: 26px;
+  }
+}
+
+@media (max-width: 767px) {
+  .tmm-welcome__inner {
+    width: min(100%, 340px);
+  }
+
+  .tmm-welcome__photo--mid-left,
+  .tmm-welcome__photo--mid-right {
+    display: none;
+  }
 }
 
 .tmm-pricing {
