@@ -35,8 +35,8 @@
   --tmm-experience-logo-width: clamp(230px, 64.8vw, 285px);
   --tmm-experience-section-height: clamp(560px, 64vw, 760px);
   --tmm-experience-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --tmm-experience-logo-duration: 1100ms;
-  --tmm-experience-logo-delay: 80ms;
+  --tmm-experience-logo-duration: 1400ms;
+  --tmm-experience-logo-delay: 120ms;
   --tmm-experience-auto-advance-delay: 4200ms;
   --tmm-experience-auto-advance-duration: 1500ms;
   --tmm-experience-mobile-exit-duration: 1200ms;
@@ -96,8 +96,8 @@
 .tmm-experience-splash__logo {
   width: 100%;
   height: auto;
-  transform: translateY(10px);
-  filter: blur(3px);
+  transform: scale(0.985);
+  filter: blur(2px);
   animation: tmmExperienceLogoIn var(--tmm-experience-logo-duration) var(--tmm-experience-ease) var(--tmm-experience-logo-delay) both;
 }
 
@@ -108,7 +108,7 @@
 @keyframes tmmExperienceLogoIn {
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1);
     filter: blur(0);
   }
 }
@@ -197,9 +197,10 @@
 .tmm-welcome__title {
   margin: 0;
   color: var(--tmm-heading-color);
-  font-size: 48px;
+  font-size: 3.2em;
   font-weight: 700;
-  line-height: 0.96;
+  letter-spacing: -0.025em;
+  line-height: 0.95em;
   text-wrap: balance;
 }
 
@@ -364,16 +365,9 @@
   transition-delay: 360ms;
 }
 
-.tmm-welcome.is-visible:not(.is-exiting) .tmm-welcome__photo {
+.tmm-welcome.is-visible .tmm-welcome__photo {
   opacity: 1;
   transform: var(--tmm-photo-rest);
-}
-
-.tmm-welcome.is-exiting .tmm-welcome__photo {
-  opacity: 0;
-  transform: var(--tmm-photo-exit);
-  transition-duration: 780ms;
-  transition-delay: 0ms;
 }
 
 .tmm-welcome.is-motion-complete .tmm-welcome__photo {
@@ -382,7 +376,7 @@
 
 @media (min-width: 768px) {
   .tmm-welcome__title {
-    font-size: 76px;
+    font-size: 3.2em;
   }
 
   .tmm-welcome__copy {
@@ -481,7 +475,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .tmm-welcome__photo,
-  .tmm-welcome.is-visible:not(.is-exiting) .tmm-welcome__photo,
+  .tmm-welcome.is-visible .tmm-welcome__photo,
   .tmm-welcome.is-exiting .tmm-welcome__photo {
     opacity: 1;
     transform: var(--tmm-photo-rest);
@@ -531,10 +525,11 @@
   margin: 0;
   max-width: 680px;
   color: var(--tmm-heading-color);
-  font-size: clamp(2rem, 9vw, 4rem);
+  font-size: 3.2em;
   font-weight: 750;
-  letter-spacing: 0;
-  line-height: 1.02;
+  letter-spacing: -0.025em;
+  line-height: 0.95em;
+  text-wrap: balance;
 }
 
 .tmm-pricing__lede {
@@ -669,8 +664,8 @@
   min-height: 26px;
   padding: 0 10px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--tmm-color-electric-red) 10%, var(--tmm-color-fresh-white));
-  color: var(--tmm-color-electric-red);
+  background: var(--tmm-color-light-sage);
+  color: var(--tmm-color-black);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -693,7 +688,7 @@
 
 .tmm-pricing-card__price {
   color: var(--tmm-heading-color);
-  font-size: clamp(2.3rem, 13vw, 3.4rem);
+  font-size: clamp(2rem, 11vw, 2.95rem);
   font-weight: 800;
   letter-spacing: 0;
   line-height: 0.95;
@@ -854,8 +849,10 @@
   }
 
   .tmm-pricing__title {
-    font-size: clamp(1.75rem, 7.4vw, 2.55rem);
-    line-height: 1.06;
+    font-size: 3.2em;
+    letter-spacing: -0.025em;
+    line-height: 0.95em;
+    text-wrap: balance;
   }
 
   .tmm-pricing__toggle-button {

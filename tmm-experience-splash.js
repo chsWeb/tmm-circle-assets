@@ -330,23 +330,8 @@
 
       handledWelcomeSections.add(section);
 
-      const pricingSection = section.nextElementSibling?.matches(".tmm-pricing")
-        ? section.nextElementSibling
-        : document.querySelector(".tmm-pricing");
-
       const markVisible = () => {
         section.classList.add("is-visible");
-      };
-
-      const updateExitState = () => {
-        if (!pricingSection) {
-          return;
-        }
-
-        const pricingTop = pricingSection.getBoundingClientRect().top;
-        const shouldExit = pricingTop < window.innerHeight * 0.72;
-
-        section.classList.toggle("is-exiting", shouldExit);
       };
 
       if ("IntersectionObserver" in window) {
@@ -355,7 +340,6 @@
             entries.forEach((entry) => {
               if (entry.isIntersecting) {
                 markVisible();
-                updateExitState();
               }
             });
           },
@@ -376,19 +360,6 @@
           { once: true }
         );
       });
-
-      let scrollFrame = null;
-      const requestExitUpdate = () => {
-        if (scrollFrame) {
-          window.cancelAnimationFrame(scrollFrame);
-        }
-
-        scrollFrame = window.requestAnimationFrame(updateExitState);
-      };
-
-      window.addEventListener("scroll", requestExitUpdate, { passive: true });
-      window.addEventListener("resize", requestExitUpdate);
-      updateExitState();
 
       section.querySelectorAll('a[href^="#"]').forEach((link) => {
         link.addEventListener("click", (event) => {
