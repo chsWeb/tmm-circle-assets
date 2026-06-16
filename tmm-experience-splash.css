@@ -81,6 +81,13 @@
   width: var(--tmm-experience-logo-width);
 }
 
+.tmm-experience-splash p,
+.tmm-welcome p,
+.tmm-pricing p,
+.tmm-pricing li {
+  text-wrap: balance;
+}
+
 .tmm-experience-splash__logo {
   opacity: 0;
   will-change: opacity, transform, filter;
