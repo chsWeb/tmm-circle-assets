@@ -11,6 +11,15 @@
   --tmm-color-electric-red: #d11934;
   --tmm-experience-bg: var(--tmm-color-brand-primary);
   --tmm-experience-text: var(--tmm-color-fresh-white);
+  --tmm-heading-color: var(--tmm-color-black);
+  --tmm-body-copy-color: var(--tmm-color-charcoal);
+  --tmm-primary-button-bg: var(--tmm-color-electric-red);
+  --tmm-primary-button-text: var(--tmm-color-fresh-white);
+  --tmm-secondary-button-bg: var(--tmm-color-fresh-white);
+  --tmm-secondary-button-border: var(--tmm-color-electric-red);
+  --tmm-secondary-button-text: var(--tmm-color-electric-red);
+  --tmm-dot-active-bg: var(--tmm-color-electric-red);
+  --tmm-dot-inactive-bg: color-mix(in srgb, var(--tmm-color-linen) 74%, var(--tmm-color-light-sage));
   --tmm-experience-logo-width: clamp(230px, 64.8vw, 285px);
   --tmm-experience-section-height: clamp(560px, 64vw, 760px);
   --tmm-experience-ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -182,8 +191,8 @@
   box-sizing: border-box;
   min-height: 100vh;
   padding: 48px 18px 56px;
-  background: #f6f3ed;
-  color: #1b1b1b;
+  background: var(--tmm-color-linen);
+  color: var(--tmm-body-copy-color);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -207,7 +216,7 @@
 
 .tmm-pricing__eyebrow {
   margin: 0;
-  color: #841517;
+  color: var(--tmm-color-electric-red);
   font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -218,7 +227,7 @@
 .tmm-pricing__title {
   margin: 0;
   max-width: 680px;
-  color: #1b1b1b;
+  color: var(--tmm-heading-color);
   font-size: clamp(2rem, 9vw, 4rem);
   font-weight: 750;
   letter-spacing: 0;
@@ -228,7 +237,7 @@
 .tmm-pricing__lede {
   margin: 0;
   max-width: 640px;
-  color: #575757;
+  color: var(--tmm-body-copy-color);
   font-size: clamp(1rem, 4.4vw, 1.18rem);
   line-height: 1.55;
 }
@@ -240,10 +249,10 @@
   gap: 4px;
   width: min(100%, 360px);
   padding: 4px;
-  border: 1px solid rgb(132 21 23 / 14%);
+  border: 1px solid color-mix(in srgb, var(--tmm-color-electric-red) 18%, transparent);
   border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 1px 2px rgb(27 27 27 / 5%);
+  background: var(--tmm-color-fresh-white);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--tmm-color-black) 5%, transparent);
 }
 
 .tmm-pricing__toggle::before {
@@ -255,8 +264,8 @@
   width: calc(50% - 6px);
   height: calc(100% - 8px);
   border-radius: 999px;
-  background: #841517;
-  box-shadow: 0 6px 16px rgb(132 21 23 / 18%);
+  background: var(--tmm-color-electric-red);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--tmm-color-electric-red) 22%, transparent);
   transform: translateX(0);
   transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -273,7 +282,7 @@
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: #575757;
+  color: var(--tmm-body-copy-color);
   font: inherit;
   font-size: 0.95rem;
   font-weight: 750;
@@ -285,7 +294,7 @@
 }
 
 .tmm-pricing__toggle-button[aria-pressed="true"] {
-  color: #ffffff;
+  color: var(--tmm-color-fresh-white);
 }
 
 .tmm-pricing__toggle-button:active {
@@ -314,14 +323,14 @@
   gap: 18px;
   min-width: 0;
   padding: 20px;
-  border: 1px solid rgb(132 21 23 / 12%);
+  border: 1px solid color-mix(in srgb, var(--tmm-color-electric-red) 13%, transparent);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--tmm-color-fresh-white);
   scroll-snap-align: start;
 }
 
 .tmm-pricing-card--featured {
-  border-color: rgb(132 21 23 / 36%);
+  border-color: color-mix(in srgb, var(--tmm-color-electric-red) 38%, transparent);
 }
 
 .tmm-pricing-card__top {
@@ -338,7 +347,7 @@
 
 .tmm-pricing-card__name {
   margin: 0;
-  color: #1b1b1b;
+  color: var(--tmm-heading-color);
   font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: 0;
@@ -351,8 +360,8 @@
   min-height: 26px;
   padding: 0 10px;
   border-radius: 999px;
-  background: #f3e8e8;
-  color: #841517;
+  background: color-mix(in srgb, var(--tmm-color-electric-red) 10%, var(--tmm-color-fresh-white));
+  color: var(--tmm-color-electric-red);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -362,7 +371,7 @@
 
 .tmm-pricing-card__description {
   margin: 0;
-  color: #575757;
+  color: var(--tmm-body-copy-color);
   font-size: 0.96rem;
   line-height: 1.5;
 }
@@ -374,7 +383,7 @@
 }
 
 .tmm-pricing-card__price {
-  color: #1b1b1b;
+  color: var(--tmm-heading-color);
   font-size: clamp(2.3rem, 13vw, 3.4rem);
   font-weight: 800;
   letter-spacing: 0;
@@ -390,7 +399,7 @@
 }
 
 .tmm-pricing-card__period {
-  color: #6f6f6f;
+  color: var(--tmm-body-copy-color);
   font-size: 0.98rem;
   font-weight: 650;
 }
@@ -406,7 +415,7 @@
 .tmm-pricing-card__features li {
   position: relative;
   padding-left: 18px;
-  color: #3f3f3f;
+  color: var(--tmm-body-copy-color);
   font-size: 0.94rem;
   line-height: 1.4;
 }
@@ -419,7 +428,7 @@
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: #841517;
+  background: var(--tmm-color-electric-red);
 }
 
 .tmm-pricing-card__button {
@@ -428,10 +437,10 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  border: 1px solid #841517;
+  border: 1px solid var(--tmm-primary-button-bg);
   border-radius: 999px;
-  background: #841517;
-  color: #ffffff;
+  background: var(--tmm-primary-button-bg);
+  color: var(--tmm-primary-button-text);
   font: inherit;
   font-size: 1rem;
   font-weight: 800;
@@ -449,8 +458,9 @@
 }
 
 .tmm-pricing-card__button--secondary {
-  background: #ffffff;
-  color: #841517;
+  border-color: var(--tmm-secondary-button-border);
+  background: var(--tmm-secondary-button-bg);
+  color: var(--tmm-secondary-button-text);
 }
 
 .tmm-pricing__dots {
@@ -468,7 +478,7 @@
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: rgb(132 21 23 / 24%);
+  background: var(--tmm-dot-inactive-bg);
   cursor: pointer;
   transition:
     width 260ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -477,7 +487,7 @@
 
 .tmm-pricing__dot[aria-current="true"] {
   width: 22px;
-  background: #841517;
+  background: var(--tmm-dot-active-bg);
 }
 
 @media (min-width: 768px) {
