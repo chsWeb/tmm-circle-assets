@@ -252,6 +252,65 @@
           updatePricingSection(section, button.dataset.billingToggle || "monthly");
         });
       });
+
+      const carousel = section.querySelector(".tmm-pricing__plans");
+      const cards = [...section.querySelectorAll(".tmm-pricing-card")];
+      const dots = [...section.querySelectorAll(".tmm-pricing__dot")];
+
+      if (!carousel || cards.length === 0 || dots.length === 0) {
+        return;
+      }
+
+      const updateDots = () => {
+        const carouselLeft = carousel.getBoundingClientRect().left;
+        let activeIndex = 0;
+        let nearestDistance = Number.POSITIVE_INFINITY;
+
+        cards.forEach((card, index) => {
+          const distance = Math.abs(card.getBoundingClientRect().left - carouselLeft);
+
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            activeIndex = index;
+          }
+        });
+
+        dots.forEach((dot, index) => {
+          dot.setAttribute("aria-current", String(index === activeIndex));
+        });
+      };
+
+      dots.forEach((dot) => {
+        dot.addEventListener("click", () => {
+          const index = Number.parseInt(dot.dataset.pricingSlide || "0", 10);
+          const targetCard = cards[index];
+
+          if (!targetCard) {
+            return;
+          }
+
+          carousel.scrollTo({
+            left: targetCard.offsetLeft - carousel.offsetLeft,
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+          });
+        });
+      });
+
+      let scrollFrame = null;
+      carousel.addEventListener(
+        "scroll",
+        () => {
+          if (scrollFrame) {
+            window.cancelAnimationFrame(scrollFrame);
+          }
+
+          scrollFrame = window.requestAnimationFrame(updateDots);
+        },
+        { passive: true }
+      );
+
+      window.addEventListener("resize", updateDots);
+      updateDots();
     });
   };
 
