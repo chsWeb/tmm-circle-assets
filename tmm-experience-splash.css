@@ -333,14 +333,10 @@
   gap: 18px;
   min-width: 0;
   padding: 20px;
-  border: 1px solid color-mix(in srgb, var(--tmm-color-electric-red) 13%, transparent);
-  border-radius: 8px;
+  border: 0;
+  border-radius: 12px;
   background: var(--tmm-color-fresh-white);
   scroll-snap-align: start;
-}
-
-.tmm-pricing-card--featured {
-  border-color: color-mix(in srgb, var(--tmm-color-electric-red) 38%, transparent);
 }
 
 .tmm-pricing--fresh-body {
