@@ -35,9 +35,9 @@
       : 1 - Math.pow(-2 * progress + 2, 3) / 2;
   };
 
-  const scrollToTarget = (target, duration) => {
+  const scrollToTarget = (target, duration, offset = 0) => {
     const startY = window.scrollY;
-    const targetY = target.getBoundingClientRect().top + window.scrollY;
+    const targetY = target.getBoundingClientRect().top + window.scrollY - offset;
     const maxY = document.documentElement.scrollHeight - window.innerHeight;
     const endY = Math.max(0, Math.min(targetY, maxY));
     const distance = endY - startY;
@@ -175,6 +175,15 @@
 
       scrollToTarget(target, getAutoAdvanceDuration(splash));
     }, getAutoAdvanceDelay(splash));
+  };
+
+  const getScrollOffset = () => {
+    const rawValue = getComputedStyle(document.documentElement)
+      .getPropertyValue("--tmm-scroll-offset")
+      .trim();
+    const parsedValue = Number.parseFloat(rawValue);
+
+    return Number.isFinite(parsedValue) ? parsedValue : 92;
   };
 
   const completeExperienceSplash = (root = document) => {
@@ -380,6 +389,26 @@
       window.addEventListener("scroll", requestExitUpdate, { passive: true });
       window.addEventListener("resize", requestExitUpdate);
       updateExitState();
+
+      section.querySelectorAll('a[href^="#"]').forEach((link) => {
+        link.addEventListener("click", (event) => {
+          const target = document.querySelector(link.getAttribute("href"));
+
+          if (!target) {
+            return;
+          }
+
+          event.preventDefault();
+
+          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            target.scrollIntoView({ behavior: "auto", block: "start" });
+            window.scrollBy(0, -getScrollOffset());
+            return;
+          }
+
+          scrollToTarget(target, 950, getScrollOffset());
+        });
+      });
     });
   };
 

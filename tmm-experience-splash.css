@@ -40,6 +40,7 @@
   --tmm-experience-auto-advance-delay: 4200ms;
   --tmm-experience-auto-advance-duration: 1500ms;
   --tmm-experience-mobile-exit-duration: 1200ms;
+  --tmm-scroll-offset: 92px;
 }
 
 .wb-p-5.tmm-experience-shell-reset,
@@ -423,8 +424,44 @@
 }
 
 @media (max-width: 767px) {
+  .tmm-welcome {
+    min-height: max(100svh, 960px);
+    padding: 300px 22px 310px;
+  }
+
   .tmm-welcome__inner {
     width: min(100%, 340px);
+  }
+
+  .tmm-welcome__photo {
+    width: min(68vw, 330px);
+    aspect-ratio: 1.1;
+    padding: 7px;
+    border-radius: 8px;
+  }
+
+  .tmm-welcome__photo--top-left {
+    top: -50px;
+    left: -58px;
+    --tmm-photo-rest: translate3d(0, 0, 0) rotate(-8deg);
+  }
+
+  .tmm-welcome__photo--top-right {
+    top: -28px;
+    right: -58px;
+    --tmm-photo-rest: translate3d(0, 0, 0) rotate(7deg);
+  }
+
+  .tmm-welcome__photo--bottom-left {
+    bottom: -84px;
+    left: -64px;
+    --tmm-photo-rest: translate3d(0, 0, 0) rotate(3deg);
+  }
+
+  .tmm-welcome__photo--bottom-right {
+    right: -68px;
+    bottom: -72px;
+    --tmm-photo-rest: translate3d(0, 0, 0) rotate(-8deg);
   }
 
   .tmm-welcome__photo--mid-left,
@@ -448,6 +485,7 @@
 .tmm-pricing {
   box-sizing: border-box;
   min-height: 100vh;
+  scroll-margin-top: var(--tmm-scroll-offset);
   padding: 48px 18px 56px;
   background: var(--tmm-color-linen);
   color: var(--tmm-body-copy-color);
