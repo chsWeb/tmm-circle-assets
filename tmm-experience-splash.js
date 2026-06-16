@@ -1,5 +1,6 @@
 (() => {
   const handledSplashes = new WeakSet();
+  const handledWelcomeSections = new WeakSet();
   const handledPricingSections = new WeakSet();
 
   const resetCircleShellPadding = (splash) => {
@@ -312,17 +313,89 @@
     });
   };
 
+  const setupWelcomeSections = (root = document) => {
+    root.querySelectorAll(".tmm-welcome").forEach((section) => {
+      if (handledWelcomeSections.has(section)) {
+        return;
+      }
+
+      handledWelcomeSections.add(section);
+
+      const pricingSection = section.nextElementSibling?.matches(".tmm-pricing")
+        ? section.nextElementSibling
+        : document.querySelector(".tmm-pricing");
+
+      const markVisible = () => {
+        section.classList.add("is-visible");
+      };
+
+      const updateExitState = () => {
+        if (!pricingSection) {
+          return;
+        }
+
+        const pricingTop = pricingSection.getBoundingClientRect().top;
+        const shouldExit = pricingTop < window.innerHeight * 0.72;
+
+        section.classList.toggle("is-exiting", shouldExit);
+      };
+
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                markVisible();
+                updateExitState();
+              }
+            });
+          },
+          { threshold: 0.18 }
+        );
+
+        observer.observe(section);
+      } else {
+        markVisible();
+      }
+
+      section.querySelectorAll(".tmm-welcome__photo").forEach((photo) => {
+        photo.addEventListener(
+          "transitionend",
+          () => {
+            section.classList.add("is-motion-complete");
+          },
+          { once: true }
+        );
+      });
+
+      let scrollFrame = null;
+      const requestExitUpdate = () => {
+        if (scrollFrame) {
+          window.cancelAnimationFrame(scrollFrame);
+        }
+
+        scrollFrame = window.requestAnimationFrame(updateExitState);
+      };
+
+      window.addEventListener("scroll", requestExitUpdate, { passive: true });
+      window.addEventListener("resize", requestExitUpdate);
+      updateExitState();
+    });
+  };
+
   if (document.readyState === "loading") {
     document.addEventListener(
       "DOMContentLoaded",
       () => {
         completeExperienceSplash();
+        setupWelcomeSections();
         setupPricingSections();
       },
       { once: true }
     );
   } else {
     completeExperienceSplash();
+    setupWelcomeSections();
     setupPricingSections();
   }
 
@@ -331,6 +404,7 @@
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1) {
           completeExperienceSplash(node);
+          setupWelcomeSections(node);
           setupPricingSections(node);
         }
       });
