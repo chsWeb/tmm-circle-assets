@@ -36,11 +36,7 @@
   --tmm-experience-section-height: clamp(560px, 64vw, 760px);
   --tmm-experience-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --tmm-experience-logo-duration: 1100ms;
-  --tmm-experience-word-duration: 1200ms;
-  --tmm-experience-tagline-duration: 1350ms;
   --tmm-experience-logo-delay: 80ms;
-  --tmm-experience-word-delay: 760ms;
-  --tmm-experience-tagline-delay: 1650ms;
   --tmm-experience-auto-advance-delay: 4200ms;
   --tmm-experience-auto-advance-duration: 1500ms;
   --tmm-experience-mobile-exit-duration: 1200ms;
@@ -57,10 +53,10 @@
   box-sizing: border-box;
   display: flex;
   min-height: var(--tmm-experience-section-height);
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: clamp(72px, 18vh, 138px) 24px clamp(48px, 12vh, 76px);
+  padding: 24px;
   background: var(--tmm-experience-bg);
   color: var(--tmm-experience-text);
   text-align: center;
@@ -84,9 +80,7 @@
   width: var(--tmm-experience-logo-width);
 }
 
-.tmm-experience-splash__logo,
-.tmm-experience-splash__word,
-.tmm-experience-splash__tagline {
+.tmm-experience-splash__logo {
   opacity: 0;
   will-change: opacity, transform, filter;
 }
@@ -99,35 +93,7 @@
   animation: tmmExperienceLogoIn var(--tmm-experience-logo-duration) var(--tmm-experience-ease) var(--tmm-experience-logo-delay) both;
 }
 
-.tmm-experience-splash__word {
-  width: min(100%, 201px);
-  height: auto;
-  margin-top: clamp(-12px, -2.7vw, -8px);
-  color: var(--tmm-experience-text);
-  transform: translateY(10px);
-  filter: blur(3px);
-  animation: tmmExperienceWordIn var(--tmm-experience-word-duration) var(--tmm-experience-ease) var(--tmm-experience-word-delay) both;
-}
-
-.tmm-experience-splash__tagline {
-  width: min(100%, 304px);
-  margin-top: clamp(58px, 9vh, 92px);
-  color: var(--tmm-experience-text);
-  font-family: "Work Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: clamp(25px, 6.82vw, 30px);
-  font-weight: 500;
-  line-height: 1.3;
-  letter-spacing: -0.04em;
-  text-wrap: balance;
-  transform: translateY(12px) scale(0.94);
-  transform-origin: center;
-  filter: blur(3px);
-  animation: tmmExperienceTaglineIn var(--tmm-experience-tagline-duration) var(--tmm-experience-ease) var(--tmm-experience-tagline-delay) both;
-}
-
-.tmm-experience-splash.is-complete .tmm-experience-splash__logo,
-.tmm-experience-splash.is-complete .tmm-experience-splash__word,
-.tmm-experience-splash.is-complete .tmm-experience-splash__tagline {
+.tmm-experience-splash.is-complete .tmm-experience-splash__logo {
   will-change: auto;
 }
 
@@ -139,26 +105,8 @@
   }
 }
 
-@keyframes tmmExperienceWordIn {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
-}
-
-@keyframes tmmExperienceTaglineIn {
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .tmm-experience-splash__logo,
-  .tmm-experience-splash__word,
-  .tmm-experience-splash__tagline {
+  .tmm-experience-splash__logo {
     animation: none;
     opacity: 1;
     transform: none;
@@ -169,7 +117,7 @@
 @media (max-width: 1024px) {
   :root {
     --tmm-experience-logo-width: clamp(230px, 64.8vw, 285px);
-    --tmm-experience-section-height: clamp(640px, 217.3vw, 956px);
+    --tmm-experience-section-height: 100svh;
   }
 }
 
@@ -197,6 +145,87 @@
   .tmm-experience-splash.is-dismissed {
     display: none;
   }
+}
+
+.tmm-welcome {
+  box-sizing: border-box;
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  padding: clamp(72px, 12vh, 112px) 22px;
+  background: var(--tmm-color-fresh-white);
+  color: var(--tmm-body-copy-color);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-align: center;
+}
+
+.tmm-welcome *,
+.tmm-welcome *::before,
+.tmm-welcome *::after {
+  box-sizing: border-box;
+}
+
+.tmm-welcome__inner {
+  display: grid;
+  justify-items: center;
+  width: min(100%, 620px);
+}
+
+.tmm-welcome__title {
+  margin: 0;
+  color: var(--tmm-heading-color);
+  font-size: clamp(36px, 8.8vw, 68px);
+  font-weight: 700;
+  line-height: 0.98;
+}
+
+.tmm-welcome__copy {
+  width: min(100%, 430px);
+  margin: 18px 0 0;
+  color: var(--tmm-body-copy-color);
+  font-size: clamp(18px, 4.4vw, 24px);
+  line-height: 1.35;
+}
+
+.tmm-welcome__button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 30px;
+  padding: 13px 28px;
+  border: 1px solid var(--tmm-primary-button-bg);
+  border-radius: 999px;
+  background: var(--tmm-primary-button-bg);
+  color: var(--tmm-primary-button-text);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    transform 220ms ease,
+    background-color 220ms ease,
+    border-color 220ms ease;
+}
+
+.tmm-welcome__button:hover {
+  background: var(--tmm-color-electric-red-600);
+  border-color: var(--tmm-color-electric-red-600);
+  transform: translateY(-1px);
+}
+
+.tmm-welcome__button:active {
+  transform: translateY(0);
+}
+
+.tmm-welcome__login {
+  margin-top: 18px;
+  color: var(--tmm-color-electric-red);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.35;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .tmm-pricing {

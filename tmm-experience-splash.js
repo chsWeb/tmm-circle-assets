@@ -186,9 +186,7 @@
       resetCircleShellPadding(splash);
       scheduleAutoAdvance(splash);
 
-      const animatedItems = splash.querySelectorAll(
-        ".tmm-experience-splash__logo, .tmm-experience-splash__word, .tmm-experience-splash__tagline"
-      );
+      const animatedItems = splash.querySelectorAll(".tmm-experience-splash__logo");
       let finishedItems = 0;
 
       animatedItems.forEach((item) => {
