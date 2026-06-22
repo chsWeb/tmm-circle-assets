@@ -771,7 +771,7 @@
 }
 
 .tmm-pricing--v2 .tmm-pricing__plans {
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 .tmm-pricing--v2 .tmm-pricing-card {
@@ -990,7 +990,7 @@
   }
 
   .tmm-pricing--v2 .tmm-pricing__plans {
-    align-items: flex-start;
+    align-items: stretch;
     gap: 12px;
   }
 
