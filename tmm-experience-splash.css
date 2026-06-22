@@ -8,6 +8,7 @@
   --tmm-color-light-sage: #b2aa96;
   --tmm-color-brand-primary: #841517;
   --tmm-color-deep-brown: #5e0d11;
+  --tmm-color-oxblood-950: #240507;
   --tmm-color-electric-red-25: #fff7f8;
   --tmm-color-electric-red-50: #fff1f3;
   --tmm-color-electric-red-100: #ffe3e8;
@@ -761,6 +762,182 @@
   transform: scale(0.985);
 }
 
+.tmm-pricing-v2__symbols {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.tmm-pricing--v2 .tmm-pricing__plans {
+  align-items: flex-start;
+}
+
+.tmm-pricing--v2 .tmm-pricing-card {
+  grid-template-rows: auto auto auto 1fr auto;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid color-mix(in srgb, var(--tmm-color-light-sage) 52%, transparent);
+  border-radius: 8px;
+  background: var(--tmm-color-fresh-white);
+}
+
+.tmm-pricing--v2 .tmm-pricing-card--v2-dark {
+  min-height: 690px;
+  border-color: color-mix(in srgb, var(--tmm-color-deep-brown) 72%, var(--tmm-color-black));
+  background: var(--tmm-color-oxblood-950);
+  color: var(--tmm-color-fresh-white);
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__top {
+  gap: 8px;
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__name {
+  color: var(--tmm-heading-color);
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.tmm-pricing--v2 .tmm-pricing-card--v2-dark .tmm-pricing-card__name {
+  color: color-mix(in srgb, var(--tmm-color-fresh-white) 72%, var(--tmm-color-light-sage));
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__price-row {
+  gap: 6px;
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__price {
+  color: var(--tmm-heading-color);
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__period {
+  color: inherit;
+  font-size: 1.05rem;
+  font-weight: 750;
+}
+
+.tmm-pricing--v2 .tmm-pricing-card--v2-dark .tmm-pricing-card__price,
+.tmm-pricing--v2 .tmm-pricing-card--v2-dark .tmm-pricing-card__period {
+  color: var(--tmm-color-fresh-white);
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__description {
+  max-width: 31ch;
+  color: var(--tmm-body-copy-color);
+  font-size: 0.9rem;
+  font-weight: 550;
+  line-height: 1.4;
+}
+
+.tmm-pricing--v2 .tmm-pricing-card--v2-dark .tmm-pricing-card__description {
+  color: color-mix(in srgb, var(--tmm-color-fresh-white) 88%, var(--tmm-color-light-sage));
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__divider {
+  height: 1px;
+  background: color-mix(in srgb, var(--tmm-color-light-sage) 42%, transparent);
+}
+
+.tmm-pricing--v2 .tmm-pricing-card--v2-dark .tmm-pricing-card__divider {
+  background: color-mix(in srgb, var(--tmm-color-deep-brown) 72%, transparent);
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__section-label {
+  margin: 0;
+  color: var(--tmm-body-copy-color);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.tmm-pricing--v2 .tmm-pricing-card--v2-dark .tmm-pricing-card__section-label {
+  color: color-mix(in srgb, var(--tmm-color-fresh-white) 68%, var(--tmm-color-light-sage));
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__features--detailed {
+  align-content: start;
+  gap: 18px;
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__features--detailed li {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+  padding: 0;
+  color: var(--tmm-body-copy-color);
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__features--detailed li::before {
+  display: none;
+}
+
+.tmm-pricing--v2 .tmm-pricing-card--v2-dark .tmm-pricing-card__features--detailed li {
+  color: var(--tmm-color-fresh-white);
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__feature-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--tmm-color-light-sage) 38%, transparent);
+  border-radius: 6px;
+  color: var(--tmm-color-charcoal);
+}
+
+.tmm-pricing--v2 .tmm-pricing-card--v2-dark .tmm-pricing-card__feature-icon {
+  border-color: color-mix(in srgb, var(--tmm-color-deep-brown) 84%, transparent);
+  background: color-mix(in srgb, var(--tmm-color-deep-brown) 30%, transparent);
+  color: color-mix(in srgb, var(--tmm-color-fresh-white) 82%, var(--tmm-color-light-sage));
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__feature-icon svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__features--detailed h4 {
+  margin: 0;
+  color: inherit;
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__features--detailed p {
+  margin: 3px 0 0;
+  color: inherit;
+  font-size: 0.88rem;
+  line-height: 1.42;
+  opacity: 0.92;
+  text-wrap: balance;
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__feature--separated {
+  padding-top: 18px;
+  border-top: 1px solid color-mix(in srgb, var(--tmm-color-deep-brown) 72%, transparent);
+}
+
+.tmm-pricing--v2 .tmm-pricing-card__button {
+  align-self: end;
+  min-height: 46px;
+  margin-top: 4px;
+  font-size: 0.92rem;
+}
+
 .tmm-pricing__dots {
   display: flex;
   align-items: center;
@@ -812,9 +989,37 @@
     scroll-snap-type: none;
   }
 
+  .tmm-pricing--v2 .tmm-pricing__plans {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
   .tmm-pricing-card {
     flex: initial;
     scroll-snap-align: none;
+  }
+
+  .tmm-pricing--v2 .tmm-pricing-card {
+    min-width: 0;
+  }
+
+  .tmm-pricing--v2 .tmm-pricing-card__features--detailed {
+    gap: 16px;
+  }
+
+  .tmm-pricing--v2 .tmm-pricing-card__features--detailed li {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .tmm-pricing--v2 .tmm-pricing-card__feature-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .tmm-pricing--v2 .tmm-pricing-card__feature-icon svg {
+    width: 21px;
+    height: 21px;
   }
 
   .tmm-pricing__dots {
@@ -863,5 +1068,19 @@
   .tmm-pricing-card__button {
     min-height: 42px;
     font-size: 0.94rem;
+  }
+
+  .tmm-pricing--v2 .tmm-pricing-card {
+    flex-basis: calc(100% - 34px);
+    min-height: 0;
+    padding: 20px;
+  }
+
+  .tmm-pricing--v2 .tmm-pricing-card--v2-dark {
+    min-height: 0;
+  }
+
+  .tmm-pricing--v2 .tmm-pricing-card__features--detailed {
+    gap: 18px;
   }
 }
