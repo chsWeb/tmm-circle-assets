@@ -385,7 +385,8 @@
   }
 
   .tmm-welcome__photo {
-    width: 188px;
+    width: clamp(280px, 34vw, 348px);
+    aspect-ratio: 4 / 3;
   }
 
   .tmm-welcome__photo--top-left {
@@ -434,41 +435,45 @@
   }
 
   .tmm-welcome__photo--top-left {
-    top: -24px;
-    left: clamp(84px, 12vw, 180px);
+    top: 10px;
+    left: clamp(48px, 8vw, 120px);
     z-index: 2;
+    --tmm-photo-rest: translate3d(0, 0, 0) rotate(-9deg);
     --tmm-photo-start: translate3d(-105%, -95%, 0) rotate(-14deg);
   }
 
   .tmm-welcome__photo--top-right {
-    top: -14px;
-    right: clamp(84px, 12vw, 180px);
+    top: 20px;
+    right: clamp(48px, 8vw, 120px);
     z-index: 2;
+    --tmm-photo-rest: translate3d(0, 0, 0) rotate(8deg);
     --tmm-photo-start: translate3d(105%, -95%, 0) rotate(14deg);
   }
 
   .tmm-welcome__photo--top-center {
-    top: -176px;
+    top: -86px;
     z-index: 3;
     --tmm-photo-start: translate3d(-50%, -125%, 0) rotate(10deg);
   }
 
   .tmm-welcome__photo--bottom-left {
-    bottom: -22px;
-    left: clamp(88px, 12.5vw, 188px);
+    bottom: 32px;
+    left: clamp(50px, 8.5vw, 128px);
     z-index: 2;
+    --tmm-photo-rest: translate3d(0, 0, 0) rotate(7deg);
     --tmm-photo-start: translate3d(-105%, 95%, 0) rotate(12deg);
   }
 
   .tmm-welcome__photo--bottom-right {
-    right: clamp(88px, 12.5vw, 188px);
-    bottom: -18px;
+    right: clamp(50px, 8.5vw, 128px);
+    bottom: 34px;
     z-index: 2;
+    --tmm-photo-rest: translate3d(0, 0, 0) rotate(-8deg);
     --tmm-photo-start: translate3d(105%, 95%, 0) rotate(-12deg);
   }
 
   .tmm-welcome__photo--bottom-center {
-    bottom: -116px;
+    bottom: -36px;
     z-index: 3;
     --tmm-photo-start: translate3d(-50%, 125%, 0) rotate(-11deg);
   }
