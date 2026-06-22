@@ -343,7 +343,7 @@
               }
             });
           },
-          { threshold: 0.18 }
+          { threshold: 0.08 }
         );
 
         observer.observe(section);
