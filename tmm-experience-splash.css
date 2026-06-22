@@ -427,54 +427,62 @@
 
 @media (min-width: 1024px) {
   .tmm-welcome__photo {
-    width: clamp(324px, 28.8vw, 432px);
+    width: clamp(340px, 28.8vw, 432px);
     aspect-ratio: 4 / 3;
     padding: 8px;
     transition-duration: 1000ms, 1300ms;
   }
 
   .tmm-welcome__photo--top-left {
-    top: -78px;
-    left: 6px;
-    --tmm-photo-start: translate3d(-115%, -90%, 0) rotate(-14deg);
+    top: -54px;
+    left: clamp(24px, 7vw, 108px);
+    z-index: 2;
+    --tmm-photo-start: translate3d(-105%, -95%, 0) rotate(-14deg);
   }
 
   .tmm-welcome__photo--top-right {
-    top: -68px;
-    right: 6px;
-    --tmm-photo-start: translate3d(115%, -90%, 0) rotate(14deg);
+    top: -42px;
+    right: clamp(24px, 7vw, 108px);
+    z-index: 2;
+    --tmm-photo-start: translate3d(105%, -95%, 0) rotate(14deg);
   }
 
   .tmm-welcome__photo--top-center {
-    top: -250px;
-    --tmm-photo-start: translate3d(-50%, -115%, 0) rotate(10deg);
+    top: -220px;
+    z-index: 1;
+    --tmm-photo-start: translate3d(-50%, -125%, 0) rotate(10deg);
   }
 
   .tmm-welcome__photo--bottom-left {
-    bottom: -42px;
-    left: 12px;
-    --tmm-photo-start: translate3d(-115%, 90%, 0) rotate(12deg);
+    bottom: -50px;
+    left: clamp(28px, 8vw, 122px);
+    z-index: 2;
+    --tmm-photo-start: translate3d(-105%, 95%, 0) rotate(12deg);
   }
 
   .tmm-welcome__photo--bottom-right {
-    right: 12px;
-    bottom: -40px;
-    --tmm-photo-start: translate3d(115%, 90%, 0) rotate(-12deg);
+    right: clamp(28px, 8vw, 122px);
+    bottom: -46px;
+    z-index: 2;
+    --tmm-photo-start: translate3d(105%, 95%, 0) rotate(-12deg);
   }
 
   .tmm-welcome__photo--bottom-center {
-    bottom: -250px;
-    --tmm-photo-start: translate3d(-50%, 115%, 0) rotate(-11deg);
+    bottom: -214px;
+    z-index: 3;
+    --tmm-photo-start: translate3d(-50%, 125%, 0) rotate(-11deg);
   }
 
   .tmm-welcome__photo--mid-left {
-    left: -118px;
-    --tmm-photo-start: translate3d(-135%, -50%, 0) rotate(13deg);
+    left: -62px;
+    z-index: 4;
+    --tmm-photo-start: translate3d(-125%, -50%, 0) rotate(13deg);
   }
 
   .tmm-welcome__photo--mid-right {
-    right: -118px;
-    --tmm-photo-start: translate3d(135%, -50%, 0) rotate(-13deg);
+    right: -62px;
+    z-index: 4;
+    --tmm-photo-start: translate3d(125%, -50%, 0) rotate(-13deg);
   }
 }
 
