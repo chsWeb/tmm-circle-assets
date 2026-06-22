@@ -427,48 +427,48 @@
 
 @media (min-width: 1024px) {
   .tmm-welcome__photo {
-    width: clamp(340px, 28.8vw, 432px);
+    width: clamp(356px, 30.2vw, 456px);
     aspect-ratio: 4 / 3;
     padding: 8px;
     transition-duration: 1000ms, 1300ms;
   }
 
   .tmm-welcome__photo--top-left {
-    top: -54px;
-    left: clamp(24px, 7vw, 108px);
+    top: -24px;
+    left: clamp(84px, 12vw, 180px);
     z-index: 2;
     --tmm-photo-start: translate3d(-105%, -95%, 0) rotate(-14deg);
   }
 
   .tmm-welcome__photo--top-right {
-    top: -42px;
-    right: clamp(24px, 7vw, 108px);
+    top: -14px;
+    right: clamp(84px, 12vw, 180px);
     z-index: 2;
     --tmm-photo-start: translate3d(105%, -95%, 0) rotate(14deg);
   }
 
   .tmm-welcome__photo--top-center {
-    top: -220px;
-    z-index: 1;
+    top: -176px;
+    z-index: 3;
     --tmm-photo-start: translate3d(-50%, -125%, 0) rotate(10deg);
   }
 
   .tmm-welcome__photo--bottom-left {
-    bottom: -50px;
-    left: clamp(28px, 8vw, 122px);
+    bottom: -22px;
+    left: clamp(88px, 12.5vw, 188px);
     z-index: 2;
     --tmm-photo-start: translate3d(-105%, 95%, 0) rotate(12deg);
   }
 
   .tmm-welcome__photo--bottom-right {
-    right: clamp(28px, 8vw, 122px);
-    bottom: -46px;
+    right: clamp(88px, 12.5vw, 188px);
+    bottom: -18px;
     z-index: 2;
     --tmm-photo-start: translate3d(105%, 95%, 0) rotate(-12deg);
   }
 
   .tmm-welcome__photo--bottom-center {
-    bottom: -214px;
+    bottom: -116px;
     z-index: 3;
     --tmm-photo-start: translate3d(-50%, 125%, 0) rotate(-11deg);
   }
