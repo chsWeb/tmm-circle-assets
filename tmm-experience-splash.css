@@ -425,6 +425,50 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .tmm-welcome__photo {
+    width: clamp(270px, 24vw, 360px);
+    aspect-ratio: 4 / 3;
+    padding: 8px;
+  }
+
+  .tmm-welcome__photo--top-left {
+    top: 22px;
+    left: 18px;
+  }
+
+  .tmm-welcome__photo--top-right {
+    top: 34px;
+    right: 18px;
+  }
+
+  .tmm-welcome__photo--top-center {
+    top: -190px;
+  }
+
+  .tmm-welcome__photo--bottom-left {
+    bottom: 28px;
+    left: 28px;
+  }
+
+  .tmm-welcome__photo--bottom-right {
+    right: 28px;
+    bottom: 30px;
+  }
+
+  .tmm-welcome__photo--bottom-center {
+    bottom: -190px;
+  }
+
+  .tmm-welcome__photo--mid-left {
+    left: -190px;
+  }
+
+  .tmm-welcome__photo--mid-right {
+    right: -190px;
+  }
+}
+
 @media (max-width: 767px) {
   .tmm-welcome {
     min-height: max(100svh, 960px);
