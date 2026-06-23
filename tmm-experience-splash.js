@@ -357,7 +357,7 @@
       const getRestTransform = (depth) => {
         const state = getRestState(depth);
 
-        return `translate3d(${state.x}px, ${state.y}px, 0) rotateY(0deg) rotate(${state.rotate}deg) scale(${state.scale})`;
+        return `translate3d(${state.x}px, ${state.y}px, 0) rotate(${state.rotate}deg) scale(${state.scale})`;
       };
 
       const applyCardState = (card, depth, animate = true, transitionValue = "") => {
@@ -434,8 +434,8 @@
         card.style.transition =
           "transform 250ms cubic-bezier(0.4, 0, 1, 1), box-shadow 180ms cubic-bezier(0.4, 0, 1, 1)";
         card.style.transform =
-          `translate3d(${exitX}px, ${exitY}px, -18px) ` +
-          `rotateY(${direction * 6}deg) rotate(${direction * 8}deg) scale(0.985)`;
+          `translate3d(${exitX}px, ${exitY}px, 0) ` +
+          `rotate(${direction * 8}deg) skewY(${direction * -1.4}deg) scale(0.985)`;
 
         window.setTimeout(() => {
           reorderForTarget(direction, targetCard);
@@ -519,17 +519,16 @@
             1
           );
           const edgeDirection = Math.sign(dx || 1);
-          const tiltY = edgeDirection * edgeProgress * 7;
-          const depthZ = edgeProgress * -24;
           const edgeScale = 1 - edgeProgress * 0.012;
+          const edgeSkew = edgeDirection * edgeProgress * -1.3;
 
           activePointer.velocityX = (event.clientX - activePointer.lastX) / elapsed;
           activePointer.lastX = event.clientX;
           activePointer.lastTime = event.timeStamp;
 
           card.style.transform =
-            `translate3d(${dx * damping}px, ${dy * 0.3}px, ${depthZ}px) ` +
-            `rotateY(${tiltY}deg) rotate(${dx / 20}deg) scale(${edgeScale})`;
+            `translate3d(${dx * damping}px, ${dy * 0.3}px, 0) ` +
+            `rotate(${dx / 20}deg) skewY(${edgeSkew}deg) scale(${edgeScale})`;
         });
 
         const finishPointer = (event) => {
