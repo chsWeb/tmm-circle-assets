@@ -568,6 +568,8 @@
 .tmm-drag-hero__visual {
   display: grid;
   min-height: clamp(500px, 49vw, 650px);
+  align-content: center;
+  gap: 22px;
   place-items: center;
 }
 
@@ -638,6 +640,43 @@
   -webkit-user-drag: none;
 }
 
+.tmm-drag-deck__dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 24px;
+}
+
+.tmm-drag-deck__dot {
+  appearance: none;
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--tmm-dot-inactive-bg);
+  cursor: pointer;
+  transition:
+    width 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tmm-drag-deck__dot:hover {
+  transform: scale(1.18);
+}
+
+.tmm-drag-deck__dot[aria-current="true"] {
+  width: 24px;
+  background: var(--tmm-dot-active-bg);
+}
+
+.tmm-drag-deck__dot:focus-visible {
+  outline: 2px solid var(--tmm-color-electric-red);
+  outline-offset: 3px;
+}
+
 .tmm-welcome--drag-hero .tmm-welcome__inner {
   justify-items: start;
   width: min(100%, 520px);
@@ -656,19 +695,28 @@
   .tmm-welcome--drag-hero {
     min-height: 0;
     padding: 72px 28px 88px;
+    text-align: center;
   }
 
   .tmm-drag-hero__layout {
-    grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
-    gap: clamp(30px, 5vw, 56px);
+    grid-template-columns: 1fr;
+    gap: 44px;
   }
 
   .tmm-drag-hero__visual {
-    min-height: clamp(430px, 56vw, 560px);
+    order: 2;
+    min-height: clamp(480px, 72vw, 610px);
   }
 
   .tmm-drag-deck {
-    width: min(82%, 360px);
+    width: min(58vw, 390px);
+  }
+
+  .tmm-welcome--drag-hero .tmm-welcome__inner {
+    order: 1;
+    justify-items: center;
+    width: min(100%, 560px);
+    margin-inline: auto;
   }
 
   .tmm-welcome--drag-hero .tmm-welcome__title {
@@ -684,12 +732,12 @@
   }
 
   .tmm-drag-hero__layout {
-    grid-template-columns: 1fr;
     gap: 34px;
   }
 
   .tmm-drag-hero__visual {
-    min-height: min(112vw, 480px);
+    min-height: min(120vw, 510px);
+    gap: 18px;
   }
 
   .tmm-drag-deck {
@@ -697,9 +745,7 @@
   }
 
   .tmm-welcome--drag-hero .tmm-welcome__inner {
-    justify-items: center;
     width: min(100%, 360px);
-    margin-inline: auto;
   }
 
   .tmm-welcome--drag-hero .tmm-welcome__title {
@@ -710,7 +756,8 @@
 @media (prefers-reduced-motion: reduce) {
   .tmm-drag-deck,
   .tmm-welcome--drag-hero.is-visible .tmm-drag-deck,
-  .tmm-drag-deck__card {
+  .tmm-drag-deck__card,
+  .tmm-drag-deck__dot {
     opacity: 1;
     transition: none;
   }

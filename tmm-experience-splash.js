@@ -333,6 +333,7 @@
 
       const cards = [...deck.querySelectorAll("[data-tmm-deck-card]")];
       const cardCount = cards.length;
+      const dotsContainer = deck.parentElement?.querySelector("[data-tmm-deck-dots]");
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
       const restStates = [
         { x: 0, y: 0, rotate: -2, scale: 1, opacity: 1 },
@@ -344,6 +345,11 @@
       ];
       let isAnimating = false;
       let activePointer = null;
+      let dots = [];
+
+      cards.forEach((card, index) => {
+        card.dataset.deckIndex = String(index);
+      });
 
       const getRestState = (depth) => {
         return restStates[Math.min(depth, restStates.length - 1)];
@@ -366,10 +372,19 @@
         card.setAttribute("aria-hidden", String(depth !== 0));
       };
 
+      const updateDots = () => {
+        const activeIndex = cards[0]?.dataset.deckIndex;
+
+        dots.forEach((dot) => {
+          dot.setAttribute("aria-current", String(dot.dataset.deckIndex === activeIndex));
+        });
+      };
+
       const renderDeck = (animate = true) => {
         cards.forEach((card, depth) => {
           applyCardState(card, depth, animate);
         });
+        updateDots();
 
         if (!animate) {
           window.requestAnimationFrame(() => {
@@ -380,48 +395,92 @@
         }
       };
 
-      const dismissCard = (card, direction, releaseY = 0) => {
+      const reorderForTarget = (outgoingCard, targetCard = null) => {
+        if (targetCard) {
+          const middleCards = cards.filter((item) => item !== targetCard && item !== outgoingCard);
+
+          cards.splice(0, cards.length, targetCard, ...middleCards, outgoingCard);
+
+          return;
+        }
+
+        cards.push(cards.shift());
+      };
+
+      const dismissCard = (card, direction, releaseY = 0, targetCard = null) => {
         if (isAnimating || cards[0] !== card) {
           return;
         }
 
         if (reducedMotion.matches) {
-          cards.shift();
-          cards.push(card);
+          reorderForTarget(card, targetCard);
           renderDeck(false);
           cards[0]?.focus({ preventScroll: true });
           return;
         }
 
         isAnimating = true;
-        const travel = Math.max(window.innerWidth * 0.7, 620);
+        const deckWidth = deck.getBoundingClientRect().width;
+        const sideX = direction * Math.min(deckWidth * 0.46, 190);
+        const sideY = Math.max(-28, Math.min(releaseY * 0.18 + 22, 58));
 
-        cards.shift();
-        renderDeck(true);
+        reorderForTarget(card, targetCard);
+        cards.forEach((deckCard, depth) => {
+          if (deckCard !== card) {
+            applyCardState(deckCard, depth, true);
+          }
+        });
+        updateDots();
 
         card.style.zIndex = String(cardCount + 2);
         card.style.transition =
-          "transform 420ms cubic-bezier(0.22, 0.76, 0.24, 1), opacity 280ms cubic-bezier(0.4, 0, 1, 1)";
+          "transform 440ms cubic-bezier(0.32, 0.72, 0, 1), opacity 320ms cubic-bezier(0.32, 0.72, 0, 1)";
         card.style.transform =
-          `translate3d(${direction * travel}px, ${releaseY * 0.35 - 30}px, 0) rotate(${direction * 19}deg) scale(0.96)`;
-        card.style.opacity = "0";
+          `translate3d(${sideX}px, ${sideY}px, 0) rotate(${direction * 14}deg) scale(0.92)`;
+        card.style.opacity = "0.72";
 
         window.setTimeout(() => {
-          cards.push(card);
-          applyCardState(card, cards.length - 1, false);
-          card.style.opacity = "0";
+          const depth = cards.indexOf(card);
+          const state = getRestState(depth);
 
-          window.requestAnimationFrame(() => {
-            window.requestAnimationFrame(() => {
-              const state = getRestState(cards.length - 1);
+          card.style.zIndex = String(cardCount - depth);
+          card.style.transition =
+            "transform 620ms cubic-bezier(0.16, 1, 0.3, 1), opacity 520ms cubic-bezier(0.16, 1, 0.3, 1)";
+          card.style.transform = getRestTransform(depth);
+          card.style.opacity = String(state.opacity);
 
-              card.style.transition = "opacity 300ms cubic-bezier(0.16, 1, 0.3, 1)";
-              card.style.opacity = String(state.opacity);
-              isAnimating = false;
-            });
-          });
+          window.setTimeout(() => {
+            card.tabIndex = -1;
+            card.setAttribute("aria-hidden", "true");
+            isAnimating = false;
+          }, 630);
         }, 430);
       };
+
+      if (dotsContainer) {
+        dots = cards.map((card, index) => {
+          const dot = document.createElement("button");
+
+          dot.type = "button";
+          dot.className = "tmm-drag-deck__dot";
+          dot.dataset.deckIndex = String(index);
+          dot.setAttribute("aria-label", `Show photograph ${index + 1}`);
+          dot.setAttribute("aria-current", String(index === 0));
+          dot.addEventListener("click", () => {
+            if (isAnimating || cards[0] === card) {
+              return;
+            }
+
+            const currentIndex = Number.parseInt(cards[0]?.dataset.deckIndex || "0", 10);
+            const direction = index >= currentIndex ? 1 : -1;
+
+            dismissCard(cards[0], direction, 0, card);
+          });
+          dotsContainer.appendChild(dot);
+
+          return dot;
+        });
+      }
 
       cards.forEach((card) => {
         card.draggable = false;
