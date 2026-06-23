@@ -357,7 +357,7 @@
       const getRestTransform = (depth) => {
         const state = getRestState(depth);
 
-        return `translate3d(${state.x}px, ${state.y}px, 0) rotate(${state.rotate}deg) scale(${state.scale})`;
+        return `translate3d(${state.x}px, ${state.y}px, 0) rotateY(0deg) rotate(${state.rotate}deg) scale(${state.scale})`;
       };
 
       const applyCardState = (card, depth, animate = true, transitionValue = "") => {
@@ -496,13 +496,23 @@
           const dx = event.clientX - activePointer.startX;
           const dy = event.clientY - activePointer.startY;
           const damping = 1 / (1 + Math.max(Math.abs(dx) - 160, 0) / 420);
+          const edgeThreshold = deck.getBoundingClientRect().width * 0.24;
+          const edgeProgress = Math.min(
+            Math.max((Math.abs(dx) - edgeThreshold * 0.45) / (edgeThreshold * 0.75), 0),
+            1
+          );
+          const edgeDirection = Math.sign(dx || 1);
+          const tiltY = edgeDirection * edgeProgress * 7;
+          const depthZ = edgeProgress * -24;
+          const edgeScale = 1 - edgeProgress * 0.012;
 
           activePointer.velocityX = (event.clientX - activePointer.lastX) / elapsed;
           activePointer.lastX = event.clientX;
           activePointer.lastTime = event.timeStamp;
 
           card.style.transform =
-            `translate3d(${dx * damping}px, ${dy * 0.3}px, 0) rotate(${dx / 20}deg) scale(1)`;
+            `translate3d(${dx * damping}px, ${dy * 0.3}px, ${depthZ}px) ` +
+            `rotateY(${tiltY}deg) rotate(${dx / 20}deg) scale(${edgeScale})`;
         });
 
         const finishPointer = (event) => {
