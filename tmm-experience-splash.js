@@ -406,7 +406,14 @@
         );
       };
 
-      const dismissCard = (card, direction, releaseY = 0, targetCard = null, animate = true) => {
+      const dismissCard = (
+        card,
+        direction,
+        releaseX = 0,
+        releaseY = 0,
+        targetCard = null,
+        animate = true
+      ) => {
         if (isAnimating || cards[0] !== card) {
           return;
         }
@@ -419,17 +426,27 @@
         }
 
         isAnimating = true;
-        reorderForTarget(direction, targetCard);
-        cards.forEach((deckCard, depth) => {
-          applyCardState(
-            deckCard,
-            depth,
-            true,
-            "transform 580ms cubic-bezier(0.32, 0.72, 0, 1), opacity 240ms cubic-bezier(0.32, 0.72, 0, 1)"
-          );
-        });
-        card.style.zIndex = "0";
-        updateDots();
+        const deckWidth = deck.getBoundingClientRect().width;
+        const exitX =
+          direction * Math.max(deckWidth * 0.56, Math.abs(releaseX) + deckWidth * 0.14);
+        const exitY = releaseY * 0.22;
+
+        card.style.transition =
+          "transform 250ms cubic-bezier(0.4, 0, 1, 1), box-shadow 180ms cubic-bezier(0.4, 0, 1, 1)";
+        card.style.transform =
+          `translate3d(${exitX}px, ${exitY}px, -18px) ` +
+          `rotateY(${direction * 6}deg) rotate(${direction * 8}deg) scale(0.985)`;
+
+        window.setTimeout(() => {
+          reorderForTarget(direction, targetCard);
+          const settleTransition =
+            "transform 380ms cubic-bezier(0.16, 1, 0.3, 1), opacity 220ms cubic-bezier(0.16, 1, 0.3, 1)";
+
+          cards.forEach((deckCard, depth) => {
+            applyCardState(deckCard, depth, true, settleTransition);
+          });
+          updateDots();
+        }, 250);
 
         window.setTimeout(() => {
           applyCardState(card, cards.indexOf(card), false);
@@ -437,7 +454,7 @@
             card.style.transition = "";
           });
           isAnimating = false;
-        }, 590);
+        }, 640);
       };
 
       if (dotsContainer) {
@@ -457,7 +474,7 @@
             const currentIndex = Number.parseInt(cards[0]?.dataset.deckIndex || "0", 10);
             const direction = index >= currentIndex ? 1 : -1;
 
-            dismissCard(cards[0], direction, 0, card);
+            dismissCard(cards[0], direction, 0, 0, card);
           });
           dotsContainer.appendChild(dot);
 
@@ -535,7 +552,7 @@
           }
 
           if (shouldDismiss) {
-            dismissCard(card, direction, dy);
+            dismissCard(card, direction, dx, dy);
             return;
           }
 
@@ -555,7 +572,7 @@
           event.preventDefault();
           const direction = event.key === "ArrowLeft" ? 1 : -1;
 
-          dismissCard(card, direction, 0, null, false);
+          dismissCard(card, direction, 0, 0, null, false);
         });
       });
 
