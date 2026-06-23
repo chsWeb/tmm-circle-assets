@@ -336,12 +336,10 @@
       const dotsContainer = deck.parentElement?.querySelector("[data-tmm-deck-dots]");
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
       const restStates = [
-        { x: 0, y: 0, rotate: -2, scale: 1, opacity: 1 },
-        { x: -22, y: 8, rotate: -7, scale: 0.965, opacity: 0.97 },
-        { x: 24, y: 14, rotate: 7, scale: 0.935, opacity: 0.93 },
-        { x: -34, y: 24, rotate: -11, scale: 0.905, opacity: 0.89 },
-        { x: 34, y: 30, rotate: 10, scale: 0.875, opacity: 0.85 },
-        { x: 0, y: 38, rotate: 2, scale: 0.845, opacity: 0.8 },
+        { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 },
+        { x: -28, y: 8, rotate: -5, scale: 0.93, opacity: 1 },
+        { x: 28, y: 20, rotate: 5, scale: 0.86, opacity: 1 },
+        { x: 0, y: 30, rotate: 1, scale: 0.82, opacity: 0 },
       ];
       let isAnimating = false;
       let activePointer = null;
@@ -361,10 +359,10 @@
         return `translate3d(${state.x}px, ${state.y}px, 0) rotate(${state.rotate}deg) scale(${state.scale})`;
       };
 
-      const applyCardState = (card, depth, animate = true) => {
+      const applyCardState = (card, depth, animate = true, transitionValue = "") => {
         const state = getRestState(depth);
 
-        card.style.transition = animate ? "" : "none";
+        card.style.transition = animate ? transitionValue : "none";
         card.style.transform = getRestTransform(depth);
         card.style.opacity = String(state.opacity);
         card.style.zIndex = String(cardCount - depth);
@@ -407,12 +405,12 @@
         cards.push(cards.shift());
       };
 
-      const dismissCard = (card, direction, releaseY = 0, targetCard = null) => {
+      const dismissCard = (card, direction, releaseY = 0, targetCard = null, animate = true) => {
         if (isAnimating || cards[0] !== card) {
           return;
         }
 
-        if (reducedMotion.matches) {
+        if (reducedMotion.matches || !animate) {
           reorderForTarget(card, targetCard);
           renderDeck(false);
           cards[0]?.focus({ preventScroll: true });
@@ -420,41 +418,25 @@
         }
 
         isAnimating = true;
-        const deckWidth = deck.getBoundingClientRect().width;
-        const sideX = direction * Math.min(deckWidth * 0.46, 190);
-        const sideY = Math.max(-28, Math.min(releaseY * 0.18 + 22, 58));
-
         reorderForTarget(card, targetCard);
         cards.forEach((deckCard, depth) => {
-          if (deckCard !== card) {
-            applyCardState(deckCard, depth, true);
-          }
+          applyCardState(
+            deckCard,
+            depth,
+            true,
+            "transform 580ms cubic-bezier(0.32, 0.72, 0, 1), opacity 240ms cubic-bezier(0.32, 0.72, 0, 1)"
+          );
         });
+        card.style.zIndex = "0";
         updateDots();
 
-        card.style.zIndex = String(cardCount + 2);
-        card.style.transition =
-          "transform 440ms cubic-bezier(0.32, 0.72, 0, 1), opacity 320ms cubic-bezier(0.32, 0.72, 0, 1)";
-        card.style.transform =
-          `translate3d(${sideX}px, ${sideY}px, 0) rotate(${direction * 14}deg) scale(0.92)`;
-        card.style.opacity = "0.72";
-
         window.setTimeout(() => {
-          const depth = cards.indexOf(card);
-          const state = getRestState(depth);
-
-          card.style.zIndex = String(cardCount - depth);
-          card.style.transition =
-            "transform 620ms cubic-bezier(0.16, 1, 0.3, 1), opacity 520ms cubic-bezier(0.16, 1, 0.3, 1)";
-          card.style.transform = getRestTransform(depth);
-          card.style.opacity = String(state.opacity);
-
-          window.setTimeout(() => {
-            card.tabIndex = -1;
-            card.setAttribute("aria-hidden", "true");
-            isAnimating = false;
-          }, 630);
-        }, 430);
+          applyCardState(card, cards.indexOf(card), false);
+          window.requestAnimationFrame(() => {
+            card.style.transition = "";
+          });
+          isAnimating = false;
+        }, 590);
       };
 
       if (dotsContainer) {
@@ -512,13 +494,14 @@
           const elapsed = Math.max(event.timeStamp - activePointer.lastTime, 1);
           const dx = event.clientX - activePointer.startX;
           const dy = event.clientY - activePointer.startY;
+          const damping = 1 / (1 + Math.max(Math.abs(dx) - 160, 0) / 420);
 
           activePointer.velocityX = (event.clientX - activePointer.lastX) / elapsed;
           activePointer.lastX = event.clientX;
           activePointer.lastTime = event.timeStamp;
 
           card.style.transform =
-            `translate3d(${dx}px, ${dy * 0.55}px, 0) rotate(${-2 + dx / 18}deg) scale(1.015)`;
+            `translate3d(${dx * damping}px, ${dy * 0.3}px, 0) rotate(${dx / 20}deg) scale(1)`;
         });
 
         const finishPointer = (event) => {
@@ -561,7 +544,7 @@
           event.preventDefault();
           const direction = event.key === "ArrowLeft" ? -1 : 1;
 
-          dismissCard(card, direction);
+          dismissCard(card, direction, 0, null, false);
         });
       });
 
