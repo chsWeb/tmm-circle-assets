@@ -331,8 +331,9 @@
 
       handledPhotoDecks.add(deck);
 
-      const cards = [...deck.querySelectorAll("[data-tmm-deck-card]")];
-      const cardCount = cards.length;
+      const originalCards = [...deck.querySelectorAll("[data-tmm-deck-card]")];
+      let cards = [...originalCards];
+      const cardCount = originalCards.length;
       const dotsContainer = deck.parentElement?.querySelector("[data-tmm-deck-dots]");
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
       const restStates = [
@@ -345,7 +346,7 @@
       let activePointer = null;
       let dots = [];
 
-      cards.forEach((card, index) => {
+      originalCards.forEach((card, index) => {
         card.dataset.deckIndex = String(index);
       });
 
@@ -393,16 +394,16 @@
         }
       };
 
-      const reorderForTarget = (outgoingCard, targetCard = null) => {
-        if (targetCard) {
-          const middleCards = cards.filter((item) => item !== targetCard && item !== outgoingCard);
+      const reorderForTarget = (direction, targetCard = null) => {
+        const currentIndex = Number.parseInt(cards[0]?.dataset.deckIndex || "0", 10);
+        const targetIndex = targetCard
+          ? Number.parseInt(targetCard.dataset.deckIndex || "0", 10)
+          : (currentIndex + (direction < 0 ? 1 : -1) + cardCount) % cardCount;
 
-          cards.splice(0, cards.length, targetCard, ...middleCards, outgoingCard);
-
-          return;
-        }
-
-        cards.push(cards.shift());
+        cards = Array.from(
+          { length: cardCount },
+          (_, offset) => originalCards[(targetIndex + offset) % cardCount]
+        );
       };
 
       const dismissCard = (card, direction, releaseY = 0, targetCard = null, animate = true) => {
@@ -411,14 +412,14 @@
         }
 
         if (reducedMotion.matches || !animate) {
-          reorderForTarget(card, targetCard);
+          reorderForTarget(direction, targetCard);
           renderDeck(false);
           cards[0]?.focus({ preventScroll: true });
           return;
         }
 
         isAnimating = true;
-        reorderForTarget(card, targetCard);
+        reorderForTarget(direction, targetCard);
         cards.forEach((deckCard, depth) => {
           applyCardState(
             deckCard,
@@ -542,7 +543,7 @@
           }
 
           event.preventDefault();
-          const direction = event.key === "ArrowLeft" ? -1 : 1;
+          const direction = event.key === "ArrowLeft" ? 1 : -1;
 
           dismissCard(card, direction, 0, null, false);
         });
