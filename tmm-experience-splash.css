@@ -727,16 +727,17 @@
 @media (max-width: 767px) {
   .tmm-welcome--drag-hero {
     min-height: 0;
-    padding: 56px 22px 76px;
+    padding: 32px 22px 24px;
     text-align: center;
   }
 
   .tmm-drag-hero__layout {
-    gap: 34px;
+    gap: 24px;
   }
 
   .tmm-drag-hero__visual {
-    min-height: min(120vw, 510px);
+    align-content: start;
+    min-height: min(100vw, 420px);
     gap: 18px;
   }
 
@@ -749,7 +750,7 @@
   }
 
   .tmm-welcome--drag-hero .tmm-welcome__title {
-    font-size: clamp(2.8rem, 14vw, 4.25rem);
+    font-size: clamp(2.8rem, 13vw, 4.25rem);
   }
 }
 
