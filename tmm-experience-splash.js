@@ -2,6 +2,7 @@
   const handledSplashes = new WeakSet();
   const handledWelcomeSections = new WeakSet();
   const handledPricingSections = new WeakSet();
+  const handledPhotoDecks = new WeakSet();
 
   const resetCircleShellPadding = (splash) => {
     splash.closest(".wb-p-5")?.classList.add("tmm-experience-shell-reset");
@@ -322,6 +323,193 @@
     });
   };
 
+  const setupPhotoDecks = (root = document) => {
+    root.querySelectorAll("[data-tmm-photo-deck]").forEach((deck) => {
+      if (handledPhotoDecks.has(deck)) {
+        return;
+      }
+
+      handledPhotoDecks.add(deck);
+
+      const cards = [...deck.querySelectorAll("[data-tmm-deck-card]")];
+      const cardCount = cards.length;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const restStates = [
+        { x: 0, y: 0, rotate: -2, scale: 1, opacity: 1 },
+        { x: -22, y: 8, rotate: -7, scale: 0.965, opacity: 0.97 },
+        { x: 24, y: 14, rotate: 7, scale: 0.935, opacity: 0.93 },
+        { x: -34, y: 24, rotate: -11, scale: 0.905, opacity: 0.89 },
+        { x: 34, y: 30, rotate: 10, scale: 0.875, opacity: 0.85 },
+        { x: 0, y: 38, rotate: 2, scale: 0.845, opacity: 0.8 },
+      ];
+      let isAnimating = false;
+      let activePointer = null;
+
+      const getRestState = (depth) => {
+        return restStates[Math.min(depth, restStates.length - 1)];
+      };
+
+      const getRestTransform = (depth) => {
+        const state = getRestState(depth);
+
+        return `translate3d(${state.x}px, ${state.y}px, 0) rotate(${state.rotate}deg) scale(${state.scale})`;
+      };
+
+      const applyCardState = (card, depth, animate = true) => {
+        const state = getRestState(depth);
+
+        card.style.transition = animate ? "" : "none";
+        card.style.transform = getRestTransform(depth);
+        card.style.opacity = String(state.opacity);
+        card.style.zIndex = String(cardCount - depth);
+        card.tabIndex = depth === 0 ? 0 : -1;
+        card.setAttribute("aria-hidden", String(depth !== 0));
+      };
+
+      const renderDeck = (animate = true) => {
+        cards.forEach((card, depth) => {
+          applyCardState(card, depth, animate);
+        });
+
+        if (!animate) {
+          window.requestAnimationFrame(() => {
+            cards.forEach((card) => {
+              card.style.transition = "";
+            });
+          });
+        }
+      };
+
+      const dismissCard = (card, direction, releaseY = 0) => {
+        if (isAnimating || cards[0] !== card) {
+          return;
+        }
+
+        if (reducedMotion.matches) {
+          cards.shift();
+          cards.push(card);
+          renderDeck(false);
+          cards[0]?.focus({ preventScroll: true });
+          return;
+        }
+
+        isAnimating = true;
+        const travel = Math.max(window.innerWidth * 0.7, 620);
+
+        cards.shift();
+        renderDeck(true);
+
+        card.style.zIndex = String(cardCount + 2);
+        card.style.transition =
+          "transform 420ms cubic-bezier(0.22, 0.76, 0.24, 1), opacity 280ms cubic-bezier(0.4, 0, 1, 1)";
+        card.style.transform =
+          `translate3d(${direction * travel}px, ${releaseY * 0.35 - 30}px, 0) rotate(${direction * 19}deg) scale(0.96)`;
+        card.style.opacity = "0";
+
+        window.setTimeout(() => {
+          cards.push(card);
+          applyCardState(card, cards.length - 1, false);
+          card.style.opacity = "0";
+
+          window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(() => {
+              const state = getRestState(cards.length - 1);
+
+              card.style.transition = "opacity 300ms cubic-bezier(0.16, 1, 0.3, 1)";
+              card.style.opacity = String(state.opacity);
+              isAnimating = false;
+            });
+          });
+        }, 430);
+      };
+
+      cards.forEach((card) => {
+        card.draggable = false;
+
+        card.addEventListener("pointerdown", (event) => {
+          if (isAnimating || reducedMotion.matches || cards[0] !== card) {
+            return;
+          }
+
+          event.preventDefault();
+          card.setPointerCapture(event.pointerId);
+          card.classList.add("is-dragging");
+
+          activePointer = {
+            id: event.pointerId,
+            startX: event.clientX,
+            startY: event.clientY,
+            lastX: event.clientX,
+            lastTime: event.timeStamp,
+            velocityX: 0,
+          };
+        });
+
+        card.addEventListener("pointermove", (event) => {
+          if (!activePointer || activePointer.id !== event.pointerId || cards[0] !== card) {
+            return;
+          }
+
+          const elapsed = Math.max(event.timeStamp - activePointer.lastTime, 1);
+          const dx = event.clientX - activePointer.startX;
+          const dy = event.clientY - activePointer.startY;
+
+          activePointer.velocityX = (event.clientX - activePointer.lastX) / elapsed;
+          activePointer.lastX = event.clientX;
+          activePointer.lastTime = event.timeStamp;
+
+          card.style.transform =
+            `translate3d(${dx}px, ${dy * 0.55}px, 0) rotate(${-2 + dx / 18}deg) scale(1.015)`;
+        });
+
+        const finishPointer = (event) => {
+          if (!activePointer || activePointer.id !== event.pointerId || cards[0] !== card) {
+            return;
+          }
+
+          const dx = event.clientX - activePointer.startX;
+          const dy = event.clientY - activePointer.startY;
+          const velocityX = activePointer.velocityX;
+          const threshold = deck.getBoundingClientRect().width * 0.24;
+          const shouldDismiss = Math.abs(dx) > threshold || Math.abs(velocityX) > 0.65;
+          const direction = Math.sign(dx || velocityX || 1);
+
+          activePointer = null;
+          card.classList.remove("is-dragging");
+
+          if (card.hasPointerCapture(event.pointerId)) {
+            card.releasePointerCapture(event.pointerId);
+          }
+
+          if (shouldDismiss) {
+            dismissCard(card, direction, dy);
+            return;
+          }
+
+          card.style.transition =
+            "transform 540ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1)";
+          card.style.transform = getRestTransform(0);
+        };
+
+        card.addEventListener("pointerup", finishPointer);
+        card.addEventListener("pointercancel", finishPointer);
+
+        card.addEventListener("keydown", (event) => {
+          if (cards[0] !== card || !["ArrowLeft", "ArrowRight", "Enter", " "].includes(event.key)) {
+            return;
+          }
+
+          event.preventDefault();
+          const direction = event.key === "ArrowLeft" ? -1 : 1;
+
+          dismissCard(card, direction);
+        });
+      });
+
+      renderDeck(false);
+    });
+  };
+
   const setupWelcomeSections = (root = document) => {
     root.querySelectorAll(".tmm-welcome").forEach((section) => {
       if (handledWelcomeSections.has(section)) {
@@ -390,6 +578,7 @@
         completeExperienceSplash();
         setupWelcomeSections();
         setupPricingSections();
+        setupPhotoDecks();
       },
       { once: true }
     );
@@ -397,6 +586,7 @@
     completeExperienceSplash();
     setupWelcomeSections();
     setupPricingSections();
+    setupPhotoDecks();
   }
 
   new MutationObserver((mutations) => {
@@ -406,6 +596,7 @@
           completeExperienceSplash(node);
           setupWelcomeSections(node);
           setupPricingSections(node);
+          setupPhotoDecks(node);
         }
       });
     });
