@@ -254,11 +254,11 @@
       }
 
       handledPricingSections.add(section);
-      updatePricingSection(section, section.dataset.billing || "monthly");
+      updatePricingSection(section, section.dataset.billing || "quarterly");
 
       section.querySelectorAll(".tmm-pricing__toggle-button").forEach((button) => {
         button.addEventListener("click", () => {
-          updatePricingSection(section, button.dataset.billingToggle || "monthly");
+          updatePricingSection(section, button.dataset.billingToggle || "quarterly");
         });
       });
 
