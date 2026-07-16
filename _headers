@@ -1,0 +1,19 @@
+# Cloudflare Pages headers — THIS FILE MUST SIT AT THE REPO ROOT
+# (tmm-circle-assets/_headers), NOT inside /home. Pages only reads it at root.
+# Rules are scoped to /home/* so they don't touch the splash page.
+
+/home/fonts/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+
+/home/assets/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400
+
+/home/home.css
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=60
+
+/home/home.js
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=60

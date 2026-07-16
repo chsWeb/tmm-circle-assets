@@ -1,10 +1,10 @@
 <!-- ============================================================
-     TMM Circle Home — body.html
-     Paste this into the Circle Custom HTML block (Custom App
-     Builder screen AND the Site Builder page — identical markup).
-     CSS + JS load from Cloudflare Pages via the <head> snippet
-     (see head.html). Menu links are STATIC HTML on purpose:
-     Circle's iframe strips JS-injected <a> tags.
+     TMM Circle Landing — body.html
+     Paste into the Circle Custom HTML block (Custom App Builder
+     screen AND the Site Builder page — identical markup).
+     CSS + JS load from Cloudflare Pages via the <head> snippet.
+     Body content only — no <!DOCTYPE>, <html>, or <head>.
+     No custom menu: Circle's native nav handles navigation.
      ============================================================ -->
 
 <!-- TEST BANNER — delete this whole block before publishing -->
@@ -21,64 +21,11 @@
 
 <div class="tmm-home" id="tmmHome" data-brand="mm">
 
-  <!-- CSS-only menu state (checkbox drives open/close; Circle-iframe safe) -->
-  <input type="checkbox" id="tmmMenuToggle" class="tmm-menu-toggle" aria-hidden="true">
-
-  <!-- Overlay (tap closes) -->
-  <label class="tmm-overlay" for="tmmMenuToggle" aria-hidden="true"></label>
-
-  <!-- Drawer -->
-  <nav class="tmm-drawer" aria-label="Community menu">
-    <div class="tmm-drawer-head">
-      <span class="tmm-drawer-title">Community</span>
-      <label class="tmm-drawer-close" for="tmmMenuToggle" aria-label="Close menu" tabindex="0">&#x2715;</label>
-    </div>
-    <div class="tmm-drawer-body">
-
-      <div class="tmm-menu-label">Millionaire Mother Experience</div>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/announcements" target="_blank"><span class="tmm-menu-emoji">📣</span>Announcements</a>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/business-questions" target="_blank"><span class="tmm-menu-emoji">📚</span>Business Questions &amp; Resources</a>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/celebrations" target="_blank"><span class="tmm-menu-emoji">🎉</span>Celebrations</a>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/group-coaching" target="_blank"><span class="tmm-menu-emoji">📆</span>Live Coaching Calls</a>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/motherhood-questions" target="_blank"><span class="tmm-menu-emoji">❤️</span>Motherhood Q&amp;A</a>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/implementation-huddles" target="_blank"><span class="tmm-menu-emoji">🛠️</span>Implementation Huddles</a>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/guest-experts" target="_blank"><span class="tmm-menu-emoji">⭐</span>Top Guest Experts</a>
-
-      <div class="tmm-menu-divider"></div>
-      <div class="tmm-menu-label">The Foundry Community</div>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/announcements-c79c49" target="_blank"><span class="tmm-menu-emoji">📣</span>Announcements</a>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/coaching-q-a" target="_blank"><span class="tmm-menu-emoji">💬</span>Coaching Q&amp;A</a>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/marketing-lab" target="_blank"><span class="tmm-menu-emoji">✍️</span>Marketing Lab</a>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/the-wisdom-well-be13ea" target="_blank"><span class="tmm-menu-emoji">🌊</span>The Wisdom Well</a>
-
-      <div class="tmm-menu-divider"></div>
-      <div class="tmm-menu-label">The Vault</div>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/business-trainings" target="_blank"><span class="tmm-menu-emoji">💻</span>Business Trainings Library</a>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/masterclass-library" target="_blank"><span class="tmm-menu-emoji">🎓</span>Masterclass Library</a>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/mme-program-library" target="_blank"><span class="tmm-menu-emoji">⬇️</span>MME Program Library</a>
-
-      <div class="tmm-menu-divider"></div>
-      <div class="tmm-menu-label">Community Hubs</div>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/mm-rolodex" target="_blank"><span class="tmm-menu-emoji">📇</span>MM Rolodex</a>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/community-job-board" target="_blank"><span class="tmm-menu-emoji">💼</span>Community Job Board</a>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/community-conversations-a0378f" target="_blank"><span class="tmm-menu-emoji">💭</span>Community Conversations</a>
-
-      <div class="tmm-menu-divider"></div>
-      <div class="tmm-menu-label">Getting Started</div>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/start-here-3ba756" target="_blank"><span class="tmm-menu-emoji">🌟</span>Start Here</a>
-      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/say-hello" target="_blank"><span class="tmm-menu-emoji">👋</span>Say Hello</a>
-    </div>
-  </nav>
-
-  <!-- Top bar -->
+  <!-- Top bar: brand logo only (swaps by tier) -->
   <div class="tmm-topbar">
     <span class="tmm-logo tmm-logo--mm" role="img" aria-label="The Millionaire Mother"></span>
     <span class="tmm-logo tmm-logo--hub" role="img" aria-label="Mother Hub"></span>
-    <label class="tmm-hamburger" for="tmmMenuToggle" aria-label="Open community menu" tabindex="0">
-      <span></span><span></span><span></span>
-    </label>
   </div>
-  <div class="tmm-greeting" id="tmmGreeting">Welcome back</div>
 
   <!-- 1 · HERO -->
   <section class="tmm-section">
@@ -138,7 +85,7 @@
     </div>
   </section>
 
-  <!-- 6 · SHARE THE APP (static; upsell logic deferred) -->
+  <!-- 6 · SHARE THE APP (static; upsell links wired later) -->
   <section class="tmm-section">
     <div class="tmm-share">
       <div class="tmm-share-title">Share the app</div>

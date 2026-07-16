@@ -254,20 +254,12 @@ function wireHeroButtons(){
   if(next) next.onclick = ()=>{ if(heroIdx<heroTotal-1){heroIdx++; updateHero();} };
 }
 
-/* Escape closes the CSS-only menu (nice-to-have) */
-function wireEscape(){
-  document.addEventListener('keydown', e=>{
-    if(e.key==='Escape'){ const t=document.getElementById('tmmMenuToggle'); if(t) t.checked=false; }
-  });
-}
-
 /* expose inline handlers + test switcher to window (IIFE hides them otherwise) */
 window.tmmHeroJump = tmmHeroJump;
 window.tmmSetTier  = (k)=>init(k);
 
 document.addEventListener('DOMContentLoaded', ()=>{
   wireHeroButtons();
-  wireEscape();
   if(!TMM_CONFIG.TEST_MODE){ const b=document.getElementById('tmmTestBanner'); if(b) b.style.display='none'; }
   init();
 });
