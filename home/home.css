@@ -142,11 +142,12 @@
 .tmm-feat-title{font-family:var(--font-head);font-weight:500;font-size:20px;line-height:1.25;letter-spacing:-.02em;color:var(--sand);text-transform:uppercase;margin-bottom:14px}
 .tmm-feat-bottom{display:flex;flex-direction:column;align-items:flex-start;gap:0}
 
-/* pill button */
-.tmm-btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 20px;border-radius:var(--pill);background:var(--electric-red);color:var(--cream);font-weight:700;font-size:14px;line-height:1;cursor:pointer;transition:var(--transition)}
+/* pill button — color forced with !important to beat Circle's <a> link styles */
+.tmm-home .tmm-btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 20px;border-radius:var(--pill);background:var(--electric-red);color:var(--cream) !important;font-weight:700;font-size:14px;line-height:1;cursor:pointer;text-decoration:none;transition:var(--transition)}
+.tmm-home a.tmm-btn,.tmm-home a.tmm-btn:link,.tmm-home a.tmm-btn:visited,.tmm-home a.tmm-btn:hover{color:var(--cream) !important}
 .tmm-btn:hover{background:var(--rose-red)}
 .tmm-btn--sm{padding:8px 16px;font-size:13px}
-.tmm-btn--muted{background:var(--disabled);color:var(--ink);cursor:default}
+.tmm-home .tmm-btn--muted{background:var(--disabled) !important;color:var(--ink) !important;cursor:default}
 
 /* ============================================================
    4 — POST FEED  (bordered carousel cards)

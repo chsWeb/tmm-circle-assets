@@ -181,6 +181,7 @@ function renderFeatured(events,cfg){
   const el=document.getElementById('tmmFeat');
   if(!events.length){ el.innerHTML='<p class="tmm-empty">No upcoming events.</p>'; return; }
   const ev=events[0], dt=ev.starts_at||ev.published_at;
+  const past = dt && new Date(dt) < new Date();
   el.innerHTML = `
     <a class="tmm-feat" href="${esc(ev.url||'#')}" target="_blank" rel="noopener">
       ${ev.cover_image_url ? `<img class="tmm-feat-bg" src="${esc(ev.cover_image_url)}" alt="" loading="lazy">` : ``}
@@ -190,7 +191,7 @@ function renderFeatured(events,cfg){
       </div>
       <div class="tmm-feat-bottom">
         <div class="tmm-feat-title">${esc(ev.name||'Untitled Event')}</div>
-        <span class="tmm-btn">Reserve a Spot</span>
+        ${past ? '' : '<span class="tmm-btn">Reserve a Spot</span>'}
       </div>
     </a>`;
 }
@@ -209,8 +210,8 @@ function renderFeed(posts,cfg){
         <div class="tmm-feed-title">${esc(p.name||'Untitled')}</div>
         <div class="tmm-feed-preview">${esc(strip(p.body?.body||'').slice(0,140))}</div>
         <div class="tmm-stats">
-          <span class="tmm-stat">♥ ${p.likes_count||0}</span>
-          <span class="tmm-stat">💬 ${p.comments_count||0}</span>
+          <span class="tmm-stat"><svg class="tmm-ico" width="15" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M13.6609 1.8746C13.3204 1.53394 12.9161 1.2637 12.4711 1.07932C12.0261 0.894947 11.5492 0.800049 11.0675 0.800049C10.5859 0.800049 10.1089 0.894947 9.66396 1.07932C9.21898 1.2637 8.8147 1.53394 8.47419 1.8746L7.76753 2.58127L7.06086 1.8746C6.37307 1.1868 5.44022 0.800405 4.46753 0.800405C3.49484 0.800405 2.56199 1.1868 1.87419 1.8746C1.1864 2.56239 0.799999 3.49524 0.799999 4.46793C0.799999 5.44062 1.1864 6.37347 1.87419 7.06127L7.76753 12.9546L13.6609 7.06127C14.0015 6.72076 14.2718 6.31648 14.4561 5.8715C14.6405 5.42653 14.7354 4.94959 14.7354 4.46793C14.7354 3.98627 14.6405 3.50934 14.4561 3.06436C14.2718 2.61939 14.0015 2.2151 13.6609 1.8746Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>${p.likes_count||0}</span>
+          <span class="tmm-stat"><svg class="tmm-ico" width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M14 10C14 10.3536 13.8595 10.6928 13.6095 10.9428C13.3594 11.1929 13.0203 11.3333 12.6667 11.3333H4.66667L2 14V3.33333C2 2.97971 2.14048 2.64057 2.39052 2.39052C2.64057 2.14048 2.97971 2 3.33333 2H12.6667C13.0203 2 13.3594 2.14048 13.6095 2.39052C13.8595 2.64057 14 2.97971 14 3.33333V10Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>${p.comments_count||0}</span>
         </div>
       </a>`;
   }).join('');
@@ -231,7 +232,7 @@ function renderEvents(events,cfg){
             <div class="tmm-ev-title">${esc(ev.name||'Untitled Event')}</div>
             <div class="tmm-ev-date">${fmtShort(dt)}</div>
           </div>
-          <span class="tmm-btn tmm-btn--sm${past?' tmm-btn--muted':''}">RSVP</span>
+          ${past ? '' : '<span class="tmm-btn tmm-btn--sm">RSVP</span>'}
         </div>
       </a>`;
   }).join('');
