@@ -1,0 +1,150 @@
+<!-- ============================================================
+     TMM Circle Home — body.html
+     Paste this into the Circle Custom HTML block (Custom App
+     Builder screen AND the Site Builder page — identical markup).
+     CSS + JS load from Cloudflare Pages via the <head> snippet
+     (see head.html). Menu links are STATIC HTML on purpose:
+     Circle's iframe strips JS-injected <a> tags.
+     ============================================================ -->
+
+<!-- TEST BANNER — delete this whole block before publishing -->
+<div id="tmmTestBanner" style="background:#0F0F0F;padding:8px 16px;display:flex;gap:10px;align-items:center;position:sticky;top:0;z-index:300;font-family:'Work Sans',sans-serif">
+  <span style="color:#D11934;font-size:11px;font-weight:600">🧪 TEST MODE</span>
+  <select onchange="tmmSetTier(this.value)" style="font-size:12px;padding:3px 8px;border-radius:5px;border:1px solid #D11934;background:transparent;color:#EAE4D6">
+    <option value="free" selected>Free (Millionaire Mother)</option>
+    <option value="mother_hub">The Mother Hub</option>
+    <option value="foundry">Foundry</option>
+    <option value="inner_circle">Inner Circle</option>
+  </select>
+  <span style="color:#666;font-size:11px">— delete before publishing</span>
+</div>
+
+<div class="tmm-home" id="tmmHome" data-brand="mm">
+
+  <!-- CSS-only menu state (checkbox drives open/close; Circle-iframe safe) -->
+  <input type="checkbox" id="tmmMenuToggle" class="tmm-menu-toggle" aria-hidden="true">
+
+  <!-- Overlay (tap closes) -->
+  <label class="tmm-overlay" for="tmmMenuToggle" aria-hidden="true"></label>
+
+  <!-- Drawer -->
+  <nav class="tmm-drawer" aria-label="Community menu">
+    <div class="tmm-drawer-head">
+      <span class="tmm-drawer-title">Community</span>
+      <label class="tmm-drawer-close" for="tmmMenuToggle" aria-label="Close menu" tabindex="0">&#x2715;</label>
+    </div>
+    <div class="tmm-drawer-body">
+
+      <div class="tmm-menu-label">Millionaire Mother Experience</div>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/announcements" target="_blank"><span class="tmm-menu-emoji">📣</span>Announcements</a>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/business-questions" target="_blank"><span class="tmm-menu-emoji">📚</span>Business Questions &amp; Resources</a>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/celebrations" target="_blank"><span class="tmm-menu-emoji">🎉</span>Celebrations</a>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/group-coaching" target="_blank"><span class="tmm-menu-emoji">📆</span>Live Coaching Calls</a>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/motherhood-questions" target="_blank"><span class="tmm-menu-emoji">❤️</span>Motherhood Q&amp;A</a>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/implementation-huddles" target="_blank"><span class="tmm-menu-emoji">🛠️</span>Implementation Huddles</a>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/guest-experts" target="_blank"><span class="tmm-menu-emoji">⭐</span>Top Guest Experts</a>
+
+      <div class="tmm-menu-divider"></div>
+      <div class="tmm-menu-label">The Foundry Community</div>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/announcements-c79c49" target="_blank"><span class="tmm-menu-emoji">📣</span>Announcements</a>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/coaching-q-a" target="_blank"><span class="tmm-menu-emoji">💬</span>Coaching Q&amp;A</a>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/marketing-lab" target="_blank"><span class="tmm-menu-emoji">✍️</span>Marketing Lab</a>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/the-wisdom-well-be13ea" target="_blank"><span class="tmm-menu-emoji">🌊</span>The Wisdom Well</a>
+
+      <div class="tmm-menu-divider"></div>
+      <div class="tmm-menu-label">The Vault</div>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/business-trainings" target="_blank"><span class="tmm-menu-emoji">💻</span>Business Trainings Library</a>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/masterclass-library" target="_blank"><span class="tmm-menu-emoji">🎓</span>Masterclass Library</a>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/mme-program-library" target="_blank"><span class="tmm-menu-emoji">⬇️</span>MME Program Library</a>
+
+      <div class="tmm-menu-divider"></div>
+      <div class="tmm-menu-label">Community Hubs</div>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/mm-rolodex" target="_blank"><span class="tmm-menu-emoji">📇</span>MM Rolodex</a>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/community-job-board" target="_blank"><span class="tmm-menu-emoji">💼</span>Community Job Board</a>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/community-conversations-a0378f" target="_blank"><span class="tmm-menu-emoji">💭</span>Community Conversations</a>
+
+      <div class="tmm-menu-divider"></div>
+      <div class="tmm-menu-label">Getting Started</div>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/start-here-3ba756" target="_blank"><span class="tmm-menu-emoji">🌟</span>Start Here</a>
+      <a class="tmm-menu-item" href="https://members.themillionairemother.com/c/say-hello" target="_blank"><span class="tmm-menu-emoji">👋</span>Say Hello</a>
+    </div>
+  </nav>
+
+  <!-- Top bar -->
+  <div class="tmm-topbar">
+    <span class="tmm-logo tmm-logo--mm" role="img" aria-label="The Millionaire Mother"></span>
+    <span class="tmm-logo tmm-logo--hub" role="img" aria-label="Mother Hub"></span>
+    <label class="tmm-hamburger" for="tmmMenuToggle" aria-label="Open community menu" tabindex="0">
+      <span></span><span></span><span></span>
+    </label>
+  </div>
+  <div class="tmm-greeting" id="tmmGreeting">Welcome back</div>
+
+  <!-- 1 · HERO -->
+  <section class="tmm-section">
+    <div class="tmm-sec-head">
+      <h2 class="tmm-sec-title" id="tmmS1Label">Loading…</h2>
+      <a class="tmm-seeall" id="tmmS1Url" href="#" target="_blank">See all</a>
+    </div>
+    <div id="tmmHero"><div class="tmm-skel" style="height:400px"></div></div>
+    <div class="tmm-hero-nav" id="tmmHeroNav" style="display:none">
+      <button class="tmm-navbtn" id="tmmHeroPrev" aria-label="Previous">&#8592;</button>
+      <button class="tmm-navbtn" id="tmmHeroNext" aria-label="Next">&#8594;</button>
+    </div>
+  </section>
+
+  <!-- 2 · CONTENT GRID -->
+  <section class="tmm-section">
+    <div class="tmm-sec-head">
+      <h2 class="tmm-sec-title" id="tmmS2Label">Loading…</h2>
+      <a class="tmm-seeall" id="tmmS2Url" href="#" target="_blank">See all</a>
+    </div>
+    <div class="tmm-scroll" id="tmmGrid">
+      <div class="tmm-skel" style="width:270px;height:230px;flex:0 0 auto"></div>
+      <div class="tmm-skel" style="width:270px;height:230px;flex:0 0 auto"></div>
+    </div>
+  </section>
+
+  <!-- 3 · FEATURED EVENT -->
+  <section class="tmm-section">
+    <div class="tmm-sec-head">
+      <h2 class="tmm-sec-title" id="tmmS3Label">Loading…</h2>
+      <a class="tmm-seeall" id="tmmS3Url" href="#" target="_blank">See all</a>
+    </div>
+    <div id="tmmFeat"><div class="tmm-skel" style="height:340px"></div></div>
+  </section>
+
+  <!-- 4 · POST FEED -->
+  <section class="tmm-section">
+    <div class="tmm-sec-head">
+      <h2 class="tmm-sec-title" id="tmmS4Label">Loading…</h2>
+      <a class="tmm-seeall" id="tmmS4Url" href="#" target="_blank">See all</a>
+    </div>
+    <div class="tmm-scroll" id="tmmFeed">
+      <div class="tmm-skel" style="width:235px;height:180px;flex:0 0 auto"></div>
+      <div class="tmm-skel" style="width:235px;height:180px;flex:0 0 auto"></div>
+    </div>
+  </section>
+
+  <!-- 5 · EVENTS GRID -->
+  <section class="tmm-section">
+    <div class="tmm-sec-head">
+      <h2 class="tmm-sec-title" id="tmmS5Label">Loading…</h2>
+      <a class="tmm-seeall" id="tmmS5Url" href="#" target="_blank">See all</a>
+    </div>
+    <div class="tmm-scroll" id="tmmEvents">
+      <div class="tmm-skel" style="width:270px;height:230px;flex:0 0 auto"></div>
+      <div class="tmm-skel" style="width:270px;height:230px;flex:0 0 auto"></div>
+    </div>
+  </section>
+
+  <!-- 6 · SHARE THE APP (static; upsell logic deferred) -->
+  <section class="tmm-section">
+    <div class="tmm-share">
+      <div class="tmm-share-title">Share the app</div>
+      <div class="tmm-share-body">Invite a friend into the community and grow your circle of boss mamas.</div>
+      <a class="tmm-btn" href="https://themillionairemother.com/" target="_blank" rel="noopener">Learn More</a>
+    </div>
+  </section>
+
+</div>

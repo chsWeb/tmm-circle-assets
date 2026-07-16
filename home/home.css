@@ -1,0 +1,258 @@
+/* ============================================================
+   TMM Circle Home — home.css
+   Design system: The Millionaire Mother / Mother Hub (2026)
+   Served from Cloudflare Pages. All selectors namespaced .tmm-*
+   so Circle's own CSS cannot collide with ours.
+   ============================================================ */
+
+/* ---- Fonts (same-origin on Pages; _headers sets CORS) ---- */
+@font-face{font-family:'Operetta 52';src:url('fonts/Operetta52-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Operetta 52';src:url('fonts/Operetta52-Light.woff2') format('woff2');font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:'Sweet Sans Pro';src:url('fonts/SweetSansProMedium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Parnaso Display';src:url('fonts/ParnasoDisplay-MediumItalic.woff2') format('woff2');font-weight:500;font-style:italic;font-display:swap}
+@font-face{font-family:'Work Sans';src:url('fonts/WorkSans-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Work Sans';src:url('fonts/WorkSans-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Work Sans';src:url('fonts/WorkSans-SemiBold.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Work Sans';src:url('fonts/WorkSans-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+
+/* ---- Tokens ---- */
+.tmm-home{
+  /* Core palette — shared by both brands (from TMM 2026 brand guide) */
+  --white:#F9F9F9; --linen:#EFEBE0; --sand:#EAE4D6; --cream:#F4EDDB;
+  --black:#0F0F0F; --charcoal:#2D2D2D; --sage:#B2AA96;
+  --rose:#B77477; --rose-red:#841517; --deep-brown:#5E0D11;
+  --electric-red:#D11934;
+  --border:#E1E1E1; --muted:#4D4D4D; --placeholder:#D9D9D9; --disabled:#B0B0B0;
+
+  /* Semantic */
+  --brand:var(--electric-red);
+  --surface:var(--sand);
+  --ink:var(--black);
+  --on-brand:var(--cream);
+
+  /* Type */
+  --font-display:'Operetta 52',Georgia,serif;
+  --font-head:'Sweet Sans Pro','Work Sans',sans-serif;
+  --font-body:'Work Sans',system-ui,-apple-system,sans-serif;
+  --font-accent:'Parnaso Display',Georgia,serif;
+
+  --radius-lg:12px; --radius:9px; --pill:999px;
+  --gap:16px; --pad:16px;
+  --maxw:430px;                 /* app / mobile canvas width */
+  --transition:.22s cubic-bezier(.4,0,.2,1);
+
+  /* Category-pill accent differs by brand */
+  --pill-bg:var(--sage); --pill-fg:var(--white);
+}
+.tmm-home[data-brand="mm"]{ --pill-bg:var(--electric-red); }
+
+/* ---- Reset / base ---- */
+.tmm-home *,.tmm-home *::before,.tmm-home *::after{box-sizing:border-box;margin:0;padding:0}
+.tmm-home{
+  font-family:var(--font-body);
+  color:var(--ink);
+  background:var(--white);
+  font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  max-width:var(--maxw);
+  margin:0 auto;
+  padding-bottom:40px;
+  position:relative;
+}
+.tmm-home img{display:block;max-width:100%}
+.tmm-home a{color:inherit;text-decoration:none}
+.tmm-home a:focus-visible,.tmm-home button:focus-visible,.tmm-home label:focus-visible{
+  outline:2px solid var(--electric-red);outline-offset:2px;border-radius:4px}
+
+/* ---- Top bar (logo + menu) ---- */
+.tmm-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:18px var(--pad) 14px;
+}
+.tmm-logo{height:34px;background-repeat:no-repeat;background-position:left center;background-size:contain}
+.tmm-logo--mm{display:none;width:118px;background-image:url('assets/mm-wordmark.png')}   /* placeholder PNG — swap for SVG later */
+.tmm-logo--hub{display:none;width:190px;background-image:url('assets/hub-wordmark.png')} /* placeholder PNG — swap for SVG later */
+.tmm-home[data-brand="mm"]  .tmm-logo--mm{display:block}
+.tmm-home[data-brand="hub"] .tmm-logo--hub{display:block}
+
+.tmm-greeting{
+  padding:0 var(--pad) 6px;
+  font-family:var(--font-head);
+  font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);
+}
+
+/* ---- Hamburger (CSS-only checkbox toggle — Circle iframe safe) ---- */
+.tmm-menu-toggle{position:absolute;opacity:0;pointer-events:none}
+.tmm-hamburger{
+  width:40px;height:40px;flex-shrink:0;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--white);-webkit-tap-highlight-color:transparent;user-select:none;
+  transition:var(--transition);
+}
+.tmm-hamburger:hover{background:var(--linen)}
+.tmm-hamburger span{width:17px;height:2px;background:var(--ink);border-radius:2px;transition:var(--transition);pointer-events:none}
+.tmm-menu-toggle:checked ~ .tmm-topbar .tmm-hamburger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.tmm-menu-toggle:checked ~ .tmm-topbar .tmm-hamburger span:nth-child(2){opacity:0;transform:scaleX(0)}
+.tmm-menu-toggle:checked ~ .tmm-topbar .tmm-hamburger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+.tmm-overlay{
+  position:fixed;inset:0;background:rgba(15,15,15,.5);z-index:200;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;
+}
+.tmm-menu-toggle:checked ~ .tmm-overlay{opacity:1;pointer-events:auto}
+
+.tmm-drawer{
+  position:fixed;top:0;left:0;bottom:0;width:290px;max-width:86vw;z-index:210;
+  background:var(--deep-brown);color:var(--cream);
+  display:flex;flex-direction:column;overflow:hidden;
+  transform:translateX(-100%);transition:transform .32s cubic-bezier(.4,0,.2,1);
+}
+.tmm-menu-toggle:checked ~ .tmm-drawer{transform:translateX(0)}
+.tmm-drawer-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.1);flex-shrink:0;
+}
+.tmm-drawer-title{font-family:var(--font-head);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--sand)}
+.tmm-drawer-close{
+  width:30px;height:30px;border:none;border-radius:50%;cursor:pointer;
+  background:rgba(255,255,255,.1);color:var(--sand);font-size:15px;
+  display:flex;align-items:center;justify-content:center;transition:var(--transition);
+}
+.tmm-drawer-close:hover{background:rgba(255,255,255,.2)}
+.tmm-drawer-body{flex:1;overflow-y:auto;padding:6px 0 32px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent}
+.tmm-drawer-body::-webkit-scrollbar{width:4px}
+.tmm-drawer-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+.tmm-menu-label{padding:14px 18px 5px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--electric-red);font-weight:700;font-family:var(--font-body)}
+.tmm-menu-item{
+  display:flex;align-items:center;gap:10px;padding:9px 18px;
+  color:rgba(244,237,219,.78);font-size:13px;
+  border-left:2px solid transparent;transition:var(--transition);
+}
+.tmm-menu-item:hover{background:rgba(255,255,255,.06);color:var(--cream);border-left-color:var(--electric-red)}
+.tmm-menu-emoji{width:20px;text-align:center;font-size:14px;flex-shrink:0}
+.tmm-menu-divider{height:1px;background:rgba(255,255,255,.08);margin:6px 18px}
+
+/* ---- Section shell ---- */
+.tmm-section{padding:22px var(--pad) 0}
+.tmm-sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
+.tmm-sec-title{
+  font-family:var(--font-head);font-weight:500;
+  font-size:24px;line-height:1.15;color:var(--electric-red);
+}
+.tmm-seeall{font-size:12px;font-weight:600;color:var(--brand);white-space:nowrap}
+.tmm-empty{font-size:13px;color:var(--muted);padding:6px 0}
+
+/* horizontal scrollers */
+.tmm-scroll{display:flex;gap:var(--gap);overflow-x:auto;scrollbar-width:none;padding-bottom:4px;scroll-snap-type:x proximity}
+.tmm-scroll::-webkit-scrollbar{display:none}
+.tmm-scroll > *{scroll-snap-align:start}
+
+/* ---- Skeleton ---- */
+.tmm-skel{background:linear-gradient(90deg,var(--sand) 25%,var(--linen) 50%,var(--sand) 75%);background-size:200% 100%;animation:tmm-shim 1.4s ease-in-out infinite;border-radius:var(--radius)}
+@keyframes tmm-shim{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
+
+/* ============================================================
+   1 — HERO CAROUSEL  (sand card, Operetta title)
+   ============================================================ */
+.tmm-hero-card{
+  display:none;background:var(--sand);border-radius:var(--radius-lg);
+  padding:20px;flex-direction:column;gap:14px;
+}
+.tmm-hero-card.is-active{display:flex;animation:tmm-fade .3s ease both}
+.tmm-cat{
+  align-self:flex-start;padding:5px 14px;border-radius:var(--pill);
+  background:var(--pill-bg);color:var(--pill-fg);
+  font-weight:700;font-size:13px;line-height:1;
+}
+.tmm-hero-img,.tmm-hero-imgph{width:100%;height:230px;border-radius:var(--radius);object-fit:cover}
+.tmm-hero-imgph{background:linear-gradient(135deg,var(--placeholder),var(--linen))}
+.tmm-hero-title{font-family:var(--font-display);font-weight:500;font-size:31px;line-height:1.18;letter-spacing:-.02em;color:var(--electric-red)}
+.tmm-hero-desc{font-size:14px;color:var(--ink)}
+.tmm-dots{display:flex;gap:6px;align-items:center;justify-content:flex-end}
+.tmm-dot{height:9px;width:9px;border:none;padding:0;border-radius:var(--pill);background:var(--placeholder);cursor:pointer;transition:var(--transition)}
+.tmm-dot.is-active{width:30px;background:var(--ink)}
+.tmm-hero-nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px}
+.tmm-navbtn{width:34px;height:34px;border:1px solid var(--border);border-radius:50%;background:var(--white);color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+.tmm-navbtn:hover:not(:disabled){background:var(--electric-red);color:var(--cream);border-color:var(--electric-red)}
+.tmm-navbtn:disabled{opacity:.25;cursor:default}
+
+/* ============================================================
+   2 — CONTENT GRID  (photo cards)
+   ============================================================ */
+.tmm-card{flex:0 0 auto;width:270px}
+.tmm-card-img,.tmm-card-imgph{width:100%;height:180px;border-radius:var(--radius);object-fit:cover;margin-bottom:12px}
+.tmm-card-imgph{background:linear-gradient(135deg,var(--placeholder),var(--linen))}
+.tmm-card-title{font-weight:700;font-size:16px;line-height:1.35;letter-spacing:-.02em;color:var(--ink);margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tmm-card-desc{font-size:12px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ============================================================
+   3 — FEATURED EVENT  (dark card)
+   ============================================================ */
+.tmm-feat{position:relative;border-radius:var(--radius-lg);overflow:hidden;background:var(--black);min-height:340px;display:flex;flex-direction:column;justify-content:space-between;padding:24px}
+.tmm-feat-bg{position:absolute;inset:0;opacity:.3;object-fit:cover;width:100%;height:100%;pointer-events:none}
+.tmm-feat-top,.tmm-feat-bottom{position:relative;z-index:1}
+.tmm-feat-top{display:flex;align-items:center;gap:14px}
+.tmm-feat-cal{width:56px;height:56px;flex-shrink:0;border-radius:50%;background:var(--electric-red);color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:24px}
+.tmm-feat-date{font-weight:700;font-size:17px;letter-spacing:-.02em;color:var(--white)}
+.tmm-feat-time{font-size:16px;color:var(--cream);letter-spacing:-.02em;margin-top:2px}
+.tmm-feat-title{font-family:var(--font-head);font-weight:500;font-size:20px;line-height:1.25;letter-spacing:-.02em;color:var(--sand);text-transform:uppercase;margin-bottom:14px}
+.tmm-feat-bottom{display:flex;flex-direction:column;align-items:flex-start;gap:0}
+
+/* pill button */
+.tmm-btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 20px;border-radius:var(--pill);background:var(--electric-red);color:var(--cream);font-weight:700;font-size:14px;line-height:1;cursor:pointer;transition:var(--transition)}
+.tmm-btn:hover{background:var(--rose-red)}
+.tmm-btn--sm{padding:8px 16px;font-size:13px}
+.tmm-btn--muted{background:var(--disabled);color:var(--ink);cursor:default}
+
+/* ============================================================
+   4 — POST FEED  (bordered carousel cards)
+   ============================================================ */
+.tmm-feed-card{flex:0 0 auto;width:235px;border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--white)}
+.tmm-feed-who{display:flex;align-items:center;gap:8px}
+.tmm-avatar{width:36px;height:36px;border-radius:50%;background:var(--sage);color:var(--white);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;overflow:hidden;object-fit:cover}
+.tmm-feed-name{font-weight:500;font-size:13px;color:var(--ink)}
+.tmm-feed-title{font-weight:700;font-size:16px;line-height:1.3;letter-spacing:-.02em;color:var(--ink)}
+.tmm-feed-preview{font-size:12px;line-height:1.4;color:var(--ink);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tmm-stats{display:flex;gap:16px;padding-top:2px}
+.tmm-stat{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--ink)}
+
+/* ============================================================
+   5 — EVENTS GRID
+   ============================================================ */
+.tmm-ev-card{flex:0 0 auto;width:270px;display:flex;flex-direction:column;gap:12px}
+.tmm-ev-img,.tmm-ev-imgph{width:100%;height:180px;border-radius:var(--radius);object-fit:cover}
+.tmm-ev-imgph{background:linear-gradient(135deg,var(--placeholder),var(--linen))}
+.tmm-ev-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 4px}
+.tmm-ev-meta{min-width:0}
+.tmm-ev-title{font-weight:700;font-size:16px;line-height:1.3;letter-spacing:-.02em;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tmm-ev-date{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* ============================================================
+   6 — SHARE THE APP  (static card; upsell logic deferred)
+   ============================================================ */
+.tmm-share{background:var(--sand);border-radius:var(--radius-lg);padding:24px;display:flex;flex-direction:column;gap:4px}
+.tmm-share-title{font-family:var(--font-head);font-weight:500;font-size:24px;color:var(--electric-red)}
+.tmm-share-body{font-size:13px;font-weight:500;color:var(--muted);margin-bottom:16px}
+
+@keyframes tmm-fade{from{opacity:0}to{opacity:1}}
+
+/* ============================================================
+   RESPONSIVE — base is mobile (the Custom App view).
+   Site Builder (desktop) widens the canvas & scales the hero.
+   ============================================================ */
+@media (min-width:768px){
+  .tmm-home{--maxw:720px}
+  .tmm-hero-img,.tmm-hero-imgph{height:320px}
+  .tmm-hero-title{font-size:38px}
+  .tmm-feat{min-height:400px}
+}
+@media (min-width:1024px){
+  .tmm-home{--maxw:960px}
+}
+
+/* ---- Accessibility ---- */
+@media (prefers-reduced-motion:reduce){
+  .tmm-home *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
