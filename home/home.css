@@ -96,13 +96,19 @@
 @keyframes tmm-shim{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
 
 /* ============================================================
-   1 — HERO CAROUSEL  (sand card, Operetta title)
+   1 — HERO CAROUSEL  (native swipe; dots track scroll position)
    ============================================================ */
-.tmm-hero-card{
-  display:none;background:var(--sand);border-radius:var(--radius-lg);
-  padding:20px;flex-direction:column;gap:14px;
+.tmm-hero-scroll{
+  display:flex;gap:var(--gap);overflow-x:auto;
+  scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
 }
-.tmm-hero-card.is-active{display:flex;animation:tmm-fade .3s ease both}
+.tmm-hero-scroll::-webkit-scrollbar{display:none}
+.tmm-hero-card{
+  flex:0 0 100%;scroll-snap-align:center;
+  display:flex;flex-direction:column;gap:14px;
+  background:var(--sand);border-radius:var(--radius-lg);padding:20px;
+}
 .tmm-cat{
   align-self:flex-start;padding:5px 14px;border-radius:var(--pill);
   background:var(--pill-bg);color:var(--pill-fg);
@@ -112,13 +118,10 @@
 .tmm-hero-imgph{background:linear-gradient(135deg,var(--placeholder),var(--linen))}
 .tmm-hero-title{font-family:var(--font-display);font-weight:500;font-size:31px;line-height:1.18;letter-spacing:-.02em;color:var(--electric-red)}
 .tmm-hero-desc{font-size:14px;color:var(--ink)}
-.tmm-dots{display:flex;gap:6px;align-items:center;justify-content:flex-end}
+.tmm-dots{display:flex;gap:6px;align-items:center;justify-content:flex-end;margin-top:12px;padding-right:4px}
 .tmm-dot{height:9px;width:9px;border:none;padding:0;border-radius:var(--pill);background:var(--placeholder);cursor:pointer;transition:var(--transition)}
 .tmm-dot.is-active{width:30px;background:var(--ink)}
-.tmm-hero-nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px}
-.tmm-navbtn{width:34px;height:34px;border:1px solid var(--border);border-radius:50%;background:var(--white);color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
-.tmm-navbtn:hover:not(:disabled){background:var(--electric-red);color:var(--cream);border-color:var(--electric-red)}
-.tmm-navbtn:disabled{opacity:.25;cursor:default}
+
 
 /* ============================================================
    2 — CONTENT GRID  (photo cards)
@@ -133,8 +136,9 @@
    3 — FEATURED EVENT  (dark card)
    ============================================================ */
 .tmm-feat{position:relative;border-radius:var(--radius-lg);overflow:hidden;background:var(--black);min-height:340px;display:flex;flex-direction:column;justify-content:space-between;padding:24px}
-.tmm-feat-bg{position:absolute;inset:0;opacity:.3;object-fit:cover;width:100%;height:100%;pointer-events:none}
-.tmm-feat-top,.tmm-feat-bottom{position:relative;z-index:1}
+.tmm-feat-bg{position:absolute;inset:0;z-index:0;opacity:.55;object-fit:cover;width:100%;height:100%;pointer-events:none}
+.tmm-feat::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(15,15,15,.55) 0%,rgba(15,15,15,.25) 45%,rgba(15,15,15,.80) 100%)}
+.tmm-feat-top,.tmm-feat-bottom{position:relative;z-index:2}
 .tmm-feat-top{display:flex;align-items:center;gap:14px}
 .tmm-feat-cal{width:56px;height:56px;flex-shrink:0;border-radius:50%;background:var(--electric-red);color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:24px}
 .tmm-feat-date{font-weight:700;font-size:17px;letter-spacing:-.02em;color:var(--white)}
@@ -142,9 +146,9 @@
 .tmm-feat-title{font-family:var(--font-head);font-weight:500;font-size:20px;line-height:1.25;letter-spacing:-.02em;color:var(--sand);text-transform:uppercase;margin-bottom:14px}
 .tmm-feat-bottom{display:flex;flex-direction:column;align-items:flex-start;gap:0}
 
-/* pill button — color forced with !important to beat Circle's <a> link styles */
-.tmm-home .tmm-btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 20px;border-radius:var(--pill);background:var(--electric-red);color:var(--cream) !important;font-weight:700;font-size:14px;line-height:1;cursor:pointer;text-decoration:none;transition:var(--transition)}
-.tmm-home a.tmm-btn,.tmm-home a.tmm-btn:link,.tmm-home a.tmm-btn:visited,.tmm-home a.tmm-btn:hover{color:var(--cream) !important}
+/* pill button — pure white text, forced to beat Circle's <a> link styles */
+.tmm-home .tmm-btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 20px;border-radius:var(--pill);background:var(--electric-red);color:#fff !important;font-weight:700;font-size:14px;line-height:1;cursor:pointer;text-decoration:none;transition:var(--transition)}
+.tmm-home a.tmm-btn,.tmm-home a.tmm-btn:link,.tmm-home a.tmm-btn:visited,.tmm-home a.tmm-btn:hover{color:#fff !important}
 .tmm-btn:hover{background:var(--rose-red)}
 .tmm-btn--sm{padding:8px 16px;font-size:13px}
 .tmm-home .tmm-btn--muted{background:var(--disabled) !important;color:var(--ink) !important;cursor:default}

@@ -195,7 +195,6 @@ function renderFeatured(events,cfg){
   const el=document.getElementById('tmmFeat');
   if(!events.length){ el.innerHTML='<p class="tmm-empty">No upcoming events.</p>'; return; }
   const ev=events[0], dt=ev.starts_at||ev.published_at;
-  const past = dt && new Date(dt) < new Date();
   el.innerHTML = `
     <a class="tmm-feat" href="${esc(ev.url||'#')}" target="_blank" rel="noopener">
       ${ev.cover_image_url ? `<img class="tmm-feat-bg" src="${esc(ev.cover_image_url)}" alt="" loading="lazy">` : ``}
@@ -205,7 +204,7 @@ function renderFeatured(events,cfg){
       </div>
       <div class="tmm-feat-bottom">
         <div class="tmm-feat-title">${esc(ev.name||'Untitled Event')}</div>
-        ${past ? '' : '<span class="tmm-btn">Reserve a Spot</span>'}
+        <span class="tmm-btn">Reserve a Spot</span>
       </div>
     </a>`;
 }
@@ -237,7 +236,6 @@ function renderEvents(events,cfg){
   if(!events.length){ el.innerHTML='<p class="tmm-empty">No events yet.</p>'; return; }
   el.innerHTML = events.map(ev=>{
     const dt=ev.starts_at||ev.published_at;
-    const past = dt && new Date(dt) < new Date();
     return `
       <a class="tmm-ev-card" href="${esc(ev.url||'#')}" target="_blank" rel="noopener">
         ${ev.cover_image_url ? `<img class="tmm-ev-img" src="${esc(ev.cover_image_url)}" alt="" loading="lazy">` : `<div class="tmm-ev-imgph"></div>`}
@@ -246,7 +244,7 @@ function renderEvents(events,cfg){
             <div class="tmm-ev-title">${esc(ev.name||'Untitled Event')}</div>
             <div class="tmm-ev-date">${fmtShort(dt)}</div>
           </div>
-          ${past ? '' : '<span class="tmm-btn tmm-btn--sm">RSVP</span>'}
+          <span class="tmm-btn tmm-btn--sm">RSVP</span>
         </div>
       </a>`;
   }).join('');
