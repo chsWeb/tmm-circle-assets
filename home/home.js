@@ -111,7 +111,8 @@ async function fetchSection(cfg){
     const cid = isEvent ? '' : `&community_id=${TMM_CONFIG.COMMUNITY_ID}`;   // posts require community_id
     const url = `${TMM_CONFIG.WORKER_URL}${ep}?space_id=${sp.id}${cid}&per_page=${perSpace}&page=1`;
     try{
-      const res = await fetch(url);
+      const res = await withTimeout(fetch(url), 6000, null);
+      if (!res){ console.error(`fetchSection ${ep} space ${sp.id}: timeout/failed`); return []; }
       if (!res.ok){ console.error(`fetchSection ${ep} space ${sp.id}: HTTP ${res.status}`); return []; }
       const data = await res.json();
       return (data.records || []).map(r => isEvent
@@ -137,32 +138,45 @@ function set(id,v){ const el=document.getElementById(id); if(el) el.textContent=
 function href(id,u){ const el=document.getElementById(id); if(el) el.href=u||'#'; }
 
 /* ---------- renderers ---------- */
-let heroIdx=0, heroTotal=0;
-
 function renderHero(posts,cfg){
   set('tmmS1Label',cfg.label); href('tmmS1Url',cfg.url);
-  const box=document.getElementById('tmmHero'), nav=document.getElementById('tmmHeroNav');
+  const box=document.getElementById('tmmHero');
   if (!posts.length){ box.innerHTML='<p class="tmm-empty">No posts yet.</p>'; return; }
-  heroIdx=0; heroTotal=posts.length;
-  box.innerHTML = posts.map((p,i)=>`
-    <a class="tmm-hero-card${i===0?' is-active':''}" href="${esc(p.url||'#')}" target="_blank" rel="noopener">
+  const cards = posts.map(p=>`
+    <a class="tmm-hero-card" href="${esc(p.url||'#')}" target="_blank" rel="noopener">
       <span class="tmm-cat">${esc(p.space_name||cfg.label||'Post')}</span>
       ${p.cover_image_url ? `<img class="tmm-hero-img" src="${esc(p.cover_image_url)}" alt="" loading="lazy">` : `<div class="tmm-hero-imgph"></div>`}
       <div class="tmm-hero-title">${esc(p.name||'Untitled')}</div>
       <div class="tmm-hero-desc">${esc(strip(p.body?.body||'').slice(0,90))}</div>
-      <div class="tmm-dots">${posts.map((_,j)=>`<button class="tmm-dot${j===0?' is-active':''}" onclick="tmmHeroJump(event,${j})" aria-label="Slide ${j+1}"></button>`).join('')}</div>
     </a>`).join('');
-  if (posts.length>1) nav.style.display='flex'; else nav.style.display='none';
-  updateHero();
+  const dots = posts.length>1
+    ? `<div class="tmm-dots" id="tmmHeroDots">${posts.map((_,j)=>`<button class="tmm-dot${j===0?' is-active':''}" data-i="${j}" aria-label="Slide ${j+1}"></button>`).join('')}</div>`
+    : '';
+  box.innerHTML = `<div class="tmm-hero-scroll" id="tmmHeroScroll">${cards}</div>${dots}`;
+  setupHeroCarousel();
 }
-function updateHero(){
-  document.querySelectorAll('#tmmHero .tmm-hero-card').forEach((c,i)=>c.classList.toggle('is-active',i===heroIdx));
-  document.querySelectorAll('#tmmHero .tmm-dot').forEach((d,i)=>d.classList.toggle('is-active',i===heroIdx));
-  const prev=document.getElementById('tmmHeroPrev'), next=document.getElementById('tmmHeroNext');
-  if(prev) prev.disabled = heroIdx===0;
-  if(next) next.disabled = heroIdx===heroTotal-1;
+
+/* Native swipe carousel. Dots track scroll position via IntersectionObserver
+   (fires natively — unlike click handlers, which Circle's iframe blocks). */
+function setupHeroCarousel(){
+  const scroll=document.getElementById('tmmHeroScroll');
+  const dots=[...document.querySelectorAll('#tmmHeroDots .tmm-dot')];
+  if(!scroll) return;
+  const cards=[...scroll.querySelectorAll('.tmm-hero-card')];
+  if(dots.length){
+    const setActive=i=>dots.forEach((d,j)=>d.classList.toggle('is-active',j===i));
+    const io=new IntersectionObserver(entries=>{
+      entries.forEach(en=>{ if(en.isIntersecting){ const i=cards.indexOf(en.target); if(i>=0) setActive(i); } });
+    },{root:scroll,threshold:0.6});
+    cards.forEach(c=>io.observe(c));
+    // Best-effort: tapping a dot scrolls to that card. Swipe always works regardless.
+    dots.forEach(d=>d.addEventListener('click',e=>{
+      e.preventDefault();
+      const c=cards[+d.getAttribute('data-i')];
+      if(c) c.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+    }));
+  }
 }
-function tmmHeroJump(e,i){ if(e){e.preventDefault();e.stopPropagation();} heroIdx=i; updateHero(); }
 
 function renderContentGrid(posts,cfg){
   set('tmmS2Label',cfg.label); href('tmmS2Url',cfg.url);
@@ -249,31 +263,24 @@ async function init(overrideTierKey){
   if (root) root.setAttribute('data-brand', TMM_CONFIG.BRAND_BY_TIER[tierKey] || 'mm');
   set('tmmGreeting', `Welcome back, ${firstName}`);
 
-  const [hero,grid,feat,feed,events] = await Promise.all([
-    fetchSection(tier.hero), fetchSection(tier.contentGrid),
-    fetchSection(tier.featuredEvent), fetchSection(tier.postFeed),
-    fetchSection(tier.eventsGrid),
-  ]);
-  renderHero(hero,tier.hero);
-  renderContentGrid(grid,tier.contentGrid);
-  renderFeatured(feat,tier.featuredEvent);
-  renderFeed(feed,tier.postFeed);
-  renderEvents(events,tier.eventsGrid);
+  // Each section fetches + renders on its own. A slow/empty section can no
+  // longer block the others (previously one hung fetch froze the whole page).
+  const render = (cfg, fn) =>
+    fetchSection(cfg)
+      .then(d => { try { fn(d, cfg); } catch(e){ console.error('render error:', e); } })
+      .catch(e => console.error('section error:', e));
+
+  render(tier.hero,          renderHero);
+  render(tier.contentGrid,   renderContentGrid);
+  render(tier.featuredEvent, renderFeatured);
+  render(tier.postFeed,      renderFeed);
+  render(tier.eventsGrid,    renderEvents);
 }
 
-/* hero prev/next (attached after DOM ready) */
-function wireHeroButtons(){
-  const prev=document.getElementById('tmmHeroPrev'), next=document.getElementById('tmmHeroNext');
-  if(prev) prev.onclick = ()=>{ if(heroIdx>0){heroIdx--; updateHero();} };
-  if(next) next.onclick = ()=>{ if(heroIdx<heroTotal-1){heroIdx++; updateHero();} };
-}
-
-/* expose inline handlers + test switcher to window (IIFE hides them otherwise) */
-window.tmmHeroJump = tmmHeroJump;
-window.tmmSetTier  = (k)=>init(k);
+/* expose test-tier switcher to window (IIFE hides it otherwise) */
+window.tmmSetTier = (k)=>init(k);
 
 document.addEventListener('DOMContentLoaded', ()=>{
-  wireHeroButtons();
   if(!TMM_CONFIG.TEST_MODE){ const b=document.getElementById('tmmTestBanner'); if(b) b.style.display='none'; }
   init();
 });
