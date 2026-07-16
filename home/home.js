@@ -65,14 +65,27 @@ const TMM_CONFIG = {
 };
 
 /* ---------- member detection ---------- */
+/* Never let an unresolved SDK/API promise hang the page. */
+function withTimeout(promise, ms, fallback){
+  return Promise.race([
+    Promise.resolve(promise).catch(()=>fallback),
+    new Promise(res => setTimeout(()=>res(fallback), ms)),
+  ]);
+}
+
 async function getCurrentMember(){
-  if (window.CircleApps){ try { return await window.CircleApps.getCurrentMember(); } catch(e){} }
-  return { id:null, firstName:'Mama' };
+  const fallback = { id:null, firstName:'Mama' };
+  if (window.CircleApps && typeof window.CircleApps.getCurrentMember === 'function'){
+    try { return await withTimeout(window.CircleApps.getCurrentMember(), 2500, fallback); }
+    catch(e){}
+  }
+  return fallback;
 }
 async function getMemberTierKey(memberId){
   if (!memberId) return 'free';
   try{
-    const res  = await fetch(`${TMM_CONFIG.WORKER_URL}/community_members?id=${memberId}`);
+    const res  = await withTimeout(fetch(`${TMM_CONFIG.WORKER_URL}/community_members?id=${memberId}`), 3000, null);
+    if (!res) return 'free';
     const data = await res.json();
     const tags = (data?.member_tags || data?.records?.[0]?.member_tags || []).map(t => typeof t==='string'?t:t.name);
     if (tags.includes(TMM_CONFIG.ACCESS_GROUPS.inner_circle)) return 'inner_circle';
@@ -172,7 +185,7 @@ function renderFeatured(events,cfg){
     <a class="tmm-feat" href="${esc(ev.url||'#')}" target="_blank" rel="noopener">
       ${ev.cover_image_url ? `<img class="tmm-feat-bg" src="${esc(ev.cover_image_url)}" alt="" loading="lazy">` : ``}
       <div class="tmm-feat-top">
-        <div class="tmm-feat-cal">📅</div>
+        <div class="tmm-feat-cal"><svg width="24" height="26" viewBox="0 0 27 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M18.6667 1.33337V6.66671M8 1.33337V6.66671M1.33333 12H25.3333M4 4.00004H22.6667C24.1394 4.00004 25.3333 5.19395 25.3333 6.66671V25.3334C25.3333 26.8061 24.1394 28 22.6667 28H4C2.52724 28 1.33333 26.8061 1.33333 25.3334V6.66671C1.33333 5.19395 2.52724 4.00004 4 4.00004Z" stroke="currentColor" stroke-width="2.66667" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div><div class="tmm-feat-date">${fmtLong(dt)}</div><div class="tmm-feat-time">${fmtTime(dt)}</div></div>
       </div>
       <div class="tmm-feat-bottom">
