@@ -65,25 +65,57 @@ const TMM_CONFIG = {
 };
 
 /* ============================================================
-   FEATURED hero — one `featured` topic, access by space-group.
+   FEATURED hero — one `featured` topic (538336), access by SPACE.
    The owner tags any post `featured`; a post shows in a member's
-   hero only if its space belongs to a group that tier can access.
+   hero only if its space_id is in that tier's list below.
    ----------------------------------------------------------------
-   EDIT THESE if group access ever changes — this map is the whole
-   access model. Group ids come from /space_groups.
+   Why space_id and not space-group: the content spaces (Resources,
+   Identity, Home, Money, Business, Motherhood) all live in ONE group
+   (Content Hub, 996638), and a single tier's featured spaces span
+   multiple groups. So group gating can't separate free from paid —
+   explicit space lists can. This map IS the access model.
+
+   EDIT THESE when featured scope changes. Space ids come from /spaces.
+   Higher tiers should include everything lower tiers see, plus more.
    ============================================================ */
 const FEATURED = {
   TOPIC_ID: 538336,   // Circle "topics" id for the `featured` tag
   MAX: 5,             // max cards in the hero
-  GROUPS: {
-    // Free: only the two non-member-visible hubs
-    free:         [999735, 996687],
-    // Mother Hub Plus: the current hub groups (VERIFY / adjust)
-    mother_hub:   [999735, 996687, 996638, 979978, 979947],
-    // Foundry (legacy): The Vault + Foundry Community + the 4 cohort pods
-    foundry:      [252529, 927751, 1038310, 1008818, 1008816, 1008815],
-    // Inner Circle (legacy): The Vault only
-    inner_circle: [252529],
+  SPACES: {
+    // Free: Welcome! + Start Here (Welcome Hub) and Resources (Content Hub)
+    free: [
+      2551323, // Welcome!        (welome-library)
+      2505755, // Start Here      (start-here-3ba756)
+      2551366, // Resources       (free-resources)
+    ],
+    // Mother Hub Plus: free set + the Content Hub library spaces + Plus space.
+    // VERIFY this list matches what a Plus member should see featured.
+    mother_hub: [
+      2551323, 2505755, 2551366,          // (inherits free)
+      2571702, // Identity
+      2571703, // Home
+      2571704, // Motherhood
+      2571705, // Business
+      2571707, // Money
+      2701022, // MotherHub Plus
+    ],
+    // Foundry (legacy): Foundry Community spaces. VERIFY / adjust.
+    foundry: [
+      2349055, // Announcements   (Foundry)
+      2349045, // Business Channel
+      2349052, // Celebrations    (Foundry)
+      2349021, // Introductions   (Foundry)
+      2349020, // Marketing Lab
+      2672204, // Motherhood Channel
+      2672218, // Peer Accountability Hub
+      2672173, // Ai & Ops Channel
+    ],
+    // Inner Circle (legacy): The Vault space(s). VERIFY / adjust.
+    inner_circle: [
+      802279,  // Top Guest Experts (Vault)
+      802277,  // Masterclass Library (Vault)
+      2361522, // MME Program Library (Vault)
+    ],
   },
 };
 
@@ -167,44 +199,28 @@ async function fetchSection(cfg){
 }
 
 /* ---------- featured hero data ----------
-   One /spaces call (cached) gives space_id → space_group id.
-   One /posts call (topic_id narrows server-side if supported; we also
-   match the topic id in code so it works either way) gives candidates.
-   Keep only featured posts whose space's group the tier may access. */
-let _spaceGroupMap = null;
-async function getSpaceGroupMap(){
-  if (_spaceGroupMap) return _spaceGroupMap;
-  const map = {};
+   Tier -> allowed space_ids (FEATURED.SPACES). Fetch each allowed
+   space's posts (small, complete lists), keep the ones tagged
+   `featured` (538336). Per-space so a featured post is found
+   regardless of age. No /spaces call, no group map needed. */
+async function fetchOneSpacePosts(spaceId){
   try{
-    const res = await withTimeout(fetch(`${TMM_CONFIG.WORKER_URL}/spaces?community_id=${TMM_CONFIG.COMMUNITY_ID}&per_page=100`), 6000, null);
-    if (res && res.ok){
-      const data = await res.json();
-      (data.records || []).forEach(s => {
-        const gid = s.space_group && s.space_group.id;
-        if (gid) map[s.id] = gid;
-      });
-    } else { console.error('getSpaceGroupMap: fetch failed'); }
-  }catch(e){ console.error('getSpaceGroupMap threw:', e.message); }
-  _spaceGroupMap = map;
-  return map;
+    const url = `${TMM_CONFIG.WORKER_URL}/posts?community_id=${TMM_CONFIG.COMMUNITY_ID}&space_id=${spaceId}&per_page=100&page=1`;
+    const res = await withTimeout(fetch(url), 6000, null);
+    if (!res || !res.ok) return [];
+    const data = await res.json();
+    return data.records || [];
+  }catch(e){ console.error('space posts fetch failed', spaceId, e.message); return []; }
 }
 
 async function fetchFeatured(tierKey){
-  const allowed = new Set(FEATURED.GROUPS[tierKey] || FEATURED.GROUPS.free);
-  const [spaceMap, recs] = await Promise.all([
-    getSpaceGroupMap(),
-    (async () => {
-      const url = `${TMM_CONFIG.WORKER_URL}/posts?community_id=${TMM_CONFIG.COMMUNITY_ID}&topic_id=${FEATURED.TOPIC_ID}&per_page=100&page=1`;
-      const res = await withTimeout(fetch(url), 6000, null);
-      if (!res || !res.ok){ console.error('fetchFeatured: posts fetch failed'); return []; }
-      const data = await res.json();
-      return data.records || [];
-    })(),
-  ]);
-
-  return recs
-    .filter(p => (p.topics || []).includes(FEATURED.TOPIC_ID))   // actually carries `featured`
-    .filter(p => allowed.has(spaceMap[p.space_id]))              // in a group this tier can see
+  const spaceIds = FEATURED.SPACES[tierKey] || FEATURED.SPACES.free;
+  if (!spaceIds.length){ console.error('fetchFeatured: no spaces for tier', tierKey); return []; }
+  const lists = await Promise.all(spaceIds.map(fetchOneSpacePosts));
+  const seen = new Set();
+  return lists.flat()
+    .filter(p => (p.topics || []).includes(FEATURED.TOPIC_ID))   // carries `featured`
+    .filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; })
     .sort((a,b) => new Date(b.published_at||0) - new Date(a.published_at||0))
     .slice(0, FEATURED.MAX);
 }
