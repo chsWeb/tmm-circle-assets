@@ -114,7 +114,7 @@
   background:var(--pill-bg);color:var(--pill-fg);
   font-weight:700;font-size:13px;line-height:1;
 }
-.tmm-hero-img,.tmm-hero-imgph{width:100%;height:230px;border-radius:var(--radius);object-fit:cover}
+.tmm-hero-img,.tmm-hero-imgph{width:100%;height:230px;border-radius:var(--radius);object-fit:contain}
 .tmm-hero-imgph{background:linear-gradient(135deg,var(--placeholder),var(--linen))}
 .tmm-hero-title{font-family:var(--font-display);font-weight:500;font-size:31px;line-height:1.18;letter-spacing:-.02em;color:var(--electric-red)}
 .tmm-hero-desc{font-size:14px;color:var(--ink)}
