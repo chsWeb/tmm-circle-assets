@@ -64,6 +64,29 @@ const TMM_CONFIG = {
   },
 };
 
+/* ============================================================
+   FEATURED hero — one `featured` topic, access by space-group.
+   The owner tags any post `featured`; a post shows in a member's
+   hero only if its space belongs to a group that tier can access.
+   ----------------------------------------------------------------
+   EDIT THESE if group access ever changes — this map is the whole
+   access model. Group ids come from /space_groups.
+   ============================================================ */
+const FEATURED = {
+  TOPIC_ID: 538336,   // Circle "topics" id for the `featured` tag
+  MAX: 5,             // max cards in the hero
+  GROUPS: {
+    // Free: only the two non-member-visible hubs
+    free:         [999735, 996687],
+    // Mother Hub Plus: the current hub groups (VERIFY / adjust)
+    mother_hub:   [999735, 996687, 996638, 979978, 979947],
+    // Foundry (legacy): The Vault + Foundry Community + the 4 cohort pods
+    foundry:      [252529, 927751, 1038310, 1008818, 1008816, 1008815],
+    // Inner Circle (legacy): The Vault only
+    inner_circle: [252529],
+  },
+};
+
 /* ---------- member detection ---------- */
 /* Never let an unresolved SDK/API promise hang the page. */
 function withTimeout(promise, ms, fallback){
@@ -122,9 +145,68 @@ async function fetchSection(cfg){
     }catch(err){ console.error(`fetchSection ${ep} space ${sp.id} threw:`, err.message); return []; }
   }));
 
-  return all.flat()
+  let records = all.flat();
+
+  // Tag filter (used by the featured/hero area). Circle calls tags "topics".
+  // Only posts carrying the configured tag are kept. Matches defensively on
+  // string OR object {name|slug|title}, case-insensitively.
+  if (cfg.tag){
+    const want = String(cfg.tag).toLowerCase();
+    const tagged = records.filter(r => (r.topics || r.tags || []).some(t =>
+      typeof t === 'string'
+        ? t.toLowerCase() === want
+        : [t.name, t.slug, t.title].filter(Boolean).some(v => String(v).toLowerCase() === want)
+    ));
+    if (!tagged.length) console.warn(`fetchSection: no posts tagged "${cfg.tag}" in this space`);
+    records = tagged;   // strict: show ONLY tagged posts (empty if none tagged)
+  }
+
+  return records
     .sort((a,b)=> new Date(b.published_at||0) - new Date(a.published_at||0))
     .slice(0, n);
+}
+
+/* ---------- featured hero data ----------
+   One /spaces call (cached) gives space_id → space_group id.
+   One /posts call (topic_id narrows server-side if supported; we also
+   match the topic id in code so it works either way) gives candidates.
+   Keep only featured posts whose space's group the tier may access. */
+let _spaceGroupMap = null;
+async function getSpaceGroupMap(){
+  if (_spaceGroupMap) return _spaceGroupMap;
+  const map = {};
+  try{
+    const res = await withTimeout(fetch(`${TMM_CONFIG.WORKER_URL}/spaces?community_id=${TMM_CONFIG.COMMUNITY_ID}&per_page=100`), 6000, null);
+    if (res && res.ok){
+      const data = await res.json();
+      (data.records || []).forEach(s => {
+        const gid = s.space_group && s.space_group.id;
+        if (gid) map[s.id] = gid;
+      });
+    } else { console.error('getSpaceGroupMap: fetch failed'); }
+  }catch(e){ console.error('getSpaceGroupMap threw:', e.message); }
+  _spaceGroupMap = map;
+  return map;
+}
+
+async function fetchFeatured(tierKey){
+  const allowed = new Set(FEATURED.GROUPS[tierKey] || FEATURED.GROUPS.free);
+  const [spaceMap, recs] = await Promise.all([
+    getSpaceGroupMap(),
+    (async () => {
+      const url = `${TMM_CONFIG.WORKER_URL}/posts?community_id=${TMM_CONFIG.COMMUNITY_ID}&topic_id=${FEATURED.TOPIC_ID}&per_page=100&page=1`;
+      const res = await withTimeout(fetch(url), 6000, null);
+      if (!res || !res.ok){ console.error('fetchFeatured: posts fetch failed'); return []; }
+      const data = await res.json();
+      return data.records || [];
+    })(),
+  ]);
+
+  return recs
+    .filter(p => (p.topics || []).includes(FEATURED.TOPIC_ID))   // actually carries `featured`
+    .filter(p => allowed.has(spaceMap[p.space_id]))              // in a group this tier can see
+    .sort((a,b) => new Date(b.published_at||0) - new Date(a.published_at||0))
+    .slice(0, FEATURED.MAX);
 }
 
 /* ---------- helpers ---------- */
@@ -268,7 +350,12 @@ async function init(overrideTierKey){
       .then(d => { try { fn(d, cfg); } catch(e){ console.error('render error:', e); } })
       .catch(e => console.error('section error:', e));
 
-  render(tier.hero,          renderHero);
+  // Hero = posts tagged `featured` community-wide, filtered to the groups
+  // this tier can access. Everything else stays per-space.
+  fetchFeatured(tierKey)
+    .then(posts => { try { renderHero(posts, tier.hero); } catch(e){ console.error('hero render error:', e); } })
+    .catch(e => console.error('featured error:', e));
+
   render(tier.contentGrid,   renderContentGrid);
   render(tier.featuredEvent, renderFeatured);
   render(tier.postFeed,      renderFeed);
@@ -278,9 +365,27 @@ async function init(overrideTierKey){
 /* expose test-tier switcher to window (IIFE hides it otherwise) */
 window.tmmSetTier = (k)=>init(k);
 
-document.addEventListener('DOMContentLoaded', ()=>{
+/* ---------- boot ----------
+   Circle is a single-page app: it may inject our HTML block AFTER this
+   script runs, and DOMContentLoaded may have already fired. So instead of
+   relying on that one event, we wait until #tmmHome actually exists, and
+   re-init if Circle swaps in a fresh block on navigation (e.g. tapping Home).
+   This is why content loaded via the test dropdown but not on nav before. */
+let tmmBootedEl = null;
+function tmmTryBoot(){
+  const home = document.getElementById('tmmHome');
+  if (!home) return;
+  if (home === tmmBootedEl) return;              // this block already initialised
+  tmmBootedEl = home;                            // set before init() so DOM edits don't re-trigger
   if(!TMM_CONFIG.TEST_MODE){ const b=document.getElementById('tmmTestBanner'); if(b) b.style.display='none'; }
   init();
-});
+}
+function tmmStart(){
+  tmmTryBoot();
+  // Keep watching: covers Circle injecting the block late AND re-injecting it on navigation.
+  new MutationObserver(tmmTryBoot).observe(document.documentElement, {childList:true, subtree:true});
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tmmStart);
+else tmmStart();
 
 })();
