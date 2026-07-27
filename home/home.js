@@ -323,8 +323,7 @@ function renderFeed(posts,cfg){
       : `<div class="tmm-avatar">${esc(initial(p.user_name))}</div>`;
     return `
       <a class="tmm-feed-card" href="${esc(p.url||'#')}" target="_blank" rel="noopener">
-        <div class="tmm-feed-who">${av}<span class="tmm-feed-name">${esc(p.user_name||'Member')}</span></div>
-        <div class="tmm-feed-space">${esc(p.space_name||'')}</div>
+        <div class="tmm-feed-who">${av}<div class="tmm-feed-whoText"><span class="tmm-feed-name">${esc(p.user_name||'Member')}</span><span class="tmm-feed-space">${esc(p.space_name||'')}</span></div></div>
         <div class="tmm-feed-preview">${esc(strip(p.body?.body||'').slice(0,140))}</div>
         <div class="tmm-stats">
           <span class="tmm-stat"><svg class="tmm-ico" width="15" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M13.6609 1.8746C13.3204 1.53394 12.9161 1.2637 12.4711 1.07932C12.0261 0.894947 11.5492 0.800049 11.0675 0.800049C10.5859 0.800049 10.1089 0.894947 9.66396 1.07932C9.21898 1.2637 8.8147 1.53394 8.47419 1.8746L7.76753 2.58127L7.06086 1.8746C6.37307 1.1868 5.44022 0.800405 4.46753 0.800405C3.49484 0.800405 2.56199 1.1868 1.87419 1.8746C1.1864 2.56239 0.799999 3.49524 0.799999 4.46793C0.799999 5.44062 1.1864 6.37347 1.87419 7.06127L7.76753 12.9546L13.6609 7.06127C14.0015 6.72076 14.2718 6.31648 14.4561 5.8715C14.6405 5.42653 14.7354 4.94959 14.7354 4.46793C14.7354 3.98627 14.6405 3.50934 14.4561 3.06436C14.2718 2.61939 14.0015 2.2151 13.6609 1.8746Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>${p.likes_count||0}</span>
