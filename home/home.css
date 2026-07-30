@@ -321,12 +321,13 @@
 }
 
 .tmm-hero-title {
-  font-family: var(--font-display);
+  font-family: var(--font-head);
   font-weight: 500;
   font-size: 31px;
   line-height: 1.18;
   letter-spacing: -.02em;
-  color: var(--electric-red)
+  color: var(--electric-red);
+  margin: 0
 }
 
 .tmm-hero-desc {

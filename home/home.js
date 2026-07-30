@@ -244,7 +244,7 @@ function renderHero(posts,cfg){
     <a class="tmm-hero-card" href="${esc(p.url||'#')}" target="_blank" rel="noopener">
       <span class="tmm-cat">${esc(p.space_name||cfg.label||'Post')}</span>
       ${p.cover_image_url ? `<img class="tmm-hero-img" src="${esc(p.cover_image_url)}" alt="" loading="lazy">` : `<div class="tmm-hero-imgph"></div>`}
-      <div class="tmm-hero-title">${esc(p.name||'Untitled')}</div>
+      <h2 class="tmm-hero-title">${esc(p.name||'Untitled')}</h2>
       <div class="tmm-hero-desc">${esc(strip(p.body?.body||'').slice(0,90))}</div>
     </a>`).join('');
   const dots = posts.length>1
