@@ -643,7 +643,7 @@
   const handledIntroCarousels = new WeakSet();
 
   const setupIntroCarousels = (root = document) => {
-    root.querySelectorAll(".tmm-intro").forEach((section) => {
+    root.querySelectorAll(".tmm-intro, .tmm-join").forEach((section) => {
       if (handledIntroCarousels.has(section)) {
         return;
       }
