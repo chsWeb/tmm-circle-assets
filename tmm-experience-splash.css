@@ -1462,8 +1462,15 @@
 
 .tmm-intro__track {
   display: flex;
+  /* overflow-y must be explicit: leaving it unset makes the browser
+     compute it to `auto`, which turns the track into a vertical scroll
+     container and swallows the page's vertical scroll on touch. */
   overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+  /* pan-y keeps vertical page scrolling working over the carousel */
+  touch-action: pan-x pan-y;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
@@ -1471,6 +1478,30 @@
 
 .tmm-intro__track::-webkit-scrollbar {
   display: none;
+}
+
+.tmm-intro__track:focus-visible {
+  outline: 2px solid var(--tmm-splash-accent);
+  outline-offset: -4px;
+}
+
+/* Pointer drag (desktop). Snap is disabled mid-drag so the track
+   follows the cursor, then restored on release. */
+.tmm-intro__track.is-dragging {
+  scroll-behavior: auto;
+  scroll-snap-type: none;
+  cursor: grabbing;
+  user-select: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tmm-intro__track {
+    cursor: grab;
+  }
+}
+
+.tmm-intro__track.is-dragging img {
+  pointer-events: none;
 }
 
 .tmm-intro__slide {
@@ -1481,6 +1512,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
+  /* Clips the collage frames where they bleed past the slide, the same
+     way the Figma section clips them, and keeps the track free of any
+     vertical overflow. */
+  overflow: hidden;
   padding: clamp(40px, 9vh, 72px) var(--tmm-splash-pad) 0;
   scroll-snap-align: start;
   text-align: center;

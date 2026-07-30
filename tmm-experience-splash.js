@@ -697,21 +697,114 @@
         });
       };
 
+      const activeIndex = () => {
+        const trackLeft = track.getBoundingClientRect().left;
+        let index = 0;
+        let nearest = Number.POSITIVE_INFINITY;
+
+        slides.forEach((slide, i) => {
+          const distance = Math.abs(slide.getBoundingClientRect().left - trackLeft);
+
+          if (distance < nearest) {
+            nearest = distance;
+            index = i;
+          }
+        });
+
+        return index;
+      };
+
+      const goToSlide = (index) => {
+        const targetSlide = slides[Math.max(0, Math.min(index, slides.length - 1))];
+
+        if (!targetSlide) {
+          return;
+        }
+
+        track.scrollTo({
+          left: targetSlide.offsetLeft - track.offsetLeft,
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+        });
+      };
+
       dots.forEach((dot) => {
         dot.addEventListener("click", () => {
-          const index = Number.parseInt(dot.dataset.introSlide || "0", 10);
-          const targetSlide = slides[index];
-
-          if (!targetSlide) {
-            return;
-          }
-
-          track.scrollTo({
-            left: targetSlide.offsetLeft - track.offsetLeft,
-            behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
-          });
+          goToSlide(Number.parseInt(dot.dataset.introSlide || "0", 10));
         });
       });
+
+      // Keyboard: arrows move a whole slide rather than nudging pixels.
+      track.tabIndex = 0;
+      track.setAttribute("role", "group");
+      track.setAttribute("aria-roledescription", "carousel");
+      track.addEventListener("keydown", (event) => {
+        if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
+          return;
+        }
+
+        event.preventDefault();
+        goToSlide(activeIndex() + (event.key === "ArrowRight" ? 1 : -1));
+      });
+
+      // Pointer drag for mouse users. Touch is left to native scrolling,
+      // which already snaps and handles momentum better than JS can.
+      let drag = null;
+
+      track.addEventListener("pointerdown", (event) => {
+        if (event.pointerType !== "mouse" || event.button !== 0) {
+          return;
+        }
+
+        drag = { startX: event.clientX, startLeft: track.scrollLeft, moved: false };
+      });
+
+      track.addEventListener("pointermove", (event) => {
+        if (!drag) {
+          return;
+        }
+
+        const dx = event.clientX - drag.startX;
+
+        if (!drag.moved && Math.abs(dx) < 4) {
+          return;
+        }
+
+        if (!drag.moved) {
+          drag.moved = true;
+          track.classList.add("is-dragging");
+          track.setPointerCapture(event.pointerId);
+        }
+
+        event.preventDefault();
+        track.scrollLeft = drag.startLeft - dx;
+      });
+
+      const endDrag = (event) => {
+        if (!drag) {
+          return;
+        }
+
+        const wasDragging = drag.moved;
+
+        drag = null;
+
+        if (!wasDragging) {
+          return;
+        }
+
+        track.classList.remove("is-dragging");
+
+        if (track.hasPointerCapture?.(event.pointerId)) {
+          track.releasePointerCapture(event.pointerId);
+        }
+
+        // Snap was off during the drag; settle on the nearest slide.
+        goToSlide(activeIndex());
+      };
+
+      track.addEventListener("pointerup", endDrag);
+      track.addEventListener("pointercancel", endDrag);
+      track.addEventListener("dragstart", (event) => event.preventDefault());
 
       let scrollFrame = null;
       track.addEventListener(
