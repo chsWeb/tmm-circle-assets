@@ -640,11 +640,103 @@
     });
   };
 
+  const handledIntroCarousels = new WeakSet();
+
+  const setupIntroCarousels = (root = document) => {
+    root.querySelectorAll(".tmm-intro").forEach((section) => {
+      if (handledIntroCarousels.has(section)) {
+        return;
+      }
+
+      handledIntroCarousels.add(section);
+
+      section.querySelectorAll('a[href^="#"]').forEach((link) => {
+        link.addEventListener("click", (event) => {
+          const target = document.querySelector(link.getAttribute("href"));
+
+          if (!target) {
+            return;
+          }
+
+          event.preventDefault();
+
+          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            target.scrollIntoView({ behavior: "auto", block: "start" });
+            window.scrollBy(0, -getScrollOffset());
+            return;
+          }
+
+          scrollToTarget(target, 950, getScrollOffset());
+        });
+      });
+
+      const track = section.querySelector(".tmm-intro__track");
+      const slides = [...section.querySelectorAll(".tmm-intro__slide")];
+      const dots = [...section.querySelectorAll(".tmm-intro__dot")];
+
+      if (!track || slides.length === 0 || dots.length === 0) {
+        return;
+      }
+
+      const updateDots = () => {
+        const trackLeft = track.getBoundingClientRect().left;
+        let activeIndex = 0;
+        let nearestDistance = Number.POSITIVE_INFINITY;
+
+        slides.forEach((slide, index) => {
+          const distance = Math.abs(slide.getBoundingClientRect().left - trackLeft);
+
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            activeIndex = index;
+          }
+        });
+
+        dots.forEach((dot, index) => {
+          dot.setAttribute("aria-current", String(index === activeIndex));
+        });
+      };
+
+      dots.forEach((dot) => {
+        dot.addEventListener("click", () => {
+          const index = Number.parseInt(dot.dataset.introSlide || "0", 10);
+          const targetSlide = slides[index];
+
+          if (!targetSlide) {
+            return;
+          }
+
+          track.scrollTo({
+            left: targetSlide.offsetLeft - track.offsetLeft,
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+          });
+        });
+      });
+
+      let scrollFrame = null;
+      track.addEventListener(
+        "scroll",
+        () => {
+          if (scrollFrame) {
+            window.cancelAnimationFrame(scrollFrame);
+          }
+
+          scrollFrame = window.requestAnimationFrame(updateDots);
+        },
+        { passive: true }
+      );
+
+      window.addEventListener("resize", updateDots);
+      updateDots();
+    });
+  };
+
   if (document.readyState === "loading") {
     document.addEventListener(
       "DOMContentLoaded",
       () => {
         completeExperienceSplash();
+        setupIntroCarousels();
         setupWelcomeSections();
         setupPricingSections();
         setupPhotoDecks();
@@ -653,6 +745,7 @@
     );
   } else {
     completeExperienceSplash();
+    setupIntroCarousels();
     setupWelcomeSections();
     setupPricingSections();
     setupPhotoDecks();
@@ -663,6 +756,7 @@
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1) {
           completeExperienceSplash(node);
+          setupIntroCarousels(node);
           setupWelcomeSections(node);
           setupPricingSections(node);
           setupPhotoDecks(node);

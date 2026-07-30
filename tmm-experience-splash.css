@@ -1,4 +1,50 @@
+/* Brand faces are served from the home bundle's /home/fonts/ folder on the
+   same Pages origin; _headers already sets Access-Control-Allow-Origin: *
+   there, so cross-folder loading is fine. */
+@font-face {
+  font-family: 'Operetta 52';
+  src: url('/home/fonts/Operetta52-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Parnaso Display';
+  src: url('/home/fonts/ParnasoDisplay-MediumItalic.woff2') format('woff2');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sweet Sans Pro';
+  src: url('/home/fonts/SweetSansProMedium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Work Sans';
+  src: url('/home/fonts/WorkSans-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Work Sans';
+  src: url('/home/fonts/WorkSans-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
+  --tmm-font-display: 'Operetta 52', Georgia, serif;
+  --tmm-font-accent: 'Parnaso Display', Georgia, serif;
+  --tmm-font-head: 'Work Sans', 'Sweet Sans Pro', Inter, system-ui, sans-serif;
   --tmm-color-fresh-white: #f9f9f9;
   --tmm-color-linen: #efebe0;
   --tmm-color-sand: #eae4d6;
@@ -1366,4 +1412,247 @@
   .tmm-pricing--v2 .tmm-pricing-card__features--detailed {
     gap: 18px;
   }
+}
+
+/* ============================================================
+   INTRO CAROUSEL — splash-welcome-02 / 03 / 04
+   Sits between the red logo splash and the .tmm-welcome CTA.
+   Horizontal scroll-snap, native swipe, dots driven by JS.
+   ============================================================ */
+
+.tmm-intro {
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: var(--tmm-color-fresh-white);
+  color: var(--tmm-body-copy-color);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.tmm-intro *,
+.tmm-intro *::before,
+.tmm-intro *::after {
+  box-sizing: border-box;
+}
+
+.tmm-intro__track {
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tmm-intro__track::-webkit-scrollbar {
+  display: none;
+}
+
+.tmm-intro__slide {
+  display: grid;
+  flex: 0 0 100%;
+  min-width: 0;
+  min-height: 100svh;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(16px, 4vw, 28px);
+  padding: clamp(52px, 10vh, 92px) 22px 0;
+  scroll-snap-align: start;
+  text-align: center;
+}
+
+.tmm-intro__body {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+}
+
+/* --- Headline (slides 03 / 04) --- */
+
+.tmm-intro__headline {
+  width: min(100%, 460px);
+  margin: 0;
+  color: var(--tmm-heading-color);
+  font-family: var(--tmm-font-head);
+  font-size: clamp(21px, 5.7vw, 31px);
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  line-height: 1.26;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.tmm-intro__accent {
+  color: var(--tmm-color-electric-red);
+  font-style: normal;
+}
+
+/* --- Slide 02 lockup --- */
+
+.tmm-intro__eyebrow {
+  display: inline-block;
+  margin: 0 0 clamp(12px, 3vw, 18px);
+  padding: 7px 15px;
+  background: var(--tmm-color-black);
+  color: var(--tmm-color-fresh-white);
+  font-family: var(--tmm-font-head);
+  font-size: clamp(13px, 3.5vw, 17px);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.tmm-intro__logo {
+  display: block;
+  width: min(100%, 330px);
+  height: auto;
+  margin: 0 auto clamp(8px, 2.4vw, 14px);
+  color: var(--tmm-color-black);
+}
+
+.tmm-intro__lede {
+  width: min(100%, 440px);
+  margin: 0;
+  color: var(--tmm-heading-color);
+  font-family: var(--tmm-font-display);
+  font-size: clamp(19px, 5vw, 27px);
+  font-weight: 500;
+  letter-spacing: 0.012em;
+  line-height: 1.16;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.tmm-intro__lede-accent {
+  display: block;
+  margin-top: 0.22em;
+  color: var(--tmm-color-electric-red);
+  font-family: var(--tmm-font-accent);
+  font-style: italic;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.tmm-intro__button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: clamp(20px, 4.5vw, 30px);
+  padding: 14px 38px;
+  border: 1px solid var(--tmm-primary-button-bg);
+  border-radius: 999px;
+  background: var(--tmm-primary-button-bg);
+  color: var(--tmm-primary-button-text);
+  font-family: var(--tmm-font-head);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: transform 200ms var(--tmm-experience-ease), background 200ms var(--tmm-experience-ease);
+}
+
+.tmm-intro__button:hover {
+  transform: translateY(-1px);
+}
+
+.tmm-intro__login {
+  margin: clamp(12px, 3vw, 18px) 0 0;
+  color: color-mix(in srgb, var(--tmm-color-charcoal) 72%, var(--tmm-color-light-sage));
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.tmm-intro__login a {
+  color: var(--tmm-color-electric-red);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* --- Photography --- */
+
+.tmm-intro__media {
+  display: grid;
+  min-height: 0;
+  place-items: end center;
+}
+
+.tmm-intro__photo {
+  width: min(100%, 480px);
+  max-width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+}
+
+/* --- Dots --- */
+
+.tmm-intro__dots {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: clamp(20px, 4.5vh, 34px);
+  left: 0;
+  display: flex;
+  gap: 9px;
+  justify-content: center;
+}
+
+.tmm-intro__dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--tmm-dot-inactive-bg);
+  cursor: pointer;
+  transition: background 200ms var(--tmm-experience-ease), transform 200ms var(--tmm-experience-ease);
+}
+
+.tmm-intro__dot[aria-current="true"] {
+  background: var(--tmm-dot-active-bg);
+  transform: scale(1.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tmm-intro__button,
+  .tmm-intro__dot {
+    transition: none;
+  }
+}
+
+/* ============================================================
+   WELCOME CTA — restyled to match splash-welcome-05
+   Overrides the earlier .tmm-welcome type rules; the collage
+   mechanics below it are unchanged.
+   ============================================================ */
+
+.tmm-welcome__title {
+  color: var(--tmm-color-electric-red);
+  font-family: var(--tmm-font-display);
+  font-size: clamp(30px, 8vw, 46px);
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  line-height: 1.06;
+}
+
+.tmm-welcome__copy {
+  width: min(100%, 420px);
+  margin-top: clamp(20px, 5vw, 30px);
+  color: var(--tmm-heading-color);
+  font-family: var(--tmm-font-head);
+  font-size: clamp(17px, 4.4vw, 21px);
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.tmm-welcome__copy .tmm-intro__accent {
+  color: var(--tmm-color-electric-red);
+  font-style: normal;
 }
