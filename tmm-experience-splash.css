@@ -62,29 +62,111 @@
   --tmm-font-accent: 'Parnaso Display', Georgia, serif;
   --tmm-font-head: 'Sweet Sans Pro', 'Work Sans', Inter, system-ui, sans-serif;
   --tmm-font-body: 'Work Sans', Inter, system-ui, sans-serif;
-  --tmm-color-fresh-white: #f9f9f9;
-  --tmm-color-linen: #efebe0;
-  --tmm-color-sand: #eae4d6;
-  --tmm-color-cream: #f4eddb;
-  --tmm-color-black: #0f0f0f;
-  --tmm-color-charcoal: #2d2d2d;
-  --tmm-color-light-sage: #b2aa96;
-  --tmm-color-brand-primary: #841517;
-  --tmm-color-deep-brown: #5e0d11;
-  --tmm-color-oxblood-950: #240507;
-  --tmm-color-electric-red-25: #fff7f8;
-  --tmm-color-electric-red-50: #fff1f3;
-  --tmm-color-electric-red-100: #ffe3e8;
-  --tmm-color-electric-red-200: #ffc7d1;
-  --tmm-color-electric-red-300: #ff9bac;
-  --tmm-color-electric-red-400: #f85d76;
-  --tmm-color-electric-red-500: #d11934;
-  --tmm-color-electric-red-600: #bd172f;
-  --tmm-color-electric-red-700: #951126;
-  --tmm-color-electric-red-800: #740d1d;
-  --tmm-color-electric-red-900: #490812;
-  --tmm-color-electric-red-950: #29050a;
-  --tmm-color-electric-red: var(--tmm-color-electric-red-500);
+  /* ----------------------------------------------------------------
+     Colour ramps, read from the design system file
+     figma.com/design/MD22oguSb9o5kx7xNa8DSL (page "color").
+     These are the source of truth — the aliases below point into them.
+     ---------------------------------------------------------------- */
+
+  /* Brand Primary — "the core brand color, a deep, confident crimson" */
+  --tmm-brand-primary-25: #fbf8f8;
+  --tmm-brand-primary-50: #f9f3f3;
+  --tmm-brand-primary-100: #f3e8e8;
+  --tmm-brand-primary-200: #e0c5c5;
+  --tmm-brand-primary-300: #cea1a2;
+  --tmm-brand-primary-400: #b57374;
+  --tmm-brand-primary-500: #841519;
+  --tmm-brand-primary-600: #771315;
+  --tmm-brand-primary-700: #5e0d11;
+  --tmm-brand-primary-800: #490c0d;
+  --tmm-brand-primary-900: #2e0708;
+  --tmm-brand-primary-950: #1a0405;
+
+  /* Beige — warm neutral that complements Brand Primary */
+  --tmm-beige-25: #fefefe;
+  --tmm-beige-50: #fefdfd;
+  --tmm-beige-100: #fdfcfb;
+  --tmm-beige-200: #faf7f4;
+  --tmm-beige-300: #f6f3ed;
+  --tmm-beige-400: #f2ece5;
+  --tmm-beige-500: #eae4d6;
+  --tmm-beige-600: #d2cabe;
+  --tmm-beige-700: #afa89e;
+  --tmm-beige-800: #807b74;
+  --tmm-beige-900: #524e4a;
+  --tmm-beige-950: #2f2d2a;
+
+  /* Electric Red */
+  --tmm-electric-red-25: #fff7f8;
+  --tmm-electric-red-50: #fff1f3;
+  --tmm-electric-red-100: #ffe3e8;
+  --tmm-electric-red-200: #ffc7d1;
+  --tmm-electric-red-300: #ff9bac;
+  --tmm-electric-red-400: #f85d76;
+  --tmm-electric-red-500: #d11934;
+  --tmm-electric-red-600: #bd172f;
+  --tmm-electric-red-700: #951126;
+  --tmm-electric-red-800: #740d1d;
+  --tmm-electric-red-900: #490812;
+  --tmm-electric-red-950: #29050a;
+
+  /* Light Sage */
+  --tmm-light-sage-25: #fbfaf9;
+  --tmm-light-sage-50: #f8f7f5;
+  --tmm-light-sage-100: #f1efec;
+  --tmm-light-sage-200: #e0ddd6;
+  --tmm-light-sage-300: #ccc6b9;
+  --tmm-light-sage-400: #b2aa96;
+  --tmm-light-sage-500: #898267;
+  --tmm-light-sage-600: #7b765d;
+  --tmm-light-sage-700: #615c49;
+  --tmm-light-sage-800: #4c4839;
+  --tmm-light-sage-900: #312e24;
+  --tmm-light-sage-950: #1c1a14;
+
+  /* Brand Neutral — 13 steps, #0F0F0F to #F7F7F7 */
+  --tmm-neutral-01: #0f0f0f;
+  --tmm-neutral-02: #1b1b1b;
+  --tmm-neutral-03: #272727;
+  --tmm-neutral-04: #3f3f3f;
+  --tmm-neutral-05: #575757;
+  --tmm-neutral-06: #6f6f6f;
+  --tmm-neutral-07: #878787;
+  --tmm-neutral-08: #9f9f9f;
+  --tmm-neutral-09: #b7b7b7;
+  --tmm-neutral-10: #cfcfcf;
+  --tmm-neutral-11: #e7e7e7;
+  --tmm-neutral-12: #f3f3f3;
+  --tmm-neutral-13: #f7f7f7;
+
+  /* ----------------------------------------------------------------
+     Aliases. Where a legacy name matched a ramp step exactly it now
+     points at the ramp. The four marked NOT IN RAMP have no equivalent
+     in the design system and are left at their existing values.
+     ---------------------------------------------------------------- */
+  --tmm-color-black: var(--tmm-neutral-01);
+  --tmm-color-sand: var(--tmm-beige-500);
+  --tmm-color-light-sage: var(--tmm-light-sage-400);
+  --tmm-color-brand-primary: var(--tmm-brand-primary-500);
+  --tmm-color-deep-brown: var(--tmm-brand-primary-700);
+  --tmm-color-fresh-white: #f9f9f9;   /* NOT IN RAMP — nearest is neutral-13 #f7f7f7 */
+  --tmm-color-charcoal: #2d2d2d;      /* NOT IN RAMP — between neutral-03 and -04 */
+  --tmm-color-linen: #efebe0;         /* NOT IN RAMP */
+  --tmm-color-cream: #f4eddb;         /* NOT IN RAMP */
+  --tmm-color-oxblood-950: #240507;   /* NOT IN RAMP — no such ramp exists */
+  --tmm-color-electric-red-25: var(--tmm-electric-red-25);
+  --tmm-color-electric-red-50: var(--tmm-electric-red-50);
+  --tmm-color-electric-red-100: var(--tmm-electric-red-100);
+  --tmm-color-electric-red-200: var(--tmm-electric-red-200);
+  --tmm-color-electric-red-300: var(--tmm-electric-red-300);
+  --tmm-color-electric-red-400: var(--tmm-electric-red-400);
+  --tmm-color-electric-red-500: var(--tmm-electric-red-500);
+  --tmm-color-electric-red-600: var(--tmm-electric-red-600);
+  --tmm-color-electric-red-700: var(--tmm-electric-red-700);
+  --tmm-color-electric-red-800: var(--tmm-electric-red-800);
+  --tmm-color-electric-red-900: var(--tmm-electric-red-900);
+  --tmm-color-electric-red-950: var(--tmm-electric-red-950);
+  --tmm-color-electric-red: var(--tmm-electric-red-500);
   --tmm-experience-bg: var(--tmm-color-brand-primary);
   --tmm-experience-text: var(--tmm-color-fresh-white);
   --tmm-heading-color: var(--tmm-color-black);
