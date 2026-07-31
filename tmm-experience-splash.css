@@ -1669,15 +1669,17 @@
   min-height: 100svh;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   overflow: hidden;
   padding: clamp(40px, 9vh, 73px) var(--tmm-splash-pad) 0;
   text-align: center;
 }
 
 .tmm-join__header {
+  position: relative;
+  z-index: 2;
   display: flex;
-  flex: 1 0 auto;
+  flex: 0 0 auto;
   flex-direction: column;
   align-items: center;
   gap: clamp(10px, 3.64vw, 16px);
@@ -1782,12 +1784,23 @@
   text-decoration: underline;
 }
 
+/* In the comp this is bottom-anchored and overlaps the text block — its
+   top sits ~143px above where the header ends, which is how the raised
+   arm passes behind the login line. Stacking it below the header (and
+   sizing it off width) made it read ~90px short. Height is taken as the
+   comp's 485.75/780 of the section so it holds that weight on any
+   viewport; aspect-ratio derives the width. */
 .tmm-join__media {
-  position: relative;
-  width: 68.4%;
-  max-width: 301px;
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  left: 50%;
+  height: 62.3%;
+  width: auto;
+  max-width: min(94%, 420px);
   aspect-ratio: 300.96 / 485.75;
   overflow: hidden;
+  transform: translateX(-50%);
 }
 
 .tmm-join__media img {
