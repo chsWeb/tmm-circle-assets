@@ -189,9 +189,22 @@
   --tmm-scroll-offset: 92px;
 }
 
+/* Circle wraps custom HTML in a .wb-p-5 padding utility. Site Builder can
+   wrap each top-level section separately, so every full-bleed section
+   needs its own reset — otherwise the padding shows as a strip along the
+   section edges (e.g. a gap under the slide-1 collage). */
 .wb-p-5.tmm-experience-shell-reset,
-.wb-p-5:has(.tmm-experience-splash) {
+.wb-p-5:has(.tmm-experience-splash),
+.wb-p-5:has(.tmm-intro),
+.wb-p-5:has(.tmm-join),
+.wb-p-5:has(.tmm-pricing) {
   padding: 0 !important;
+}
+
+/* Same defence for margins Circle may apply to the wrapper or section. */
+.tmm-intro,
+.tmm-join {
+  margin: 0;
 }
 
 .tmm-experience-splash {
