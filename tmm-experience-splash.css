@@ -935,9 +935,10 @@
   background: transparent;
   color: var(--tmm-body-copy-color);
   font: inherit;
+  font-family: var(--tmm-font-head);
   font-size: 0.95rem;
-  font-weight: 750;
-  letter-spacing: 0;
+  font-weight: 500;
+  letter-spacing: 0.06em;
   cursor: pointer;
   transition:
     color 220ms ease,
@@ -1004,11 +1005,15 @@
   gap: 12px;
 }
 
+/* Sweet Sans Pro, matching .tmm-pricing__title. Only the Medium face is
+   available, so 700 is synthesised by the browser — swap in a real bold
+   woff2 here if one exists. */
 .tmm-pricing-card__name {
   margin: 0;
   color: var(--tmm-heading-color);
+  font-family: var(--tmm-font-head);
   font-size: 1.1rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1.2;
 }
