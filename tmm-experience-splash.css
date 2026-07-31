@@ -27,6 +27,14 @@
 
 @font-face {
   font-family: 'Work Sans';
+  src: url('/home/fonts/WorkSans-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Work Sans';
   src: url('/home/fonts/WorkSans-Medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
@@ -181,7 +189,9 @@
 @media (max-width: 1024px) {
   :root {
     --tmm-experience-logo-width: clamp(230px, 64.8vw, 285px);
-    --tmm-experience-section-height: 100svh;
+    /* Capped for the same reason as --tmm-splash-section-height: a full
+       100svh overflows Circle's Site Builder container. */
+    --tmm-experience-section-height: clamp(520px, 100svh, 780px);
   }
 }
 
@@ -860,14 +870,18 @@
   text-transform: uppercase;
 }
 
+/* Matches .tmm-intro__headline so the pricing section reads as part of
+   the same page rather than the older Inter-based design. */
 .tmm-pricing__title {
   margin: 0;
   max-width: 680px;
-  color: var(--tmm-heading-color);
-  font-size: 3.2em;
-  font-weight: 750;
-  letter-spacing: -0.025em;
-  line-height: 0.95em;
+  color: var(--tmm-color-black);
+  font-family: var(--tmm-font-head);
+  font-size: clamp(16px, 4.545vw, 20px);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  line-height: 1.125;
+  text-transform: uppercase;
   text-wrap: balance;
 }
 
@@ -875,7 +889,9 @@
   margin: 0;
   max-width: 640px;
   color: var(--tmm-body-copy-color);
-  font-size: clamp(1rem, 4.4vw, 1.18rem);
+  font-family: var(--tmm-font-body);
+  font-size: clamp(0.95rem, 4.2vw, 1.05rem);
+  font-weight: 400;
   line-height: 1.55;
 }
 
@@ -905,7 +921,7 @@
   transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.tmm-pricing[data-billing="annual"] .tmm-pricing__toggle::before {
+.tmm-pricing[data-billing="quarterly"] .tmm-pricing__toggle::before {
   transform: translateX(calc(100% + 4px));
 }
 
@@ -1392,9 +1408,9 @@
   }
 
   .tmm-pricing__title {
-    font-size: 3.2em;
-    letter-spacing: -0.025em;
-    line-height: 0.95em;
+    font-size: clamp(16px, 4.545vw, 20px);
+    letter-spacing: 0.2em;
+    line-height: 1.125;
     text-wrap: balance;
   }
 
@@ -1437,6 +1453,13 @@
 .tmm-join {
   --tmm-splash-accent: var(--tmm-color-brand-primary);
   --tmm-splash-pad: clamp(24px, 10.909vw, 48px);
+  /* Section height. Plain 100svh measures the browser viewport, but inside
+     Circle's Site Builder the block sits in a shorter container, so full-
+     viewport sections overflow it. Capped at the comp's 780px and floored
+     so it never collapses. Override on .tmm-home / the page wrapper to
+     tune against Circle's actual content area, e.g.
+       .tmm-intro, .tmm-join { --tmm-splash-section-height: 640px; }        */
+  --tmm-splash-section-height: clamp(520px, 100svh, 780px);
   position: relative;
   isolation: isolate;
   box-sizing: border-box;
@@ -1508,7 +1531,7 @@
   display: flex;
   flex: 0 0 100%;
   min-width: 0;
-  min-height: 100svh;
+  min-height: var(--tmm-splash-section-height);
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
@@ -1666,7 +1689,7 @@
 
 .tmm-join {
   display: flex;
-  min-height: 100svh;
+  min-height: var(--tmm-splash-section-height);
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
