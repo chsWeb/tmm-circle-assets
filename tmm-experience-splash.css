@@ -1594,26 +1594,15 @@
   text-align: center;
 }
 
+/* Slides are stacked, not laid out in a row — swapping is a cross-fade.
+   touch-action: pan-y keeps the page scrolling vertically over the
+   carousel; horizontal gestures are handled in JS. */
 .tmm-intro__track {
-  display: flex;
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
-  /* overflow-y must be explicit: leaving it unset makes the browser
-     compute it to `auto`, which turns the track into a vertical scroll
-     container and swallows the page's vertical scroll on touch. */
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  overscroll-behavior-y: auto;
-  /* pan-y keeps vertical page scrolling working over the carousel */
-  touch-action: pan-x pan-y;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.tmm-intro__track::-webkit-scrollbar {
-  display: none;
+  overflow: hidden;
+  touch-action: pan-y;
 }
 
 .tmm-intro__track:focus-visible {
@@ -1621,40 +1610,32 @@
   outline-offset: -4px;
 }
 
-/* Pointer drag (desktop). Snap is disabled mid-drag so the track
-   follows the cursor, then restored on release. */
-.tmm-intro__track.is-dragging {
-  scroll-behavior: auto;
-  scroll-snap-type: none;
-  cursor: grabbing;
-  user-select: none;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .tmm-intro__track {
-    cursor: grab;
-  }
-}
-
-.tmm-intro__track.is-dragging img {
-  pointer-events: none;
-}
-
 .tmm-intro__slide {
+  position: absolute;
+  inset: 0;
   display: flex;
-  flex: 0 0 100%;
-  min-width: 0;
-  min-height: 0;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   /* Clips the collage frames where they bleed past the slide, the same
-     way the Figma section clips them, and keeps the track free of any
-     vertical overflow. */
+     way the Figma section clips them. */
   overflow: hidden;
   padding: 0 var(--tmm-splash-pad);
-  scroll-snap-align: start;
+  opacity: 0;
+  pointer-events: none;
   text-align: center;
+  transition: opacity 420ms var(--tmm-experience-ease);
+}
+
+.tmm-intro__slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tmm-intro__slide {
+    transition: none;
+  }
 }
 
 /* Top-aligned, not centred: centring would place each subheading
@@ -1749,7 +1730,7 @@
   transform: rotate(-7.83deg);
 }
 
-/* --- Slide media (Figma crop replicated exactly) --- */
+/* --- Slide media --- */
 
 .tmm-intro__media {
   position: relative;
@@ -1760,14 +1741,19 @@
   overflow: hidden;
 }
 
+/* The sources are masked cut-outs on transparency, so `contain` keeps the
+   whole subject — no risk of clipping a head — and the empty area simply
+   shows the page behind. They're taller than this box, so contain fits by
+   height, putting the subject at full height and flush with the bottom.
+   (This replaced a crop that replicated the Figma frame offsets, which
+   only worked while the sources were the flattened 1080x1920 mockups.) */
 .tmm-intro__media img {
-  position: absolute;
-  left: 0;
-  top: -66%;
+  display: block;
   width: 100%;
-  height: 166%;
+  height: 100%;
   max-width: none;
-  object-fit: fill;
+  object-fit: contain;
+  object-position: center bottom;
 }
 
 /* --- Dots --- */
@@ -1948,14 +1934,14 @@
   transform: translateX(-50%);
 }
 
+/* Same treatment as the carousel media — see the note there. */
 .tmm-join__media img {
-  position: absolute;
-  left: -28.68%;
-  top: -61.03%;
-  width: 146.2%;
-  height: 161.03%;
+  display: block;
+  width: 100%;
+  height: 100%;
   max-width: none;
-  object-fit: fill;
+  object-fit: contain;
+  object-position: center bottom;
 }
 
 @media (prefers-reduced-motion: reduce) {

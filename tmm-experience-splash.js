@@ -678,53 +678,35 @@
         return;
       }
 
-      const updateDots = () => {
-        const trackLeft = track.getBoundingClientRect().left;
-        let activeIndex = 0;
-        let nearestDistance = Number.POSITIVE_INFINITY;
+      // Cross-fade rather than a scrolling track: slides are stacked and
+      // only opacity changes, so the subtitle and photo dissolve into the
+      // next pair instead of travelling sideways. Swipe is handled here
+      // because there is no native scrolling left to piggyback on.
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      let index = 0;
 
-        slides.forEach((slide, index) => {
-          const distance = Math.abs(slide.getBoundingClientRect().left - trackLeft);
-
-          if (distance < nearestDistance) {
-            nearestDistance = distance;
-            activeIndex = index;
-          }
-        });
-
-        dots.forEach((dot, index) => {
-          dot.setAttribute("aria-current", String(index === activeIndex));
-        });
-      };
-
-      const activeIndex = () => {
-        const trackLeft = track.getBoundingClientRect().left;
-        let index = 0;
-        let nearest = Number.POSITIVE_INFINITY;
-
+      const render = () => {
         slides.forEach((slide, i) => {
-          const distance = Math.abs(slide.getBoundingClientRect().left - trackLeft);
+          const isActive = i === index;
 
-          if (distance < nearest) {
-            nearest = distance;
-            index = i;
-          }
+          slide.classList.toggle("is-active", isActive);
+          slide.setAttribute("aria-hidden", String(!isActive));
         });
 
-        return index;
+        dots.forEach((dot, i) => {
+          dot.setAttribute("aria-current", String(i === index));
+        });
       };
 
-      const goToSlide = (index) => {
-        const targetSlide = slides[Math.max(0, Math.min(index, slides.length - 1))];
+      const goToSlide = (next) => {
+        const clamped = Math.max(0, Math.min(next, slides.length - 1));
 
-        if (!targetSlide) {
+        if (clamped === index) {
           return;
         }
 
-        track.scrollTo({
-          left: targetSlide.offsetLeft - track.offsetLeft,
-          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
-        });
+        index = clamped;
+        render();
       };
 
       dots.forEach((dot) => {
@@ -733,7 +715,6 @@
         });
       });
 
-      // Keyboard: arrows move a whole slide rather than nudging pixels.
       track.tabIndex = 0;
       track.setAttribute("role", "group");
       track.setAttribute("aria-roledescription", "carousel");
@@ -743,84 +724,72 @@
         }
 
         event.preventDefault();
-        goToSlide(activeIndex() + (event.key === "ArrowRight" ? 1 : -1));
+        goToSlide(index + (event.key === "ArrowRight" ? 1 : -1));
       });
 
-      // Pointer drag for mouse users. Touch is left to native scrolling,
-      // which already snaps and handles momentum better than JS can.
-      let drag = null;
+      // Swipe. Direction is locked on the first meaningful movement so a
+      // vertical drag scrolls the page instead of flipping the slide.
+      const SWIPE_THRESHOLD = 45;
+      let gesture = null;
 
-      track.addEventListener("pointerdown", (event) => {
-        if (event.pointerType !== "mouse" || event.button !== 0) {
-          return;
-        }
-
-        drag = { startX: event.clientX, startLeft: track.scrollLeft, moved: false };
-      });
-
-      track.addEventListener("pointermove", (event) => {
-        if (!drag) {
-          return;
-        }
-
-        const dx = event.clientX - drag.startX;
-
-        if (!drag.moved && Math.abs(dx) < 4) {
-          return;
-        }
-
-        if (!drag.moved) {
-          drag.moved = true;
-          track.classList.add("is-dragging");
-          track.setPointerCapture(event.pointerId);
-        }
-
-        event.preventDefault();
-        track.scrollLeft = drag.startLeft - dx;
-      });
-
-      const endDrag = (event) => {
-        if (!drag) {
-          return;
-        }
-
-        const wasDragging = drag.moved;
-
-        drag = null;
-
-        if (!wasDragging) {
-          return;
-        }
-
-        track.classList.remove("is-dragging");
-
-        if (track.hasPointerCapture?.(event.pointerId)) {
-          track.releasePointerCapture(event.pointerId);
-        }
-
-        // Snap was off during the drag; settle on the nearest slide.
-        goToSlide(activeIndex());
-      };
-
-      track.addEventListener("pointerup", endDrag);
-      track.addEventListener("pointercancel", endDrag);
-      track.addEventListener("dragstart", (event) => event.preventDefault());
-
-      let scrollFrame = null;
       track.addEventListener(
-        "scroll",
-        () => {
-          if (scrollFrame) {
-            window.cancelAnimationFrame(scrollFrame);
+        "pointerdown",
+        (event) => {
+          if (event.pointerType === "mouse" && event.button !== 0) {
+            return;
           }
 
-          scrollFrame = window.requestAnimationFrame(updateDots);
+          gesture = { x: event.clientX, y: event.clientY, axis: null };
         },
         { passive: true }
       );
 
-      window.addEventListener("resize", updateDots);
-      updateDots();
+      track.addEventListener(
+        "pointermove",
+        (event) => {
+          if (!gesture) {
+            return;
+          }
+
+          const dx = event.clientX - gesture.x;
+          const dy = event.clientY - gesture.y;
+
+          if (!gesture.axis && Math.abs(dx) + Math.abs(dy) > 8) {
+            gesture.axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+          }
+
+          if (gesture.axis === "y") {
+            gesture = null;
+          }
+        },
+        { passive: true }
+      );
+
+      const endGesture = (event) => {
+        if (!gesture) {
+          return;
+        }
+
+        const dx = event.clientX - gesture.x;
+        const horizontal = gesture.axis === "x";
+
+        gesture = null;
+
+        if (!horizontal || Math.abs(dx) < SWIPE_THRESHOLD) {
+          return;
+        }
+
+        goToSlide(index + (dx < 0 ? 1 : -1));
+      };
+
+      track.addEventListener("pointerup", endGesture);
+      track.addEventListener("pointercancel", () => {
+        gesture = null;
+      });
+      track.addEventListener("dragstart", (event) => event.preventDefault());
+
+      reduceMotion.addEventListener?.("change", render);
+      render();
     });
   };
 
