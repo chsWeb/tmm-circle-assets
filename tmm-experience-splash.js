@@ -736,12 +736,40 @@
 
       const trackWidth = () => track.getBoundingClientRect().width || 1;
 
+      // Smoothstep, so the dissolve eases away from the start and into the
+      // finish instead of tracking the finger linearly. A linear map is
+      // what made it feel abrupt: opacity moved fastest exactly where the
+      // eye is most sensitive to it, right at the endpoints.
+      const ease = (t) => t * t * (3 - 2 * t);
+
+      // Depth of the text drift, matching the resting offset in the CSS.
+      const DRIFT = 7;
+      const BLUR = 3;
+
+      const paintSlide = (slide, opacity, direction) => {
+        const away = 1 - opacity;
+
+        slide.style.opacity = String(opacity);
+
+        const header = slide.querySelector(".tmm-intro__header");
+
+        if (!header) {
+          return;
+        }
+
+        header.style.transform = `translateY(${away * DRIFT * direction}px)`;
+        header.style.filter = away > 0.01 ? `blur(${(away * BLUR).toFixed(2)}px)` : "none";
+      };
+
       const paint = (from, to, progress) => {
+        const eased = ease(progress);
+
         slides.forEach((slide, i) => {
           if (i === from) {
-            slide.style.opacity = String(1 - progress);
+            // Outgoing lifts away; incoming rises into place.
+            paintSlide(slide, 1 - eased, -1);
           } else if (i === to) {
-            slide.style.opacity = String(progress);
+            paintSlide(slide, eased, 1);
           } else {
             slide.style.opacity = "";
           }
@@ -751,6 +779,13 @@
       const clearPaint = () => {
         slides.forEach((slide) => {
           slide.style.opacity = "";
+
+          const header = slide.querySelector(".tmm-intro__header");
+
+          if (header) {
+            header.style.transform = "";
+            header.style.filter = "";
+          }
         });
       };
 

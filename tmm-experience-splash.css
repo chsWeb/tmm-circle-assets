@@ -1557,6 +1557,10 @@
      is gone. Override here to tune against Circle's content area, e.g.
        .tmm-intro, .tmm-join { --tmm-splash-section-height: 640px; }        */
   --tmm-splash-section-height: max(520px, 100dvh);
+  /* Shared by the carousel cross-fade. Eased at both ends rather than
+     linear, so slides settle instead of switching. */
+  --tmm-fade-duration: 640ms;
+  --tmm-fade-ease: cubic-bezier(0.65, 0, 0.35, 1);
   position: relative;
   isolation: isolate;
   box-sizing: border-box;
@@ -1624,14 +1628,29 @@
   opacity: 0;
   pointer-events: none;
   text-align: center;
-  /* Long and gentle so the dissolve reads as a settle rather than a
-     switch. cubic-bezier(0.4, 0, 0.2, 1) eases both ends. */
-  transition: opacity 520ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity var(--tmm-fade-duration) var(--tmm-fade-ease);
 }
 
 .tmm-intro__slide.is-active {
   opacity: 1;
   pointer-events: auto;
+}
+
+/* The text carries the character of the transition: as well as fading it
+   drifts a few pixels and defocuses, so a subtitle resolves into place
+   rather than simply appearing. The photography stays pure opacity —
+   blurring a full-bleed image every frame of a drag is expensive on
+   phones, and the text is what the eye is reading. */
+.tmm-intro__header {
+  transition:
+    transform var(--tmm-fade-duration) var(--tmm-fade-ease),
+    filter var(--tmm-fade-duration) var(--tmm-fade-ease);
+  will-change: transform, filter;
+}
+
+.tmm-intro__slide:not(.is-active) .tmm-intro__header {
+  transform: translateY(7px);
+  filter: blur(3px);
 }
 
 /* While a finger is down the opacity is written directly from the drag
@@ -1816,8 +1835,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
+  /* So the photo below can be floored against the section's own width.
+     The inline padding lives on the header rather than here, because
+     container-type measures the content box — with padding here, 100cqw
+     would be the section width minus both gutters. */
+  container-type: inline-size;
   overflow: hidden;
-  padding: clamp(40px, 9vh, 73px) var(--tmm-splash-pad) 0;
+  padding: clamp(40px, 9vh, 73px) 0 0;
   text-align: center;
 }
 
@@ -1830,6 +1854,7 @@
   align-items: center;
   gap: clamp(10px, 3.64vw, 16px);
   width: 100%;
+  padding-inline: var(--tmm-splash-pad);
 }
 
 .tmm-join__lockup {
@@ -1941,7 +1966,13 @@
   z-index: 1;
   bottom: 0;
   left: 50%;
-  height: 62.3%;
+  /* 62.3% is the comp's 485.75/780 of the section height. But a section
+     shorter than the viewport — which is what Circle gives us — scales
+     that down with it, and the photo shrinks. The cqw term is the same
+     photo expressed against the section's *width* (68.4% wide at the
+     comp's aspect), so max() holds the comp's proportions no matter how
+     short the section gets, and still grows on a tall screen. */
+  height: max(62.3%, 110.4cqw);
   width: auto;
   max-width: min(94%, 420px);
   aspect-ratio: 300.96 / 485.75;
@@ -1949,13 +1980,14 @@
   transform: translateX(-50%);
 }
 
-/* Same treatment as the carousel media — see the note there. */
+/* cover, so she fills the frame rather than sitting letterboxed inside
+   it — the cut-out carries empty space around the raised arm. */
 .tmm-join__media img {
   display: block;
   width: 100%;
   height: 100%;
   max-width: none;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center bottom;
 }
 
