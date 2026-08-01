@@ -727,10 +727,32 @@
         goToSlide(index + (event.key === "ArrowRight" ? 1 : -1));
       });
 
-      // Swipe. Direction is locked on the first meaningful movement so a
-      // vertical drag scrolls the page instead of flipping the slide.
-      const SWIPE_THRESHOLD = 45;
+      // Swipe. The fade tracks the drag: opacity is driven by how far the
+      // finger has travelled, so the two slides cross-dissolve under the
+      // thumb rather than waiting for release. Direction is locked on the
+      // first meaningful movement so a vertical drag scrolls the page.
+      const COMMIT_RATIO = 0.28;
       let gesture = null;
+
+      const trackWidth = () => track.getBoundingClientRect().width || 1;
+
+      const paint = (from, to, progress) => {
+        slides.forEach((slide, i) => {
+          if (i === from) {
+            slide.style.opacity = String(1 - progress);
+          } else if (i === to) {
+            slide.style.opacity = String(progress);
+          } else {
+            slide.style.opacity = "";
+          }
+        });
+      };
+
+      const clearPaint = () => {
+        slides.forEach((slide) => {
+          slide.style.opacity = "";
+        });
+      };
 
       track.addEventListener(
         "pointerdown",
@@ -739,7 +761,7 @@
             return;
           }
 
-          gesture = { x: event.clientX, y: event.clientY, axis: null };
+          gesture = { x: event.clientX, y: event.clientY, axis: null, to: null, progress: 0 };
         },
         { passive: true }
       );
@@ -756,11 +778,35 @@
 
           if (!gesture.axis && Math.abs(dx) + Math.abs(dy) > 8) {
             gesture.axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+
+            if (gesture.axis === "x") {
+              track.classList.add("is-dragging");
+            }
           }
 
           if (gesture.axis === "y") {
             gesture = null;
+            return;
           }
+
+          if (gesture.axis !== "x" || reduceMotion.matches) {
+            return;
+          }
+
+          const to = index + (dx < 0 ? 1 : -1);
+
+          // At the ends there's nowhere to fade to, so resist instead.
+          if (to < 0 || to > slides.length - 1) {
+            gesture.to = null;
+            gesture.progress = 0;
+            clearPaint();
+            slides[index].style.opacity = "1";
+            return;
+          }
+
+          gesture.to = to;
+          gesture.progress = Math.min(Math.abs(dx) / (trackWidth() * 0.5), 1);
+          paint(index, to, gesture.progress);
         },
         { passive: true }
       );
@@ -770,21 +816,39 @@
           return;
         }
 
+        const { axis, to, progress } = gesture;
         const dx = event.clientX - gesture.x;
-        const horizontal = gesture.axis === "x";
 
         gesture = null;
+        track.classList.remove("is-dragging");
+        clearPaint();
 
-        if (!horizontal || Math.abs(dx) < SWIPE_THRESHOLD) {
+        if (axis !== "x") {
           return;
         }
 
-        goToSlide(index + (dx < 0 ? 1 : -1));
+        // Under reduced motion nothing was painted, so fall back to a
+        // plain distance threshold.
+        if (reduceMotion.matches) {
+          if (Math.abs(dx) > 45) {
+            goToSlide(index + (dx < 0 ? 1 : -1));
+          }
+          return;
+        }
+
+        if (to !== null && progress >= COMMIT_RATIO) {
+          goToSlide(to);
+        } else {
+          render();
+        }
       };
 
       track.addEventListener("pointerup", endGesture);
       track.addEventListener("pointercancel", () => {
         gesture = null;
+        track.classList.remove("is-dragging");
+        clearPaint();
+        render();
       });
       track.addEventListener("dragstart", (event) => event.preventDefault());
 
