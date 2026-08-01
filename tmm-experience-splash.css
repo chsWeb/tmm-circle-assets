@@ -1576,14 +1576,28 @@
 
 /* --- Carousel shell --- */
 
+/* The masthead sits outside the track so "Welcome to The Millionaire
+   Mother" stays put while only the subheading changes underneath. The
+   track takes the remaining height and the slides stretch into it. */
 .tmm-intro {
+  display: flex;
+  min-height: var(--tmm-splash-section-height);
+  flex-direction: column;
   overflow: hidden;
   /* Lets the dots below be positioned from the section's own width. */
   container-type: inline-size;
 }
 
+.tmm-intro__masthead {
+  flex: 0 0 auto;
+  padding: clamp(40px, 9vh, 72px) var(--tmm-splash-pad) clamp(22px, 9.09vw, 40px);
+  text-align: center;
+}
+
 .tmm-intro__track {
   display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
   /* overflow-y must be explicit: leaving it unset makes the browser
      compute it to `auto`, which turns the track into a vertical scroll
      container and swallows the page's vertical scroll on touch. */
@@ -1630,7 +1644,7 @@
   display: flex;
   flex: 0 0 100%;
   min-width: 0;
-  min-height: var(--tmm-splash-section-height);
+  min-height: 0;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
@@ -1638,17 +1652,20 @@
      way the Figma section clips them, and keeps the track free of any
      vertical overflow. */
   overflow: hidden;
-  padding: clamp(40px, 9vh, 72px) var(--tmm-splash-pad) 0;
+  padding: 0 var(--tmm-splash-pad);
   scroll-snap-align: start;
   text-align: center;
 }
 
+/* Top-aligned, not centred: centring would place each subheading
+   relative to its own photo, so they'd sit at different heights and
+   appear to jump while swiping. */
 .tmm-intro__header {
   display: flex;
-  flex: 1 0 auto;
+  flex: 0 0 auto;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: clamp(22px, 9.09vw, 40px);
   width: 100%;
 }
