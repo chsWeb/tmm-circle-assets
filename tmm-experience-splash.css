@@ -284,9 +284,7 @@
 @media (max-width: 1024px) {
   :root {
     --tmm-experience-logo-width: clamp(230px, 64.8vw, 285px);
-    /* Capped for the same reason as --tmm-splash-section-height: a full
-       100svh overflows Circle's Site Builder container. */
-    --tmm-experience-section-height: clamp(520px, 100svh, 780px);
+    --tmm-experience-section-height: max(520px, 100dvh);
   }
 }
 
@@ -1553,13 +1551,12 @@
 .tmm-join {
   --tmm-splash-accent: var(--tmm-color-brand-primary);
   --tmm-splash-pad: clamp(24px, 10.909vw, 48px);
-  /* Section height. Plain 100svh measures the browser viewport, but inside
-     Circle's Site Builder the block sits in a shorter container, so full-
-     viewport sections overflow it. Capped at the comp's 780px and floored
-     so it never collapses. Override on .tmm-home / the page wrapper to
-     tune against Circle's actual content area, e.g.
+  /* Section height — full dynamic viewport height, floored so it can never
+     collapse. The earlier overflow in Site Builder turned out to be Circle's
+     .wb-p-5 wrapper padding (reset above), not the height, so the 780px cap
+     is gone. Override here to tune against Circle's content area, e.g.
        .tmm-intro, .tmm-join { --tmm-splash-section-height: 640px; }        */
-  --tmm-splash-section-height: clamp(520px, 100svh, 780px);
+  --tmm-splash-section-height: max(520px, 100dvh);
   position: relative;
   isolation: isolate;
   box-sizing: border-box;
@@ -1581,6 +1578,8 @@
 
 .tmm-intro {
   overflow: hidden;
+  /* Lets the dots below be positioned from the section's own width. */
+  container-type: inline-size;
 }
 
 .tmm-intro__track {
@@ -1756,11 +1755,17 @@
 
 /* --- Dots --- */
 
+/* Sits in the gap above the photography rather than on top of it.
+   The three slides don't start their imagery at the same height — the
+   media on slides 2 and 3 is 471.22/440 of the section width, the slide-1
+   collage is shorter — so the dots are anchored above the tallest of them
+   (the media) and hold that one position across all slides. Anchoring to
+   each slide's own imagery would make them jump while swiping. */
 .tmm-intro__dots {
   position: absolute;
   z-index: 2;
   right: 0;
-  bottom: clamp(16px, 3.5vh, 26px);
+  bottom: calc(107.096cqw + clamp(14px, 4cqw, 22px));
   left: 0;
   display: flex;
   gap: 9px;
