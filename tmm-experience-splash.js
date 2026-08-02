@@ -905,6 +905,18 @@
         if (tallest > 0) {
           section.style.setProperty("--tmm-dots-top", `${track.offsetTop + tallest}px`);
         }
+
+        // The imagery starts just below the dots and runs to the bottom
+        // edge. Giving it every pixel that's left means object-fit: cover
+        // has the least possible to crop away.
+        const dotsRow = section.querySelector(".tmm-intro__dots");
+
+        if (dotsRow) {
+          const gap = 16;
+          const mediaTop = dotsRow.offsetTop + dotsRow.offsetHeight - track.offsetTop + gap;
+
+          section.style.setProperty("--tmm-media-top", `${Math.max(0, Math.round(mediaTop))}px`);
+        }
       };
 
       let dotsFrame = null;

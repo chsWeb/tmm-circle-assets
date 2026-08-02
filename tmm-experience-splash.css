@@ -1,8 +1,15 @@
 /* Brand faces are served from the home bundle's /home/fonts/ folder on the
    same Pages origin; _headers already sets Access-Control-Allow-Origin: *
-   there, so cross-folder loading is fine. */
+   there, so cross-folder loading is fine.
+
+   The family names are prefixed "TMM " deliberately. Circle's Site Builder
+   theme registers the same brand fonts under their plain names, and for a
+   given family/weight/style the last @font-face declared wins — which on
+   that surface is Circle's, not ours. That swapped Operetta for a lighter
+   cut and made the welcome title render thin and hard to read. Namespacing
+   makes our faces unreachable by anything the host declares. */
 @font-face {
-  font-family: 'Operetta 52';
+  font-family: 'TMM Operetta 52';
   src: url('/home/fonts/Operetta52-Medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
@@ -10,7 +17,7 @@
 }
 
 @font-face {
-  font-family: 'Parnaso Display';
+  font-family: 'TMM Parnaso Display';
   src: url('/home/fonts/ParnasoDisplay-MediumItalic.woff2') format('woff2');
   font-weight: 500;
   font-style: italic;
@@ -18,7 +25,7 @@
 }
 
 @font-face {
-  font-family: 'Sweet Sans Pro';
+  font-family: 'TMM Sweet Sans Pro';
   src: url('/home/fonts/SweetSansProMedium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
@@ -26,7 +33,7 @@
 }
 
 @font-face {
-  font-family: 'Work Sans';
+  font-family: 'TMM Work Sans';
   src: url('/home/fonts/WorkSans-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
@@ -34,7 +41,7 @@
 }
 
 @font-face {
-  font-family: 'Work Sans';
+  font-family: 'TMM Work Sans';
   src: url('/home/fonts/WorkSans-Medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
@@ -42,7 +49,7 @@
 }
 
 @font-face {
-  font-family: 'Work Sans';
+  font-family: 'TMM Work Sans';
   src: url('/home/fonts/WorkSans-SemiBold.woff2') format('woff2');
   font-weight: 600;
   font-style: normal;
@@ -50,7 +57,7 @@
 }
 
 @font-face {
-  font-family: 'Work Sans';
+  font-family: 'TMM Work Sans';
   src: url('/home/fonts/WorkSans-Bold.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
@@ -58,10 +65,10 @@
 }
 
 :root {
-  --tmm-font-display: 'Operetta 52', Georgia, serif;
-  --tmm-font-accent: 'Parnaso Display', Georgia, serif;
-  --tmm-font-head: 'Sweet Sans Pro', 'Work Sans', Inter, system-ui, sans-serif;
-  --tmm-font-body: 'Work Sans', Inter, system-ui, sans-serif;
+  --tmm-font-display: 'TMM Operetta 52', Georgia, serif;
+  --tmm-font-accent: 'TMM Parnaso Display', Georgia, serif;
+  --tmm-font-head: 'TMM Sweet Sans Pro', 'TMM Work Sans', Inter, system-ui, sans-serif;
+  --tmm-font-body: 'TMM Work Sans', Inter, system-ui, sans-serif;
   /* ----------------------------------------------------------------
      Colour ramps, read from the design system file
      figma.com/design/MD22oguSb9o5kx7xNa8DSL (page "color").
@@ -1764,12 +1771,23 @@
 
 /* --- Slide media --- */
 
+/* Height fills everything between the dots and the bottom edge, rather
+   than a fixed aspect ratio, so `cover` has as little as possible left to
+   crop. The box used to be 440/471.22, which was shorter than the sources
+   and threw away ~29% off the top of presence-purpose.
+
+   overflow: hidden stays. It isn't what crops the image — object-fit does
+   that, inside the box — but without it this flex item's automatic
+   minimum size grows to the image's own height, which pushes the artwork
+   up behind the dots. --tmm-media-top is measured in JS. */
 .tmm-intro__media {
   position: relative;
+  flex: 0 0 auto;
+  min-height: 0;
   width: calc(100% + var(--tmm-splash-pad) * 2);
   max-width: none;
+  height: calc(100% - var(--tmm-media-top, 42%));
   margin-inline: calc(var(--tmm-splash-pad) * -1);
-  aspect-ratio: 440 / 471.22;
   overflow: hidden;
 }
 
