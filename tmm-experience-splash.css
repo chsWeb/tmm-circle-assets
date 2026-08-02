@@ -198,6 +198,11 @@
      Builder and Site Builder. 0 until measured, so a full-height section
      is simply 100dvh if there is no chrome (or the script hasn't run). */
   --tmm-chrome-offset: 0px;
+  /* Depth of the host's bottom chrome. On Site Builder, Circle paints a
+     mobile-web tab bar over the foot of the page once the member scrolls,
+     which otherwise covers the bottom of the collage and the join photo.
+     Also measured by adaptToHost(); 0 in the app, which has no such bar. */
+  --tmm-chrome-bottom: 0px;
   --tmm-scroll-offset: 92px;
 }
 
@@ -296,7 +301,7 @@
 @media (max-width: 1024px) {
   :root {
     --tmm-experience-logo-width: clamp(230px, 64.8vw, 285px);
-    --tmm-experience-section-height: max(520px, calc(100dvh - var(--tmm-chrome-offset, 0px)));
+    --tmm-experience-section-height: max(520px, calc(100dvh - var(--tmm-chrome-offset, 0px) - var(--tmm-chrome-bottom, 0px)));
   }
 }
 
@@ -1568,7 +1573,7 @@
      .wb-p-5 wrapper padding (reset above), not the height, so the 780px cap
      is gone. Override here to tune against Circle's content area, e.g.
        .tmm-intro, .tmm-join { --tmm-splash-section-height: 640px; }        */
-  --tmm-splash-section-height: max(520px, calc(100dvh - var(--tmm-chrome-offset, 0px)));
+  --tmm-splash-section-height: max(520px, calc(100dvh - var(--tmm-chrome-offset, 0px) - var(--tmm-chrome-bottom, 0px)));
   /* Shared by the carousel cross-fade. Eased at both ends rather than
      linear, so slides settle instead of switching. */
   --tmm-fade-duration: 640ms;

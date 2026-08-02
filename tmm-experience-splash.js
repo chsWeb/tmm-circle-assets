@@ -1017,13 +1017,14 @@
     });
   };
 
-  const measureTopChrome = () => {
+  // Probes what the host paints over a given edge of the viewport.
+  const measureChromeAt = (edge) => {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    let bottom = 0;
+    const probeY = edge === "top" ? 2 : viewportHeight - 2;
+    let depth = 0;
 
-    // Whatever is painted at the very top of the page, centred.
-    const stack = document.elementsFromPoint?.(Math.round(viewportWidth / 2), 2) || [];
+    const stack = document.elementsFromPoint?.(Math.round(viewportWidth / 2), probeY) || [];
 
     stack.forEach((element) => {
       if (element.matches?.(HOST_SECTIONS) || element.closest?.(HOST_SECTIONS)) {
@@ -1037,45 +1038,79 @@
       }
 
       const rect = element.getBoundingClientRect();
-      const looksLikeChrome =
-        rect.top <= 2 &&
-        rect.height > 8 &&
-        rect.height < viewportHeight * 0.4 &&
-        rect.width >= viewportWidth * 0.6;
+      const spansWidth = rect.width >= viewportWidth * 0.6;
+      const plausibleHeight = rect.height > 8 && rect.height < viewportHeight * 0.4;
 
-      if (looksLikeChrome) {
-        bottom = Math.max(bottom, rect.bottom);
+      if (!spansWidth || !plausibleHeight) {
+        return;
+      }
+
+      if (edge === "top" && rect.top <= 2) {
+        depth = Math.max(depth, rect.bottom);
+      }
+
+      if (edge === "bottom" && rect.bottom >= viewportHeight - 2) {
+        depth = Math.max(depth, viewportHeight - rect.top);
       }
     });
 
-    return Math.round(bottom);
+    return Math.round(depth);
   };
+
+  // Circle's mobile-web tab bar only appears once the member starts
+  // scrolling, so a single measurement at load finds nothing. We keep the
+  // deepest value seen at this viewport size instead: the space is
+  // reserved from the first time the bar shows, and the layout then stays
+  // put rather than reflowing every time it hides and returns.
+  let bottomChromeSeen = 0;
+  let lastViewportKey = "";
 
   const adaptToHost = () => {
     unpadHostWrappers();
 
-    const chrome = measureTopChrome();
     const root = document.documentElement;
+    const viewportKey = `${window.innerWidth}x${window.innerHeight}`;
 
-    root.style.setProperty("--tmm-chrome-offset", `${chrome}px`);
+    // Orientation or window change: start the bottom memo over.
+    if (viewportKey !== lastViewportKey) {
+      lastViewportKey = viewportKey;
+      bottomChromeSeen = 0;
+    }
+
+    const top = measureChromeAt("top");
+    bottomChromeSeen = Math.max(bottomChromeSeen, measureChromeAt("bottom"));
+
+    root.style.setProperty("--tmm-chrome-offset", `${top}px`);
+    root.style.setProperty("--tmm-chrome-bottom", `${bottomChromeSeen}px`);
 
     // Only override the scroll offset when chrome was actually found,
     // so the stylesheet's default still applies if detection misses.
-    if (chrome > 0) {
-      root.style.setProperty("--tmm-scroll-offset", `${chrome + 8}px`);
+    if (top > 0) {
+      root.style.setProperty("--tmm-scroll-offset", `${top + 8}px`);
     }
   };
 
   let adaptFrame = null;
+  let adaptTrailing = null;
   const scheduleAdapt = () => {
     if (adaptFrame) {
       window.cancelAnimationFrame(adaptFrame);
     }
 
     adaptFrame = window.requestAnimationFrame(adaptToHost);
+
+    // The tab bar slides in over ~200ms, so a measurement taken on the
+    // scroll event itself catches it mid-transition, or not at all.
+    // Measure again once the host's own animation has settled.
+    if (adaptTrailing) {
+      window.clearTimeout(adaptTrailing);
+    }
+
+    adaptTrailing = window.setTimeout(adaptToHost, 320);
   };
 
   window.addEventListener("resize", scheduleAdapt);
+  window.addEventListener("scroll", scheduleAdapt, { passive: true });
 
   if (document.readyState === "loading") {
     document.addEventListener(
