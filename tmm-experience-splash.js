@@ -914,6 +914,61 @@
       });
       track.addEventListener("dragstart", (event) => event.preventDefault());
 
+      // Wheel / trackpad, to match the pricing cards — those are a native
+      // horizontal scroller, so the browser gives them this for free.
+      // Only horizontal intent moves the carousel: a plain vertical wheel
+      // has to keep scrolling the page, or the section becomes a trap.
+      // Shift+wheel counts as horizontal, which is what browsers do for
+      // real scroll containers and is how a plain mouse gets there.
+      const WHEEL_THRESHOLD = 40;
+      let wheelTravel = 0;
+      let wheelSpent = false;
+      let wheelIdle = null;
+
+      section.addEventListener(
+        "wheel",
+        (event) => {
+          const horizontal =
+            Math.abs(event.deltaX) > Math.abs(event.deltaY)
+              ? event.deltaX
+              : event.shiftKey
+                ? event.deltaY
+                : 0;
+
+          if (!horizontal) {
+            return;
+          }
+
+          // Claim the gesture so it doesn't also trigger the browser's
+          // horizontal back/forward swipe.
+          event.preventDefault();
+
+          if (wheelIdle) {
+            window.clearTimeout(wheelIdle);
+          }
+
+          // One slide per gesture: a flick emits a long tail of events,
+          // and without this the carousel would run to the end.
+          wheelIdle = window.setTimeout(() => {
+            wheelTravel = 0;
+            wheelSpent = false;
+          }, 260);
+
+          if (wheelSpent) {
+            return;
+          }
+
+          wheelTravel += horizontal;
+
+          if (Math.abs(wheelTravel) >= WHEEL_THRESHOLD) {
+            goToSlide(index + (wheelTravel > 0 ? 1 : -1));
+            wheelTravel = 0;
+            wheelSpent = true;
+          }
+        },
+        { passive: false }
+      );
+
       // The imagery starts below the longest of the three subheadings and
       // runs to the bottom edge — giving it every pixel that's left means
       // object-fit: cover has the least possible to crop away. Anchored to
