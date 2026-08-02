@@ -1792,17 +1792,20 @@
 
 /* --- Dots --- */
 
-/* Sits in the gap above the photography rather than on top of it.
-   The three slides don't start their imagery at the same height — the
-   media on slides 2 and 3 is 471.22/440 of the section width, the slide-1
-   collage is shorter — so the dots are anchored above the tallest of them
-   (the media) and hold that one position across all slides. Anchoring to
-   each slide's own imagery would make them jump while swiping. */
+/* Sits just under the subtitle. --tmm-dots-top is measured in JS from the
+   tallest of the three subheadings, so the dots clear the longest one and
+   still hold a single position across all slides (anchoring to each
+   slide's own text would make them jump while swiping).
+
+   Previously they were pinned above the imagery by a fixed cqw offset,
+   which collided with the photo once the title wrapped to three lines and
+   pushed everything down. */
 .tmm-intro__dots {
   position: absolute;
   z-index: 2;
   right: 0;
-  bottom: calc(107.096cqw + clamp(14px, 4cqw, 22px));
+  top: calc(var(--tmm-dots-top, 55%) + clamp(14px, 4cqw, 22px));
+  bottom: auto;
   left: 0;
   display: flex;
   gap: 9px;

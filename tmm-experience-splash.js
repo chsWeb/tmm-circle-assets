@@ -887,8 +887,55 @@
       });
       track.addEventListener("dragstart", (event) => event.preventDefault());
 
+      // The dots sit under the subtitle, so their offset depends on how tall
+      // the longest of the three subheadings wraps to at the current width.
+      // Measured with offsetHeight rather than getBoundingClientRect so the
+      // drift transform on inactive slides doesn't skew it.
+      const positionDots = () => {
+        let tallest = 0;
+
+        slides.forEach((slide) => {
+          const header = slide.querySelector(".tmm-intro__header");
+
+          if (header) {
+            tallest = Math.max(tallest, header.offsetHeight);
+          }
+        });
+
+        if (tallest > 0) {
+          section.style.setProperty("--tmm-dots-top", `${track.offsetTop + tallest}px`);
+        }
+      };
+
+      let dotsFrame = null;
+      const schedulePositionDots = () => {
+        if (dotsFrame) {
+          window.cancelAnimationFrame(dotsFrame);
+        }
+
+        dotsFrame = window.requestAnimationFrame(positionDots);
+      };
+
+      window.addEventListener("resize", schedulePositionDots);
+
+      if (typeof ResizeObserver === "function") {
+        const observer = new ResizeObserver(schedulePositionDots);
+
+        slides.forEach((slide) => {
+          const header = slide.querySelector(".tmm-intro__header");
+
+          if (header) {
+            observer.observe(header);
+          }
+        });
+      }
+
+      // Web fonts change the wrap, so re-measure once they've loaded.
+      document.fonts?.ready?.then(schedulePositionDots);
+
       reduceMotion.addEventListener?.("change", render);
       render();
+      positionDots();
     });
   };
 
