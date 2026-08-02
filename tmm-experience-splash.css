@@ -186,6 +186,11 @@
   --tmm-experience-auto-advance-delay: 4200ms;
   --tmm-experience-auto-advance-duration: 1500ms;
   --tmm-experience-mobile-exit-duration: 1200ms;
+  /* Depth of the host's sticky/fixed top chrome. Measured at runtime by
+     adaptToHost() in the JS, which differs between Circle's Custom App
+     Builder and Site Builder. 0 until measured, so a full-height section
+     is simply 100dvh if there is no chrome (or the script hasn't run). */
+  --tmm-chrome-offset: 0px;
   --tmm-scroll-offset: 92px;
 }
 
@@ -284,7 +289,7 @@
 @media (max-width: 1024px) {
   :root {
     --tmm-experience-logo-width: clamp(230px, 64.8vw, 285px);
-    --tmm-experience-section-height: max(520px, 100dvh);
+    --tmm-experience-section-height: max(520px, calc(100dvh - var(--tmm-chrome-offset, 0px)));
   }
 }
 
@@ -1556,7 +1561,7 @@
      .wb-p-5 wrapper padding (reset above), not the height, so the 780px cap
      is gone. Override here to tune against Circle's content area, e.g.
        .tmm-intro, .tmm-join { --tmm-splash-section-height: 640px; }        */
-  --tmm-splash-section-height: max(520px, 100dvh);
+  --tmm-splash-section-height: max(520px, calc(100dvh - var(--tmm-chrome-offset, 0px)));
   /* Shared by the carousel cross-fade. Eased at both ends rather than
      linear, so slides settle instead of switching. */
   --tmm-fade-duration: 640ms;

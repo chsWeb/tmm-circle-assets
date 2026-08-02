@@ -939,10 +939,137 @@
     });
   };
 
+  /* ------------------------------------------------------------------
+     Host adaptation.
+
+     The same bundle runs in Circle's Custom App Builder and in Site
+     Builder, and the two wrap and chrome the page differently. Rather
+     than hard-coding either, measure the host at runtime:
+
+       1. Wrapper padding. The stylesheet resets .wb-p-5 by name, which
+          only helps if that is the class the surface happens to use.
+          Here we walk up from each of our sections and zero the padding
+          on any wrapper that contains nothing but our own content — so
+          it works whatever the utility class is called.
+       2. Sticky/fixed top chrome. A full-viewport-height section sits
+          partly underneath it. Measuring its depth lets the sections and
+          the anchor scroll account for it.
+     ------------------------------------------------------------------ */
+  const HOST_SECTIONS = ".tmm-experience-splash, .tmm-intro, .tmm-join, .tmm-pricing";
+
+  const wrapsOnlyOurContent = (element) => {
+    const children = [...element.children];
+
+    if (children.length === 0) {
+      return false;
+    }
+
+    const everyChildIsOurs = children.every(
+      (child) => child.matches(HOST_SECTIONS) || child.querySelector(HOST_SECTIONS)
+    );
+
+    const hasStrayText = [...element.childNodes].some(
+      (node) => node.nodeType === 3 && node.textContent.trim().length > 0
+    );
+
+    return everyChildIsOurs && !hasStrayText;
+  };
+
+  const unpadHostWrappers = () => {
+    const seen = new Set();
+
+    document.querySelectorAll(HOST_SECTIONS).forEach((section) => {
+      let element = section.parentElement;
+      let depth = 0;
+
+      while (element && element !== document.body && depth < 4) {
+        if (!seen.has(element)) {
+          seen.add(element);
+
+          const styles = getComputedStyle(element);
+          const padded =
+            parseFloat(styles.paddingTop) ||
+            parseFloat(styles.paddingRight) ||
+            parseFloat(styles.paddingBottom) ||
+            parseFloat(styles.paddingLeft);
+
+          if (padded && wrapsOnlyOurContent(element)) {
+            element.style.padding = "0px";
+            element.dataset.tmmUnpadded = "true";
+          }
+        }
+
+        element = element.parentElement;
+        depth += 1;
+      }
+    });
+  };
+
+  const measureTopChrome = () => {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    let bottom = 0;
+
+    // Whatever is painted at the very top of the page, centred.
+    const stack = document.elementsFromPoint?.(Math.round(viewportWidth / 2), 2) || [];
+
+    stack.forEach((element) => {
+      if (element.matches?.(HOST_SECTIONS) || element.closest?.(HOST_SECTIONS)) {
+        return;
+      }
+
+      const styles = getComputedStyle(element);
+
+      if (styles.position !== "fixed" && styles.position !== "sticky") {
+        return;
+      }
+
+      const rect = element.getBoundingClientRect();
+      const looksLikeChrome =
+        rect.top <= 2 &&
+        rect.height > 8 &&
+        rect.height < viewportHeight * 0.4 &&
+        rect.width >= viewportWidth * 0.6;
+
+      if (looksLikeChrome) {
+        bottom = Math.max(bottom, rect.bottom);
+      }
+    });
+
+    return Math.round(bottom);
+  };
+
+  const adaptToHost = () => {
+    unpadHostWrappers();
+
+    const chrome = measureTopChrome();
+    const root = document.documentElement;
+
+    root.style.setProperty("--tmm-chrome-offset", `${chrome}px`);
+
+    // Only override the scroll offset when chrome was actually found,
+    // so the stylesheet's default still applies if detection misses.
+    if (chrome > 0) {
+      root.style.setProperty("--tmm-scroll-offset", `${chrome + 8}px`);
+    }
+  };
+
+  let adaptFrame = null;
+  const scheduleAdapt = () => {
+    if (adaptFrame) {
+      window.cancelAnimationFrame(adaptFrame);
+    }
+
+    adaptFrame = window.requestAnimationFrame(adaptToHost);
+  };
+
+  window.addEventListener("resize", scheduleAdapt);
+
   if (document.readyState === "loading") {
     document.addEventListener(
       "DOMContentLoaded",
       () => {
+        adaptToHost();
         completeExperienceSplash();
         setupIntroCarousels();
         setupWelcomeSections();
@@ -952,6 +1079,7 @@
       { once: true }
     );
   } else {
+    adaptToHost();
     completeExperienceSplash();
     setupIntroCarousels();
     setupWelcomeSections();
@@ -963,6 +1091,7 @@
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1) {
+          scheduleAdapt();
           completeExperienceSplash(node);
           setupIntroCarousels(node);
           setupWelcomeSections(node);
