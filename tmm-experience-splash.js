@@ -676,7 +676,10 @@
       const prevButton = section.querySelector(".tmm-intro__nav--prev");
       const nextButton = section.querySelector(".tmm-intro__nav--next");
 
-      if (!track || slides.length === 0 || segments.length === 0) {
+      // Only the track and slides are essential. The progress bar and
+      // chevrons are optional, so stale pasted markup degrades to a
+      // carousel that still fades and swipes rather than dying outright.
+      if (!track || slides.length === 0) {
         return;
       }
 
