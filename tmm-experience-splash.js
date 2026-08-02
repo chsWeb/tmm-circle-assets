@@ -672,9 +672,9 @@
 
       const track = section.querySelector(".tmm-intro__track");
       const slides = [...section.querySelectorAll(".tmm-intro__slide")];
-      const dots = [...section.querySelectorAll(".tmm-intro__dot")];
+      const segments = [...section.querySelectorAll(".tmm-intro__segment")];
 
-      if (!track || slides.length === 0 || dots.length === 0) {
+      if (!track || slides.length === 0 || segments.length === 0) {
         return;
       }
 
@@ -693,8 +693,11 @@
           slide.setAttribute("aria-hidden", String(!isActive));
         });
 
-        dots.forEach((dot, i) => {
-          dot.setAttribute("aria-current", String(i === index));
+        segments.forEach((segment, i) => {
+          const isCurrent = i === index;
+
+          segment.setAttribute("aria-current", String(isCurrent));
+          segment.style.setProperty("--tmm-segment-fill", isCurrent ? "1" : "0");
         });
       };
 
@@ -709,9 +712,9 @@
         render();
       };
 
-      dots.forEach((dot) => {
-        dot.addEventListener("click", () => {
-          goToSlide(Number.parseInt(dot.dataset.introSlide || "0", 10));
+      segments.forEach((segment) => {
+        segment.addEventListener("click", () => {
+          goToSlide(Number.parseInt(segment.dataset.introSlide || "0", 10));
         });
       });
 
@@ -764,6 +767,14 @@
       const paint = (from, to, progress) => {
         const eased = ease(progress);
 
+        segments.forEach((segment, i) => {
+          if (i === from) {
+            segment.style.setProperty("--tmm-segment-fill", String(1 - eased));
+          } else if (i === to) {
+            segment.style.setProperty("--tmm-segment-fill", String(eased));
+          }
+        });
+
         slides.forEach((slide, i) => {
           if (i === from) {
             // Outgoing lifts away; incoming rises into place.
@@ -815,7 +826,7 @@
             gesture.axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
 
             if (gesture.axis === "x") {
-              track.classList.add("is-dragging");
+              section.classList.add("is-dragging");
             }
           }
 
@@ -855,7 +866,7 @@
         const dx = event.clientX - gesture.x;
 
         gesture = null;
-        track.classList.remove("is-dragging");
+        section.classList.remove("is-dragging");
         clearPaint();
 
         if (axis !== "x") {
@@ -881,17 +892,23 @@
       track.addEventListener("pointerup", endGesture);
       track.addEventListener("pointercancel", () => {
         gesture = null;
-        track.classList.remove("is-dragging");
+        section.classList.remove("is-dragging");
         clearPaint();
         render();
       });
       track.addEventListener("dragstart", (event) => event.preventDefault());
 
-      // The dots sit under the subtitle, so their offset depends on how tall
-      // the longest of the three subheadings wraps to at the current width.
-      // Measured with offsetHeight rather than getBoundingClientRect so the
-      // drift transform on inactive slides doesn't skew it.
-      const positionDots = () => {
+      // The imagery starts below the longest of the three subheadings and
+      // runs to the bottom edge — giving it every pixel that's left means
+      // object-fit: cover has the least possible to crop away. Anchored to
+      // the tallest rather than each slide's own so the artwork doesn't
+      // shift height while swiping. Measured with offsetHeight rather than
+      // getBoundingClientRect so the drift transform on inactive slides
+      // doesn't skew it.
+      //
+      // (This used to key off the dot row; the progress bar now sits at the
+      // top of the section, so the subheading is the reference.)
+      const positionMedia = () => {
         let tallest = 0;
 
         slides.forEach((slide) => {
@@ -903,35 +920,25 @@
         });
 
         if (tallest > 0) {
-          section.style.setProperty("--tmm-dots-top", `${track.offsetTop + tallest}px`);
-        }
+          const gap = 28;
 
-        // The imagery starts just below the dots and runs to the bottom
-        // edge. Giving it every pixel that's left means object-fit: cover
-        // has the least possible to crop away.
-        const dotsRow = section.querySelector(".tmm-intro__dots");
-
-        if (dotsRow) {
-          const gap = 16;
-          const mediaTop = dotsRow.offsetTop + dotsRow.offsetHeight - track.offsetTop + gap;
-
-          section.style.setProperty("--tmm-media-top", `${Math.max(0, Math.round(mediaTop))}px`);
+          section.style.setProperty("--tmm-media-top", `${Math.round(tallest + gap)}px`);
         }
       };
 
-      let dotsFrame = null;
-      const schedulePositionDots = () => {
-        if (dotsFrame) {
-          window.cancelAnimationFrame(dotsFrame);
+      let mediaFrame = null;
+      const schedulePositionMedia = () => {
+        if (mediaFrame) {
+          window.cancelAnimationFrame(mediaFrame);
         }
 
-        dotsFrame = window.requestAnimationFrame(positionDots);
+        mediaFrame = window.requestAnimationFrame(positionMedia);
       };
 
-      window.addEventListener("resize", schedulePositionDots);
+      window.addEventListener("resize", schedulePositionMedia);
 
       if (typeof ResizeObserver === "function") {
-        const observer = new ResizeObserver(schedulePositionDots);
+        const observer = new ResizeObserver(schedulePositionMedia);
 
         slides.forEach((slide) => {
           const header = slide.querySelector(".tmm-intro__header");
@@ -943,11 +950,11 @@
       }
 
       // Web fonts change the wrap, so re-measure once they've loaded.
-      document.fonts?.ready?.then(schedulePositionDots);
+      document.fonts?.ready?.then(schedulePositionMedia);
 
       reduceMotion.addEventListener?.("change", render);
       render();
-      positionDots();
+      positionMedia();
     });
   };
 
