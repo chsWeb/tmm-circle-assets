@@ -673,6 +673,8 @@
       const track = section.querySelector(".tmm-intro__track");
       const slides = [...section.querySelectorAll(".tmm-intro__slide")];
       const segments = [...section.querySelectorAll(".tmm-intro__segment")];
+      const prevButton = section.querySelector(".tmm-intro__nav--prev");
+      const nextButton = section.querySelector(".tmm-intro__nav--next");
 
       if (!track || slides.length === 0 || segments.length === 0) {
         return;
@@ -699,6 +701,14 @@
           segment.setAttribute("aria-current", String(isCurrent));
           segment.style.setProperty("--tmm-segment-fill", isCurrent ? "1" : "0");
         });
+
+        if (prevButton) {
+          prevButton.disabled = index === 0;
+        }
+
+        if (nextButton) {
+          nextButton.disabled = index === slides.length - 1;
+        }
       };
 
       const goToSlide = (next) => {
@@ -717,6 +727,9 @@
           goToSlide(Number.parseInt(segment.dataset.introSlide || "0", 10));
         });
       });
+
+      prevButton?.addEventListener("click", () => goToSlide(index - 1));
+      nextButton?.addEventListener("click", () => goToSlide(index + 1));
 
       track.tabIndex = 0;
       track.setAttribute("role", "group");
