@@ -1756,19 +1756,29 @@
   object-fit: cover;
 }
 
+/* Stacking is explicit rather than DOM order: living-room on top, then
+   group-outdoors, with hug behind both. */
 .tmm-intro__frame--a {
+  z-index: 2;
   left: 8.42%;
   top: 0;
   transform: rotate(8deg);
 }
 
+/* 46% rather than the comp's 40%: at 40% the frame's lowest corner sat
+   only 11px past the clip, and because it's rotated 6deg the far end of
+   its bottom edge is ~27px higher again — so a wedge of white border
+   showed. Dropping it 6% carries the whole bottom edge below the crop so
+   it reads as bleeding off. Percentage, so it holds at any width. */
 .tmm-intro__frame--b {
+  z-index: 3;
   left: 40.53%;
-  top: 40%;
+  top: 46%;
   transform: rotate(6deg);
 }
 
 .tmm-intro__frame--c {
+  z-index: 1;
   left: -18.99%;
   top: 51.2%;
   transform: rotate(-7.83deg);
