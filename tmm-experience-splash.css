@@ -2126,11 +2126,14 @@
 .tmm-intro__nav {
   position: absolute;
   z-index: 3;
-  /* On the imagery's top edge. Centring them on the section put them at
-     50%, and centring them on the imagery band was worse — that band sits
-     low, so it pushed them further down again. The top edge keeps them
-     just under the subheading and consistent across all three slides. */
-  top: calc(var(--tmm-track-top, 0px) + var(--tmm-media-top, 45%));
+  /* Centred vertically. Not a flat 50%, because that resolves against the
+     padding box and would sit low once chrome is declared — this is the
+     midpoint of the band actually visible between the host's header and
+     tab bar, which is plain 50% when both offsets are 0. */
+  top: calc(
+    var(--tmm-chrome-offset, 0px) +
+    (100% - var(--tmm-chrome-offset, 0px) - var(--tmm-chrome-bottom, 0px)) / 2
+  );
   display: flex;
   width: 44px;
   height: 44px;
