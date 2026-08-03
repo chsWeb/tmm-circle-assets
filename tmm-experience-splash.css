@@ -204,7 +204,11 @@
      in the parent document, so from in here it is invisible. Set these on
      the page instead; the head snippet carries a commented example. */
   --tmm-chrome-bottom: 0px;
-  --tmm-scroll-offset: 92px;
+  /* How far above a scroll target to stop. This was a fixed 92px, meant to
+     clear a sticky header — but with no header it just lands 92px short and
+     leaves the previous section on screen. Tied to the declared chrome so
+     it's 0 when nothing overlaps. */
+  --tmm-scroll-offset: var(--tmm-chrome-offset, 0px);
 }
 
 /* Circle wraps custom HTML in a .wb-p-5 padding utility. Site Builder can
@@ -2211,7 +2215,9 @@
      with the first card and sit slightly left of centre. */
   --tmm-card-width: min(336px, calc(100% - 40px));
   --tmm-pricing-pad: clamp(20px, 7.27vw, 32px);
-  padding: clamp(56px, 20vw, 88px) var(--tmm-pricing-pad);
+  /* Trimmed from the comp's 88/88: at 375 that made the section 830 tall
+     against an 812 viewport, so the dots sat just under the fold. */
+  padding: clamp(40px, 13vw, 88px) var(--tmm-pricing-pad) clamp(28px, 9vw, 88px);
   background: var(--tmm-color-fresh-white);
 }
 
