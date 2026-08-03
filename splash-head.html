@@ -5,5 +5,29 @@
      Bump ?v=N on EVERY deploy to bust Circle's + browser cache.
      ============================================================ -->
 <link rel="preconnect" href="https://tmm-circle-assets.pages.dev" crossorigin>
-<link rel="stylesheet" href="https://tmm-circle-assets.pages.dev/tmm-experience-splash.css?v=25">
-<script defer src="https://tmm-circle-assets.pages.dev/tmm-experience-splash.js?v=25"></script>
+<link rel="stylesheet" href="https://tmm-circle-assets.pages.dev/tmm-experience-splash.css?v=26">
+<script defer src="https://tmm-circle-assets.pages.dev/tmm-experience-splash.js?v=26"></script>
+
+<!-- ------------------------------------------------------------
+     HOST CHROME — set these per surface.
+
+     Circle renders our markup inside an iframe, and its header and
+     tab bar live in the parent document. Nothing inside the frame
+     can measure them, so they have to be declared here.
+
+     To measure: full frame height minus the height of the band that
+     is actually visible between Circle's header and tab bar.
+
+       Site Builder — has a top header and a bottom tab bar
+       App Builder  — native chrome sits outside the webview, so
+                      these usually stay at 0
+
+     Sections still fill the frame, so backgrounds run edge to edge;
+     only the content is inset.
+     ------------------------------------------------------------ -->
+<style>
+  :root {
+    --tmm-chrome-offset: 0px;   /* header overlapping the top */
+    --tmm-chrome-bottom: 0px;   /* tab bar overlapping the foot */
+  }
+</style>

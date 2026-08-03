@@ -1212,8 +1212,18 @@
       sweepForBottomChrome()
     );
 
-    root.style.setProperty("--tmm-chrome-offset", `${top}px`);
-    root.style.setProperty("--tmm-chrome-bottom", `${bottomChromeSeen}px`);
+    // Only write these when we actually found chrome. These land as inline
+    // styles, which outrank any stylesheet — so writing a measured 0 would
+    // silently overwrite the value the page sets in its head snippet. In an
+    // iframe (which is how Circle embeds us) detection always finds nothing,
+    // and the author's value is the only one that's right.
+    if (top > 0) {
+      root.style.setProperty("--tmm-chrome-offset", `${top}px`);
+    }
+
+    if (bottomChromeSeen > 0) {
+      root.style.setProperty("--tmm-chrome-bottom", `${bottomChromeSeen}px`);
+    }
 
     // Only override the scroll offset when chrome was actually found,
     // so the stylesheet's default still applies if detection misses.

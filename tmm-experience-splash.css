@@ -198,10 +198,11 @@
      Builder and Site Builder. 0 until measured, so a full-height section
      is simply 100dvh if there is no chrome (or the script hasn't run). */
   --tmm-chrome-offset: 0px;
-  /* Depth of the host's bottom chrome. On Site Builder, Circle paints a
-     mobile-web tab bar over the foot of the page once the member scrolls,
-     which otherwise covers the bottom of the collage and the join photo.
-     Also measured by adaptToHost(); 0 in the app, which has no such bar. */
+  /* Depth of the host's bottom chrome. Circle paints a tab bar over the
+     foot of the page on Site Builder. adaptToHost() measures this when it
+     can — but our markup runs inside an iframe and Circle's furniture is
+     in the parent document, so from in here it is invisible. Set these on
+     the page instead; the head snippet carries a commented example. */
   --tmm-chrome-bottom: 0px;
   --tmm-scroll-offset: 92px;
 }
@@ -233,7 +234,10 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: 24px;
+  padding:
+    calc(24px + var(--tmm-chrome-offset, 0px))
+    24px
+    calc(24px + var(--tmm-chrome-bottom, 0px));
   background: var(--tmm-experience-bg);
   color: var(--tmm-experience-text);
   text-align: center;
@@ -301,7 +305,7 @@
 @media (max-width: 1024px) {
   :root {
     --tmm-experience-logo-width: clamp(230px, 64.8vw, 285px);
-    --tmm-experience-section-height: max(520px, calc(100dvh - var(--tmm-chrome-offset, 0px) - var(--tmm-chrome-bottom, 0px)));
+    --tmm-experience-section-height: max(520px, 100dvh);
   }
 }
 
@@ -1573,7 +1577,7 @@
      .wb-p-5 wrapper padding (reset above), not the height, so the 780px cap
      is gone. Override here to tune against Circle's content area, e.g.
        .tmm-intro, .tmm-join { --tmm-splash-section-height: 640px; }        */
-  --tmm-splash-section-height: max(520px, calc(100dvh - var(--tmm-chrome-offset, 0px) - var(--tmm-chrome-bottom, 0px)));
+  --tmm-splash-section-height: max(520px, 100dvh);
   /* Shared by the carousel cross-fade. Eased at both ends rather than
      linear, so slides settle instead of switching. */
   --tmm-fade-duration: 640ms;
@@ -1605,6 +1609,8 @@
   min-height: var(--tmm-splash-section-height);
   flex-direction: column;
   overflow: hidden;
+  padding-top: var(--tmm-chrome-offset, 0px);
+  padding-bottom: var(--tmm-chrome-bottom, 0px);
   /* Lets the dots below be positioned from the section's own width. */
   container-type: inline-size;
 }
@@ -1840,7 +1846,10 @@
 .tmm-intro__progress {
   position: absolute;
   z-index: 4;
-  top: 0;
+  /* Absolute children resolve against the padding box, so the section's
+     padding doesn't shift them — the offset has to be applied here or the
+     bar hides behind Circle's header. */
+  top: var(--tmm-chrome-offset, 0px);
   right: 0;
   left: 0;
   display: flex;
@@ -1913,7 +1922,10 @@
      would be the section width minus both gutters. */
   container-type: inline-size;
   overflow: hidden;
-  padding: clamp(40px, 9vh, 73px) 0 0;
+  padding:
+    calc(clamp(40px, 9vh, 73px) + var(--tmm-chrome-offset, 0px))
+    0
+    var(--tmm-chrome-bottom, 0px);
   text-align: center;
 }
 
@@ -2055,7 +2067,7 @@
 .tmm-join__media {
   position: absolute;
   z-index: 1;
-  bottom: 0;
+  bottom: var(--tmm-chrome-bottom, 0px);
   left: 50%;
   /* 62.3% is the comp's 485.75/780 of the section height. But a section
      shorter than the viewport — which is what Circle gives us — scales
@@ -2063,7 +2075,10 @@
      photo expressed against the section's *width* (68.4% wide at the
      comp's aspect), so max() holds the comp's proportions no matter how
      short the section gets, and still grows on a tall screen. */
-  height: max(62.3%, 110.4cqw);
+  height: max(
+    calc((100% - var(--tmm-chrome-offset, 0px) - var(--tmm-chrome-bottom, 0px)) * 0.623),
+    110.4cqw
+  );
   width: auto;
   max-width: min(94%, 420px);
   aspect-ratio: 300.96 / 485.75;
@@ -2098,12 +2113,11 @@
 .tmm-intro__nav {
   position: absolute;
   z-index: 3;
-  /* Centred on the imagery, not the section. At a flat 50% they tracked
-     the section's midpoint, which slides away from the photography as the
-     section gets taller — so they read as too low on a real phone.
-     Imagery runs from (track top + media top) to the section's bottom;
-     this is the midpoint of that band. */
-  top: calc((var(--tmm-track-top, 0px) + var(--tmm-media-top, 45%) + 100%) / 2);
+  /* On the imagery's top edge. Centring them on the section put them at
+     50%, and centring them on the imagery band was worse — that band sits
+     low, so it pushed them further down again. The top edge keeps them
+     just under the subheading and consistent across all three slides. */
+  top: calc(var(--tmm-track-top, 0px) + var(--tmm-media-top, 45%));
   display: flex;
   width: 44px;
   height: 44px;
@@ -2162,7 +2176,7 @@
   position: absolute;
   z-index: 1;
   right: 0;
-  bottom: 0;
+  bottom: var(--tmm-chrome-bottom, 0px);
   left: 0;
   display: flex;
   flex-direction: column;
