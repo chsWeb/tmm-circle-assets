@@ -2198,3 +2198,247 @@
   z-index: 3;
   pointer-events: none;
 }
+
+/* ============================================================
+   PRICING — Figma node 9818:927
+   Rewrites the older treatment: serif red heading, a toggle sized to
+   the first card, and cards that differentiate free (white + linen
+   border) from the paid tiers (linen, no border).
+   ============================================================ */
+
+.tmm-pricing {
+  /* Toggle and cards share this, which is what makes the toggle line up
+     with the first card and sit slightly left of centre. */
+  --tmm-card-width: min(336px, calc(100% - 40px));
+  padding: clamp(56px, 20vw, 88px) clamp(20px, 7.27vw, 32px);
+  background: var(--tmm-color-fresh-white);
+}
+
+.tmm-pricing__inner {
+  display: flex;
+  max-width: 1048px;
+  flex-direction: column;
+  gap: clamp(24px, 7.27vw, 32px);
+  padding: 0;
+}
+
+.tmm-pricing__header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  text-align: left;
+}
+
+.tmm-pricing__title {
+  max-width: none;
+  margin: 0;
+  color: var(--tmm-color-brand-primary);
+  font-family: var(--tmm-font-display);
+  font-size: clamp(28px, 8.18vw, 36px);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  text-align: left;
+  text-transform: none;
+}
+
+.tmm-pricing__lede {
+  max-width: none;
+  margin: 16px 0 20px;
+  color: var(--tmm-color-charcoal);
+  font-family: var(--tmm-font-body);
+  font-size: clamp(16px, 4.09vw, 18px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  text-align: left;
+}
+
+/* --- Billing toggle --- */
+
+.tmm-pricing__toggle {
+  display: flex;
+  width: 100%;
+  max-width: var(--tmm-card-width);
+  margin: 0;
+  padding: 2px;
+  border: 1px solid var(--tmm-color-linen);
+  border-radius: 99999px;
+  background: #fff;
+  gap: 0;
+}
+
+/* The old sliding pill is replaced by filling the selected half. */
+.tmm-pricing__toggle::before {
+  display: none;
+}
+
+.tmm-pricing__toggle-button {
+  flex: 1 1 0;
+  min-height: 39px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--tmm-color-light-sage);
+  font-family: var(--tmm-font-head);
+  font-size: clamp(15px, 3.86vw, 17px);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.32;
+  cursor: pointer;
+  transition:
+    background 220ms var(--tmm-fade-ease),
+    color 220ms var(--tmm-fade-ease);
+}
+
+/* Same fill as the Join Us button. */
+.tmm-pricing__toggle-button[aria-pressed="true"] {
+  background: var(--tmm-color-brand-primary);
+  color: var(--tmm-color-fresh-white);
+}
+
+/* --- Cards --- */
+
+.tmm-pricing__plans {
+  gap: 16px;
+  margin-inline: 0;
+  padding: 2px 0 10px;
+}
+
+.tmm-pricing-card {
+  display: flex;
+  flex: 0 0 var(--tmm-card-width);
+  max-width: 336px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  padding: 32px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--tmm-color-linen);
+}
+
+/* Free reads lighter than the paid tiers. Scoped to .tmm-pricing so it
+   outranks .tmm-pricing--fresh-body .tmm-pricing-card, which sets linen
+   on every card. */
+.tmm-pricing .tmm-pricing-card--free {
+  border-color: var(--tmm-color-linen);
+  background: #fff;
+}
+
+.tmm-pricing-card__name {
+  margin: 0;
+  color: #000;
+  font-family: var(--tmm-font-head);
+  font-size: clamp(19px, 4.77vw, 21px);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 0.85;
+  text-transform: none;
+}
+
+.tmm-pricing-card__description {
+  margin: 0;
+  color: var(--tmm-color-charcoal);
+  font-family: var(--tmm-font-body);
+  font-size: clamp(15px, 3.64vw, 16px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.375;
+}
+
+/* Takes the slack so the button and login line sit at the card foot
+   however long the copy runs. */
+.tmm-pricing-card__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 8px;
+}
+
+.tmm-pricing-card__price-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.tmm-pricing-card__price {
+  color: #000;
+  font-family: var(--tmm-font-head);
+  font-size: clamp(36px, 10vw, 44px);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 0.85;
+}
+
+.tmm-pricing-card__period {
+  color: var(--tmm-color-charcoal);
+  font-family: var(--tmm-font-head);
+  font-size: clamp(16px, 4.09vw, 18px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+}
+
+.tmm-pricing-card__features {
+  margin: 0;
+  padding: 0 0 0 24px;
+  list-style: disc;
+  color: var(--tmm-color-charcoal);
+  font-family: var(--tmm-font-body);
+  font-size: clamp(15px, 3.64vw, 16px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.375;
+}
+
+.tmm-pricing-card__features li {
+  margin: 0;
+  padding: 0;
+}
+
+/* The older treatment drew its own bullets. */
+.tmm-pricing-card__features li::before {
+  content: none;
+}
+
+.tmm-pricing-card__button {
+  display: flex;
+  width: 100%;
+  min-height: 39px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 20px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--tmm-color-brand-primary);
+  color: var(--tmm-color-fresh-white);
+  font-family: var(--tmm-font-head);
+  font-size: clamp(15px, 3.86vw, 17px);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.32;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.tmm-pricing-card__login {
+  margin: 0;
+  color: var(--tmm-color-charcoal);
+  font-family: var(--tmm-font-body);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.tmm-pricing-card__login a {
+  color: var(--tmm-color-electric-red);
+  font-weight: 600;
+  text-decoration: underline;
+}
