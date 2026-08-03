@@ -197,6 +197,12 @@
      adaptToHost() in the JS, which differs between Circle's Custom App
      Builder and Site Builder. 0 until measured, so a full-height section
      is simply 100dvh if there is no chrome (or the script hasn't run). */
+  /* Shared easing. These were scoped to .tmm-intro/.tmm-join, so any rule
+     outside those two — the pricing toggle among them — resolved
+     var(--tmm-fade-ease) to nothing, which invalidates the whole
+     transition declaration and silently leaves it at 0s. */
+  --tmm-fade-duration: 640ms;
+  --tmm-fade-ease: cubic-bezier(0.65, 0, 0.35, 1);
   --tmm-chrome-offset: 0px;
   /* Depth of the host's bottom chrome. Circle paints a tab bar over the
      foot of the page on Site Builder. adaptToHost() measures this when it
@@ -1582,10 +1588,6 @@
      is gone. Override here to tune against Circle's content area, e.g.
        .tmm-intro, .tmm-join { --tmm-splash-section-height: 640px; }        */
   --tmm-splash-section-height: max(520px, 100dvh);
-  /* Shared by the carousel cross-fade. Eased at both ends rather than
-     linear, so slides settle instead of switching. */
-  --tmm-fade-duration: 640ms;
-  --tmm-fade-ease: cubic-bezier(0.65, 0, 0.35, 1);
   position: relative;
   isolation: isolate;
   box-sizing: border-box;
@@ -2276,9 +2278,32 @@
   gap: 0;
 }
 
-/* The old sliding pill is replaced by filling the selected half. */
+/* Sliding fill. The older rule sized this for a 4px-padded grid with a
+   gap; this container is a 2px-padded flex pair with no gap, so the pill
+   is exactly half the inner width and travels by its own width. */
 .tmm-pricing__toggle::before {
-  display: none;
+  content: "";
+  display: block;
+  position: absolute;
+  z-index: 0;
+  top: 2px;
+  left: 2px;
+  width: calc(50% - 2px);
+  height: calc(100% - 4px);
+  border-radius: 9999px;
+  background: var(--tmm-color-brand-primary);
+  transform: translateX(0);
+  transition: transform 320ms var(--tmm-fade-ease);
+}
+
+.tmm-pricing[data-billing="quarterly"] .tmm-pricing__toggle::before {
+  transform: translateX(100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tmm-pricing__toggle::before {
+    transition: none;
+  }
 }
 
 .tmm-pricing__toggle-button {
@@ -2295,14 +2320,12 @@
   letter-spacing: 0;
   line-height: 1.32;
   cursor: pointer;
-  transition:
-    background 220ms var(--tmm-fade-ease),
-    color 220ms var(--tmm-fade-ease);
+  transition: color 320ms var(--tmm-fade-ease);
 }
 
-/* Same fill as the Join Us button. */
+/* Only the label changes; the fill behind it is the sliding pill. */
 .tmm-pricing__toggle-button[aria-pressed="true"] {
-  background: var(--tmm-color-brand-primary);
+  background: transparent;
   color: var(--tmm-color-fresh-white);
 }
 
