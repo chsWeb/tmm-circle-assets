@@ -2036,11 +2036,6 @@
   text-decoration: none;
   text-indent: 0.2em;
   text-transform: uppercase;
-  transition: transform 200ms var(--tmm-experience-ease);
-}
-
-.tmm-join__button:hover {
-  transform: translateY(-1px);
 }
 
 .tmm-join__login {
@@ -2095,12 +2090,6 @@
   max-width: none;
   object-fit: cover;
   object-position: center bottom;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tmm-join__button {
-    transition: none;
-  }
 }
 
 /* ============================================================
