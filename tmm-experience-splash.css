@@ -2210,7 +2210,8 @@
   /* Toggle and cards share this, which is what makes the toggle line up
      with the first card and sit slightly left of centre. */
   --tmm-card-width: min(336px, calc(100% - 40px));
-  padding: clamp(56px, 20vw, 88px) clamp(20px, 7.27vw, 32px);
+  --tmm-pricing-pad: clamp(20px, 7.27vw, 32px);
+  padding: clamp(56px, 20vw, 88px) var(--tmm-pricing-pad);
   background: var(--tmm-color-fresh-white);
 }
 
@@ -2301,10 +2302,15 @@
 
 /* --- Cards --- */
 
+/* Full-bleed scroller: pulled out to the section edges and padded back
+   in, so the first card still lines up with the heading while the next
+   one runs off the screen rather than being cut at the gutter.
+   scroll-padding keeps snapping aligned to the same edge. */
 .tmm-pricing__plans {
   gap: 16px;
-  margin-inline: 0;
-  padding: 2px 0 10px;
+  margin-inline: calc(var(--tmm-pricing-pad) * -1);
+  padding: 2px var(--tmm-pricing-pad) 10px;
+  scroll-padding-inline: var(--tmm-pricing-pad);
 }
 
 .tmm-pricing-card {
