@@ -1893,6 +1893,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
+  /* Figma 9810:84 carries the top bar as a 48px border rather than an
+     element. box-sizing: border-box above means it eats into the section
+     rather than adding to it, matching the comp's 780 total. */
+  border-top: clamp(34px, 10.909cqw, 48px) solid var(--tmm-color-deep-brown);
   /* So the photo below can be floored against the section's own width.
      The inline padding lives on the header rather than here, because
      container-type measures the content box — with padding here, 100cqw
@@ -1943,8 +1947,14 @@
   color: var(--tmm-color-black);
 }
 
+/* The three lines are aligned independently — left, right, then centred
+   — which is why they're separate spans rather than one wrapped block. */
 .tmm-join__subtitle {
+  display: flex;
+  width: min(100%, 348px);
   margin: 0;
+  flex-direction: column;
+  gap: 4px;
   color: var(--tmm-color-black);
   font-family: var(--tmm-font-display);
   font-size: clamp(16px, 4.545vw, 20px);
@@ -1954,9 +1964,22 @@
   text-transform: uppercase;
 }
 
+.tmm-join__line {
+  display: block;
+}
+
+.tmm-join__line--start {
+  text-align: left;
+}
+
+.tmm-join__line--end {
+  text-align: right;
+}
+
 .tmm-join__dreams {
   display: block;
-  margin: 0;
+  margin: 1px 0 0;
+  text-align: center;
   color: var(--tmm-splash-accent);
   font-family: var(--tmm-font-accent);
   font-size: clamp(18px, 5vw, 22px);
@@ -2112,4 +2135,48 @@
   .tmm-intro__nav {
     transition: none;
   }
+}
+
+/* ============================================================
+   JOIN SCREEN BOTTOM BARS — Figma 9820:1042
+   30px deep-brown sitting on 16px brand-primary, full width, flush to
+   the bottom edge. Scaled from the comp's 440 like the top border.
+   ============================================================ */
+
+.tmm-join__bars {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tmm-join__bar {
+  display: block;
+  width: 100%;
+}
+
+.tmm-join__bar--upper {
+  height: clamp(21px, 6.818cqw, 30px);
+  background: var(--tmm-color-deep-brown);
+}
+
+.tmm-join__bar--lower {
+  height: clamp(11px, 3.636cqw, 16px);
+  background: var(--tmm-color-brand-primary);
+}
+
+/* Figma stacks these bars (z2) under the text (z3) under the photo (z4),
+   so her dress carries over the bars rather than being cut by them.
+   Putting the photo on top means it would otherwise swallow taps on the
+   Join Us button, which sits inside its box — hence pointer-events. */
+.tmm-join__header {
+  z-index: 2;
+}
+
+.tmm-join__media {
+  z-index: 3;
+  pointer-events: none;
 }
