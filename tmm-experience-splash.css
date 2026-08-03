@@ -187,7 +187,7 @@
   --tmm-dot-inactive-bg: color-mix(in srgb, var(--tmm-color-linen) 54%, var(--tmm-color-light-sage));
   --tmm-experience-logo-width: clamp(230px, 64.8vw, 285px);
   --tmm-experience-section-height: clamp(560px, 64vw, 760px);
-  --tmm-experience-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --tmm-experience-ease: var(--tmm-ease-out);
   --tmm-experience-logo-duration: 1400ms;
   --tmm-experience-logo-delay: 120ms;
   --tmm-experience-auto-advance-delay: 4200ms;
@@ -197,12 +197,42 @@
      adaptToHost() in the JS, which differs between Circle's Custom App
      Builder and Site Builder. 0 until measured, so a full-height section
      is simply 100dvh if there is no chrome (or the script hasn't run). */
-  /* Shared easing. These were scoped to .tmm-intro/.tmm-join, so any rule
-     outside those two — the pricing toggle among them — resolved
-     var(--tmm-fade-ease) to nothing, which invalidates the whole
-     transition declaration and silently leaves it at 0s. */
-  --tmm-fade-duration: 640ms;
-  --tmm-fade-ease: cubic-bezier(0.65, 0, 0.35, 1);
+  /* ----------------------------------------------------------------
+     Motion scale. Durations were previously written inline at ~16
+     different values, and two easings were competing, which is how
+     similar interactions ended up animating at different speeds.
+
+     These must stay on :root. An unresolvable custom property
+     invalidates the entire declaration that uses it and silently
+     computes to 0s — which is exactly what happened when the fade
+     tokens lived on .tmm-intro/.tmm-join and the pricing rules
+     referenced them.
+     ---------------------------------------------------------------- */
+  --tmm-motion-fast: 220ms;   /* colour, opacity, small state changes */
+  --tmm-motion-base: 320ms;   /* pills, controls, indicators          */
+  --tmm-motion-slow: 640ms;   /* slide cross-fade, text drift         */
+  --tmm-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --tmm-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Kept as aliases so the inherited sections keep working unchanged. */
+  --tmm-fade-duration: var(--tmm-motion-slow);
+  --tmm-fade-ease: var(--tmm-ease-in-out);
+}
+
+/* Collapses what used to be four separate `transition: none` blocks.
+   Anything on the scale goes instant; the inherited sections keep their
+   own guards, since they still use inline durations.
+   0.01ms rather than 0 so transitionend still fires. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --tmm-motion-fast: 0.01ms;
+    --tmm-motion-base: 0.01ms;
+    --tmm-motion-slow: 0.01ms;
+  }
+}
+
+/* Re-opened so the rest of the original :root block is untouched. */
+:root {
   --tmm-chrome-offset: 0px;
   /* Depth of the host's bottom chrome. Circle paints a tab bar over the
      foot of the page on Site Builder. adaptToHost() measures this when it
@@ -1657,7 +1687,7 @@
   opacity: 0;
   pointer-events: none;
   text-align: center;
-  transition: opacity var(--tmm-fade-duration) var(--tmm-fade-ease);
+  transition: opacity var(--tmm-motion-slow) var(--tmm-ease-in-out);
 }
 
 .tmm-intro__slide.is-active {
@@ -1672,8 +1702,8 @@
    phones, and the text is what the eye is reading. */
 .tmm-intro__header {
   transition:
-    transform var(--tmm-fade-duration) var(--tmm-fade-ease),
-    filter var(--tmm-fade-duration) var(--tmm-fade-ease);
+    transform var(--tmm-motion-slow) var(--tmm-ease-in-out),
+    filter var(--tmm-motion-slow) var(--tmm-ease-in-out);
   will-change: transform, filter;
 }
 
@@ -1686,12 +1716,6 @@
    distance, so the transition must be off or it would lag the thumb. */
 .tmm-intro.is-dragging .tmm-intro__slide {
   transition: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tmm-intro__slide {
-    transition: none;
-  }
 }
 
 /* Top-aligned, not centred: centring would place each subheading
@@ -1890,7 +1914,7 @@
   background: var(--tmm-splash-accent);
   transform: scaleX(var(--tmm-segment-fill, 0));
   transform-origin: left center;
-  transition: transform var(--tmm-fade-duration) var(--tmm-fade-ease);
+  transition: transform var(--tmm-motion-slow) var(--tmm-ease-in-out);
 }
 
 .tmm-intro__segment:focus-visible {
@@ -1900,12 +1924,6 @@
 
 .tmm-intro.is-dragging .tmm-intro__segment span {
   transition: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tmm-intro__segment span {
-    transition: none;
-  }
 }
 
 /* ============================================================
@@ -2125,7 +2143,7 @@
   color: var(--tmm-color-light-sage);
   cursor: pointer;
   transform: translateY(-50%);
-  transition: opacity 220ms var(--tmm-fade-ease);
+  transition: opacity var(--tmm-motion-fast) var(--tmm-ease-in-out);
 }
 
 .tmm-intro__nav--prev {
@@ -2153,12 +2171,6 @@
 .tmm-intro__nav:focus-visible {
   outline: 2px solid var(--tmm-splash-accent);
   outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tmm-intro__nav {
-    transition: none;
-  }
 }
 
 /* ============================================================
@@ -2293,17 +2305,11 @@
   border-radius: 9999px;
   background: var(--tmm-color-brand-primary);
   transform: translateX(0);
-  transition: transform 320ms var(--tmm-fade-ease);
+  transition: transform var(--tmm-motion-base) var(--tmm-ease-in-out);
 }
 
 .tmm-pricing[data-billing="quarterly"] .tmm-pricing__toggle::before {
   transform: translateX(100%);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tmm-pricing__toggle::before {
-    transition: none;
-  }
 }
 
 .tmm-pricing__toggle-button {
@@ -2320,7 +2326,7 @@
   letter-spacing: 0;
   line-height: 1.32;
   cursor: pointer;
-  transition: color 320ms var(--tmm-fade-ease);
+  transition: color var(--tmm-motion-base) var(--tmm-ease-in-out);
 }
 
 /* Only the label changes; the fill behind it is the sliding pill. */
