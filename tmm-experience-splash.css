@@ -2098,7 +2098,12 @@
 .tmm-intro__nav {
   position: absolute;
   z-index: 3;
-  top: 50%;
+  /* Centred on the imagery, not the section. At a flat 50% they tracked
+     the section's midpoint, which slides away from the photography as the
+     section gets taller — so they read as too low on a real phone.
+     Imagery runs from (track top + media top) to the section's bottom;
+     this is the midpoint of that band. */
+  top: calc((var(--tmm-track-top, 0px) + var(--tmm-media-top, 45%) + 100%) / 2);
   display: flex;
   width: 44px;
   height: 44px;

@@ -995,6 +995,11 @@
 
           section.style.setProperty("--tmm-media-top", `${Math.round(tallest + gap)}px`);
         }
+
+        // Where the track starts, so the chevrons can be centred on the
+        // imagery rather than on the section — the two drift apart as the
+        // section grows, which is what left them sitting low.
+        section.style.setProperty("--tmm-track-top", `${Math.round(track.offsetTop)}px`);
       };
 
       let mediaFrame = null;
@@ -1135,6 +1140,51 @@
     return Math.round(depth);
   };
 
+  // elementsFromPoint only finds chrome that is actually painted at the
+  // probe point. Circle's tab bar can miss that — it may be pointer-events
+  // free, or sit in a nested scroller so the window's own bottom edge isn't
+  // where it lives. This sweeps the top of the DOM for anything pinned to
+  // the bottom instead. Bounded to two levels below body, which is where
+  // app shells put their furniture, so it stays cheap.
+  const sweepForBottomChrome = () => {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const candidates = [];
+
+    [...document.body.children].forEach((child) => {
+      candidates.push(child, ...child.children);
+    });
+
+    let depth = 0;
+
+    candidates.slice(0, 300).forEach((element) => {
+      if (element.matches?.(HOST_SECTIONS) || element.querySelector?.(HOST_SECTIONS)) {
+        return;
+      }
+
+      const styles = getComputedStyle(element);
+
+      if (styles.position !== "fixed" && styles.position !== "sticky") {
+        return;
+      }
+
+      if (styles.visibility === "hidden" || styles.display === "none") {
+        return;
+      }
+
+      const rect = element.getBoundingClientRect();
+      const pinnedToBottom = Math.abs(rect.bottom - viewportHeight) <= 2;
+      const spansWidth = rect.width >= viewportWidth * 0.6;
+      const plausibleHeight = rect.height > 8 && rect.height < viewportHeight * 0.4;
+
+      if (pinnedToBottom && spansWidth && plausibleHeight) {
+        depth = Math.max(depth, rect.height);
+      }
+    });
+
+    return Math.round(depth);
+  };
+
   // Circle's mobile-web tab bar only appears once the member starts
   // scrolling, so a single measurement at load finds nothing. We keep the
   // deepest value seen at this viewport size instead: the space is
@@ -1156,7 +1206,11 @@
     }
 
     const top = measureChromeAt("top");
-    bottomChromeSeen = Math.max(bottomChromeSeen, measureChromeAt("bottom"));
+    bottomChromeSeen = Math.max(
+      bottomChromeSeen,
+      measureChromeAt("bottom"),
+      sweepForBottomChrome()
+    );
 
     root.style.setProperty("--tmm-chrome-offset", `${top}px`);
     root.style.setProperty("--tmm-chrome-bottom", `${bottomChromeSeen}px`);
