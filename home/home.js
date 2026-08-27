@@ -40,7 +40,7 @@ const TMM_CONFIG = {
     mother_hub: {
       label: 'The Mother Hub',
       hero:         { label:'Announcements', spaces:[{id:853914,space_type:'basic'}], count:3, url:'https://members.themillionairemother.com/c/announcements' },
-      contentGrid:  { label:'Business Resources', spaceId:853992, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/business-questions' },
+      contentGrid:  { label:'Business Resources', spaceId:853992, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/business-questions', placeholders:'resource' },
       featuredEvent:{ label:'Coming Up', spaceId:802308, space_type:'event', url:'https://members.themillionairemother.com/c/group-coaching' },
       postFeed:     { label:'From the community', spaceId:853990, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/motherhood-questions' },
       eventsGrid:   { label:'Upcoming Live Events', spaceId:802308, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/group-coaching' },
@@ -237,39 +237,56 @@ function href(id,u){ const el=document.getElementById(id); if(el) el.href=u||'#'
 
 /* ---------- cover-image placeholders ----------
    Posts without a cover image used to get a grey gradient block. They now
-   get one of four brand announcement graphics instead.
+   get one of four brand graphics instead.
+
+   There is a set per content type, because the art names itself — the
+   announcement graphics read "ANNOUNCEMENTS" and the resource graphics read
+   "RESOURCES", so the set has to match what the section is showing. A
+   section picks its set with `placeholders:'resource'` in TMM_CONFIG.TIERS;
+   anything unset falls back to `announce`.
 
    Adjacent cards must never share a graphic. Rather than rolling a die per
    card (which repeats), we roll ONCE for a starting point and then step
-   through the set in order — red, linen, white, sand, red… That guarantees
-   neighbours differ while the run still starts somewhere different on each
-   load, so the shelf looks fresh without ever doubling up.
+   through the set in order. That guarantees neighbours differ while the run
+   still starts somewhere different on each load, so the shelf looks fresh
+   without ever doubling up.
+
+   Order within a set matters too. Two of every four graphics sit on a light
+   backdrop (white = red artwork, sand = tan artwork), so they are held apart
+   rather than listed together — otherwise the shelf shows two near-identical
+   pale cards in a row. red -> white -> linen -> sand alternates the backdrop
+   at every step, including across the wrap.
 
    The art is 810x540 — a true 3:2, exactly 3x the 270x180 card slot — so it
    fills the frame with no crop and no letterbox. `contain` and the per-variant
    backgrounds in home.css stay as insurance: if a future export drifts off
    ratio it letterboxes in its own backdrop colour rather than cropping the
-   wordmark or showing a bar.
-
-   Reused by any section that needs a fallback: pass the card index. */
-/* Order matters. Two of the four graphics are on white (white = red
-   megaphone, sand = tan megaphone), so they are kept apart in the cycle
-   rather than listed side by side — otherwise the shelf shows two
-   near-identical white cards in a row. red -> white -> linen -> sand
-   alternates the backdrop at every step, including across the wrap. */
-const PLACEHOLDERS = [
-  { file:'announce-red.webp',   variant:'red'   },
-  { file:'announce-white.webp', variant:'white' },
-  { file:'announce-linen.webp', variant:'linen' },
-  { file:'announce-sand.webp',  variant:'sand'  },
-];
+   wordmark or showing a bar. Both sets land on the same four backdrops, so
+   they share those rules. */
+const PLACEHOLDER_SETS = {
+  announce: [
+    { file:'announce-red.webp',   variant:'red'   },
+    { file:'announce-white.webp', variant:'white' },
+    { file:'announce-linen.webp', variant:'linen' },
+    { file:'announce-sand.webp',  variant:'sand'  },
+  ],
+  resource: [
+    { file:'resource-red.webp',   variant:'red'   },
+    { file:'resource-white.webp', variant:'white' },
+    { file:'resource-linen.webp', variant:'linen' },
+    { file:'resource-sand.webp',  variant:'sand'  },
+  ],
+};
 const PLACEHOLDER_BASE = 'https://tmm-circle-assets.pages.dev/images/';
 
-/* One roll per render pass, not per card. */
-function placeholderStart(){ return Math.floor(Math.random()*PLACEHOLDERS.length); }
+function placeholderSet(name){ return PLACEHOLDER_SETS[name] || PLACEHOLDER_SETS.announce; }
 
-function placeholderImg(index,start,imgClass){
-  const ph = PLACEHOLDERS[(start+index)%PLACEHOLDERS.length];
+/* One roll per render pass, not per card. */
+function placeholderStart(setName){ return Math.floor(Math.random()*placeholderSet(setName).length); }
+
+function placeholderImg(index,start,imgClass,setName){
+  const set = placeholderSet(setName);
+  const ph = set[(start+index)%set.length];
   return `<img class="${imgClass} tmm-ph tmm-ph--${ph.variant}" src="${PLACEHOLDER_BASE}${ph.file}" alt="" loading="lazy" data-ph-fallback="${imgClass}">`;
 }
 
@@ -332,10 +349,11 @@ function renderContentGrid(posts,cfg){
   set('tmmS2Label',cfg.label); href('tmmS2Url',cfg.url);
   const el=document.getElementById('tmmGrid');
   if(!posts.length){ el.innerHTML='<p class="tmm-empty">No posts yet.</p>'; return; }
-  const start = placeholderStart();
+  const phSet = cfg.placeholders;
+  const start = placeholderStart(phSet);
   el.innerHTML = posts.map((p,i)=>`
     <a class="tmm-card" href="${esc(p.url||'#')}" target="_blank" rel="noopener">
-      ${p.cover_image_url ? `<img class="tmm-card-img" src="${esc(p.cover_image_url)}" alt="" loading="lazy">` : placeholderImg(i,start,'tmm-card-img')}
+      ${p.cover_image_url ? `<img class="tmm-card-img" src="${esc(p.cover_image_url)}" alt="" loading="lazy">` : placeholderImg(i,start,'tmm-card-img',phSet)}
       <div class="tmm-card-title">${esc(p.name||'Untitled')}</div>
       <div class="tmm-card-desc">${esc(strip(p.body?.body||'').slice(0,80))}</div>
     </a>`).join('');

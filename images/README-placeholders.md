@@ -3,19 +3,40 @@
 `home/home.js` uses these when a post has no cover image, in place of the old
 grey gradient block.
 
-| File | Artwork | Backdrop the CSS paints |
-|---|---|---|
-| `announce-red.webp`   | grey megaphone on red   | `#D11934` |
-| `announce-linen.webp` | red megaphone on beige  | `#EAE4D6` |
-| `announce-white.webp` | red megaphone on white  | `#fff` |
-| `announce-sand.webp`  | tan megaphone on white  | `#fff` |
+There is **one set per content type**, because the art names itself — the
+announcement graphics read "ANNOUNCEMENTS", the resource graphics read
+"RESOURCES". A section chooses its set in `TMM_CONFIG.TIERS`:
 
-All four are **810 × 540** — a true 3:2, exactly 3× the 270 × 180 card slot, so
+```js
+contentGrid: { label:'Business Resources', …, placeholders:'resource' },
+```
+
+Anything without a `placeholders` key gets `announce`. An unrecognised name
+also falls back to `announce` rather than breaking.
+
+| Set | Files | Reads |
+|---|---|---|
+| `announce` | `announce-{red,white,linen,sand}.webp` | ANNOUNCEMENTS |
+| `resource` | `resource-{red,white,linen,sand}.webp` | RESOURCES |
+
+Within each set the suffix is the **backdrop**, not the artwork colour:
+
+| Suffix | Backdrop | CSS rule |
+|---|---|---|
+| `red`   | `#D11934` | `.tmm-ph--red` |
+| `white` | `#fff`    | `.tmm-ph--white` |
+| `linen` | `#EAE4D6` (this is sand, despite the name) | `.tmm-ph--linen` |
+| `sand`  | `#fff`    | `.tmm-ph--sand` |
+
+Both sets land on these same four backdrops to within 6/255, so they share the
+CSS rules.
+
+Every file is **810 × 540** — a true 3:2, exactly 3× the 270 × 180 card slot, so
 they fill the frame with no crop and no letterbox on displays up to 3×.
 
-`.webp` is what ships (~9KB each). The matching `.png` files are the lossless
-source at ~45KB each; nothing references them. They can be deleted without
-affecting the build, or kept for re-export.
+`.webp` is what ships (~9KB announce, ~13KB resource). The matching `.png` files
+are the lossless source at ~45–68KB each; nothing references them. They can be
+deleted without affecting the build, or kept for re-export.
 
 They serve from `https://tmm-circle-assets.pages.dev/images/<name>`.
 
@@ -34,6 +55,13 @@ those rules.
 **Watch the horizontal margins.** The wordmark runs close to the left and right
 edges, which is tight at 270px wide. A little more breathing room either side
 would help if the art is ever redrawn.
+
+## Adding another set
+
+Add the four files here, add an entry to `PLACEHOLDER_SETS` in `home/home.js`
+keeping the red → white → linen → sand order, and point a section at it with
+`placeholders:'<name>'`. No CSS changes are needed if the backdrops match the
+table above; re-sample and add rules if they do not.
 
 ## Rotation
 
