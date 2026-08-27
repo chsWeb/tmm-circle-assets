@@ -235,6 +235,52 @@ function initial(name){ return (name||'?').trim().charAt(0).toUpperCase(); }
 function set(id,v){ const el=document.getElementById(id); if(el) el.textContent=v||''; }
 function href(id,u){ const el=document.getElementById(id); if(el) el.href=u||'#'; }
 
+/* ---------- cover-image placeholders ----------
+   Posts without a cover image used to get a grey gradient block. They now
+   get one of four brand announcement graphics instead.
+
+   Adjacent cards must never share a graphic. Rather than rolling a die per
+   card (which repeats), we roll ONCE for a starting point and then step
+   through the set in order — red, linen, white, sand, red… That guarantees
+   neighbours differ while the run still starts somewhere different on each
+   load, so the shelf looks fresh without ever doubling up.
+
+   The art is a ~3.2:1 banner and the card slot is 1.5:1, so these are
+   letterboxed with `contain` rather than cropped — a `cover` crop would cut
+   "ANNOUNCEMENTS" roughly in half. Each variant carries its own background
+   so the letterbox matches the artwork instead of showing a bar.
+
+   Reused by any section that needs a fallback: pass the card index. */
+const PLACEHOLDERS = [
+  { file:'announce-red.png',   variant:'red'   },
+  { file:'announce-linen.png', variant:'linen' },
+  { file:'announce-white.png', variant:'white' },
+  { file:'announce-sand.png',  variant:'sand'  },
+];
+const PLACEHOLDER_BASE = 'https://tmm-circle-assets.pages.dev/images/';
+
+/* One roll per render pass, not per card. */
+function placeholderStart(){ return Math.floor(Math.random()*PLACEHOLDERS.length); }
+
+function placeholderImg(index,start,imgClass){
+  const ph = PLACEHOLDERS[(start+index)%PLACEHOLDERS.length];
+  return `<img class="${imgClass} tmm-ph tmm-ph--${ph.variant}" src="${PLACEHOLDER_BASE}${ph.file}" alt="" loading="lazy" data-ph-fallback="${imgClass}">`;
+}
+
+/* If a placeholder file is missing or blocked, fall back to the old grey
+   block rather than leaving a broken-image icon on the shelf. Wired here
+   instead of an inline onerror because Circle's iframe CSP can strip
+   inline handlers. Call after setting innerHTML. */
+function wirePlaceholderFallbacks(el){
+  el.querySelectorAll('img[data-ph-fallback]').forEach(img=>{
+    img.addEventListener('error',()=>{
+      const div=document.createElement('div');
+      div.className=img.getAttribute('data-ph-fallback')+'ph';
+      img.replaceWith(div);
+    },{once:true});
+  });
+}
+
 /* ---------- renderers ---------- */
 function renderHero(posts,cfg){
   set('tmmS1Label',cfg.label); href('tmmS1Url',cfg.url);
@@ -280,12 +326,14 @@ function renderContentGrid(posts,cfg){
   set('tmmS2Label',cfg.label); href('tmmS2Url',cfg.url);
   const el=document.getElementById('tmmGrid');
   if(!posts.length){ el.innerHTML='<p class="tmm-empty">No posts yet.</p>'; return; }
-  el.innerHTML = posts.map(p=>`
+  const start = placeholderStart();
+  el.innerHTML = posts.map((p,i)=>`
     <a class="tmm-card" href="${esc(p.url||'#')}" target="_blank" rel="noopener">
-      ${p.cover_image_url ? `<img class="tmm-card-img" src="${esc(p.cover_image_url)}" alt="" loading="lazy">` : `<div class="tmm-card-imgph"></div>`}
+      ${p.cover_image_url ? `<img class="tmm-card-img" src="${esc(p.cover_image_url)}" alt="" loading="lazy">` : placeholderImg(i,start,'tmm-card-img')}
       <div class="tmm-card-title">${esc(p.name||'Untitled')}</div>
       <div class="tmm-card-desc">${esc(strip(p.body?.body||'').slice(0,80))}</div>
     </a>`).join('');
+  wirePlaceholderFallbacks(el);
 }
 
 function renderFeatured(events,cfg){

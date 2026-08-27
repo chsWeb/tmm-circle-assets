@@ -752,3 +752,34 @@
     transition-duration: .001ms !important
   }
 }
+/* ============================================================
+   COVER-IMAGE PLACEHOLDERS
+   Brand announcement graphics standing in for posts with no cover
+   image, replacing the old grey gradient block.
+
+   The art is a ~3.2:1 banner sitting in a 1.5:1 slot, so it is
+   letterboxed rather than cropped — object-fit:cover would show only
+   the middle 47% and cut "ANNOUNCEMENTS" in half. Each variant paints
+   its own background so the letterbox reads as part of the artwork.
+   ============================================================ */
+.tmm-ph {
+  object-fit: contain
+}
+
+.tmm-ph--red {
+  background: var(--electric-red)
+}
+
+.tmm-ph--linen {
+  background: var(--linen)
+}
+
+.tmm-ph--white {
+  background: var(--white)
+}
+
+/* The tan-megaphone graphic sits on WHITE, not sand — the variant is
+   named for its artwork, so the letterbox colour must stay white. */
+.tmm-ph--sand {
+  background: var(--white)
+}
