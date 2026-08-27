@@ -38,10 +38,13 @@ would help if the art is ever redrawn.
 ## Rotation
 
 One roll per render picks a starting point, then the set is walked in order —
-red, linen, white, sand, red… so neighbouring cards can never share a graphic.
+red, white, linen, sand, red… so neighbouring cards can never share a graphic.
 Adding or removing a file changes the cycle length but not that guarantee. Keep
 the array in `home/home.js` and the `.tmm-ph--*` rules in `home/home.css` in step.
 
-Note the current order puts the two white-backed graphics next to each other.
-Reordering the array to red → white → linen → sand alternates light and dark
-instead, if that reads better on the shelf.
+**The array order is deliberate.** Two graphics sit on white — `white` (red
+megaphone) and `sand` (tan megaphone) — so they are separated in the cycle
+rather than listed together. Listing them side by side puts two near-identical
+white cards next to each other on the shelf. The current order alternates the
+backdrop at every step, including across the wrap. If you add a graphic, place
+it so no two same-backdrop entries end up adjacent.

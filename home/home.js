@@ -252,10 +252,15 @@ function href(id,u){ const el=document.getElementById(id); if(el) el.href=u||'#'
    wordmark or showing a bar.
 
    Reused by any section that needs a fallback: pass the card index. */
+/* Order matters. Two of the four graphics are on white (white = red
+   megaphone, sand = tan megaphone), so they are kept apart in the cycle
+   rather than listed side by side — otherwise the shelf shows two
+   near-identical white cards in a row. red -> white -> linen -> sand
+   alternates the backdrop at every step, including across the wrap. */
 const PLACEHOLDERS = [
   { file:'announce-red.webp',   variant:'red'   },
-  { file:'announce-linen.webp', variant:'linen' },
   { file:'announce-white.webp', variant:'white' },
+  { file:'announce-linen.webp', variant:'linen' },
   { file:'announce-sand.webp',  variant:'sand'  },
 ];
 const PLACEHOLDER_BASE = 'https://tmm-circle-assets.pages.dev/images/';
