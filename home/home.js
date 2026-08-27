@@ -231,6 +231,13 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 function fmtLong(iso){ return iso ? new Date(iso).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : ''; }
 function fmtTime(iso){ return iso ? new Date(iso).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZoneName:'short'}) : ''; }
 function fmtShort(iso){ return iso ? new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''; }
+/* Circle stores a post's picture in one of two places: cover_image_url when
+   someone sets a cover image, cardview_thumbnail_url when they attach it as the
+   card thumbnail instead. Reading only the first meant posts that had a
+   perfectly good image still fell through to a placeholder — 6 of the 253 posts
+   across the Mother Hub's spaces were hit, including the featured "Matriarch"
+   post. Take whichever one is there. */
+function coverImage(x){ return (x && (x.cover_image_url || x.cardview_thumbnail_url)) || ''; }
 function initial(name){ return (name||'?').trim().charAt(0).toUpperCase(); }
 function set(id,v){ const el=document.getElementById(id); if(el) el.textContent=v||''; }
 function href(id,u){ const el=document.getElementById(id); if(el) el.href=u||'#'; }
@@ -309,13 +316,16 @@ function renderHero(posts,cfg){
   set('tmmS1Label',cfg.label); href('tmmS1Url',cfg.url);
   const box=document.getElementById('tmmHero');
   if (!posts.length){ box.innerHTML='<p class="tmm-empty">No posts yet.</p>'; return; }
-  const cards = posts.map(p=>`
+  const cards = posts.map(p=>{
+    const img = coverImage(p);
+    return `
     <a class="tmm-hero-card" href="${esc(p.url||'#')}" target="_blank" rel="noopener">
       <span class="tmm-cat">${esc(p.space_name||cfg.label||'Post')}</span>
-      ${p.cover_image_url ? `<img class="tmm-hero-img" src="${esc(p.cover_image_url)}" alt="" loading="lazy">` : `<div class="tmm-hero-imgph"></div>`}
+      ${img ? `<img class="tmm-hero-img" src="${esc(img)}" alt="" loading="lazy">` : `<div class="tmm-hero-imgph"></div>`}
       <h2 class="tmm-hero-title">${esc(p.name||'Untitled')}</h2>
       <div class="tmm-hero-desc">${esc(strip(p.body?.body||'').slice(0,90))}</div>
-    </a>`).join('');
+    </a>`;
+  }).join('');
   const dots = posts.length>1
     ? `<div class="tmm-dots" id="tmmHeroDots">${posts.map((_,j)=>`<button class="tmm-dot${j===0?' is-active':''}" data-i="${j}" aria-label="Slide ${j+1}"></button>`).join('')}</div>`
     : '';
@@ -351,12 +361,15 @@ function renderContentGrid(posts,cfg){
   if(!posts.length){ el.innerHTML='<p class="tmm-empty">No posts yet.</p>'; return; }
   const phSet = cfg.placeholders;
   const start = placeholderStart(phSet);
-  el.innerHTML = posts.map((p,i)=>`
+  el.innerHTML = posts.map((p,i)=>{
+    const img = coverImage(p);
+    return `
     <a class="tmm-card" href="${esc(p.url||'#')}" target="_blank" rel="noopener">
-      ${p.cover_image_url ? `<img class="tmm-card-img" src="${esc(p.cover_image_url)}" alt="" loading="lazy">` : placeholderImg(i,start,'tmm-card-img',phSet)}
+      ${img ? `<img class="tmm-card-img" src="${esc(img)}" alt="" loading="lazy">` : placeholderImg(i,start,'tmm-card-img',phSet)}
       <div class="tmm-card-title">${esc(p.name||'Untitled')}</div>
       <div class="tmm-card-desc">${esc(strip(p.body?.body||'').slice(0,80))}</div>
-    </a>`).join('');
+    </a>`;
+  }).join('');
   wirePlaceholderFallbacks(el);
 }
 
@@ -371,9 +384,10 @@ function renderFeatured(events,cfg){
         (e.name||'').toLowerCase().startsWith(PIN_TITLE)
       )||events[0];
   const dt=ev.starts_at||ev.published_at;
+  const featImg=coverImage(ev);
   el.innerHTML = `
     <a class="tmm-feat" href="${esc(ev.url||'#')}" target="_blank" rel="noopener">
-      ${ev.cover_image_url ? `<img class="tmm-feat-bg" src="${esc(ev.cover_image_url)}" alt="" loading="lazy">` : ``}
+      ${featImg ? `<img class="tmm-feat-bg" src="${esc(featImg)}" alt="" loading="lazy">` : ``}
       <div class="tmm-feat-top">
         <div class="tmm-feat-cal"><svg width="24" height="26" viewBox="0 0 27 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M18.6667 1.33337V6.66671M8 1.33337V6.66671M1.33333 12H25.3333M4 4.00004H22.6667C24.1394 4.00004 25.3333 5.19395 25.3333 6.66671V25.3334C25.3333 26.8061 24.1394 28 22.6667 28H4C2.52724 28 1.33333 26.8061 1.33333 25.3334V6.66671C1.33333 5.19395 2.52724 4.00004 4 4.00004Z" stroke="currentColor" stroke-width="2.66667" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div><div class="tmm-feat-date">${fmtLong(dt)}</div><div class="tmm-feat-time">${fmtTime(dt)}</div></div>
@@ -411,9 +425,10 @@ function renderEvents(events,cfg){
   if(!events.length){ el.innerHTML='<p class="tmm-empty">No events yet.</p>'; return; }
   el.innerHTML = events.map(ev=>{
     const dt=ev.starts_at||ev.published_at;
+    const img=coverImage(ev);
     return `
       <a class="tmm-ev-card" href="${esc(ev.url||'#')}" target="_blank" rel="noopener">
-        ${ev.cover_image_url ? `<img class="tmm-ev-img" src="${esc(ev.cover_image_url)}" alt="" loading="lazy">` : `<div class="tmm-ev-imgph"></div>`}
+        ${img ? `<img class="tmm-ev-img" src="${esc(img)}" alt="" loading="lazy">` : `<div class="tmm-ev-imgph"></div>`}
         <div class="tmm-ev-row">
           <div class="tmm-ev-meta">
             <div class="tmm-ev-title">${esc(ev.name||'Untitled Event')}</div>
