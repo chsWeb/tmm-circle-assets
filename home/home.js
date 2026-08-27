@@ -245,17 +245,18 @@ function href(id,u){ const el=document.getElementById(id); if(el) el.href=u||'#'
    neighbours differ while the run still starts somewhere different on each
    load, so the shelf looks fresh without ever doubling up.
 
-   The art is a ~3.2:1 banner and the card slot is 1.5:1, so these are
-   letterboxed with `contain` rather than cropped — a `cover` crop would cut
-   "ANNOUNCEMENTS" roughly in half. Each variant carries its own background
-   so the letterbox matches the artwork instead of showing a bar.
+   The art is 810x540 — a true 3:2, exactly 3x the 270x180 card slot — so it
+   fills the frame with no crop and no letterbox. `contain` and the per-variant
+   backgrounds in home.css stay as insurance: if a future export drifts off
+   ratio it letterboxes in its own backdrop colour rather than cropping the
+   wordmark or showing a bar.
 
    Reused by any section that needs a fallback: pass the card index. */
 const PLACEHOLDERS = [
-  { file:'announce-red.png',   variant:'red'   },
-  { file:'announce-linen.png', variant:'linen' },
-  { file:'announce-white.png', variant:'white' },
-  { file:'announce-sand.png',  variant:'sand'  },
+  { file:'announce-red.webp',   variant:'red'   },
+  { file:'announce-linen.webp', variant:'linen' },
+  { file:'announce-white.webp', variant:'white' },
+  { file:'announce-sand.webp',  variant:'sand'  },
 ];
 const PLACEHOLDER_BASE = 'https://tmm-circle-assets.pages.dev/images/';
 

@@ -757,29 +757,34 @@
    Brand announcement graphics standing in for posts with no cover
    image, replacing the old grey gradient block.
 
-   The art is a ~3.2:1 banner sitting in a 1.5:1 slot, so it is
-   letterboxed rather than cropped — object-fit:cover would show only
-   the middle 47% and cut "ANNOUNCEMENTS" in half. Each variant paints
-   its own background so the letterbox reads as part of the artwork.
+   The art is 810x540 — a true 3:2, exactly 3x the 270x180 slot — so it
+   fills the frame with no crop and no letterbox. `contain` and the
+   backdrops below are insurance: if a future export drifts off ratio it
+   letterboxes in its own colour rather than cropping the wordmark.
+
+   These values are sampled from the artwork itself, NOT taken from the
+   palette tokens — the graphics do not use them. The beige one is sand
+   (#EAE4D6), not linen, and the two light ones are pure white, not
+   --white (#F9F9F9). Re-sample if the art is ever re-exported.
    ============================================================ */
 .tmm-ph {
   object-fit: contain
 }
 
 .tmm-ph--red {
-  background: var(--electric-red)
+  background: #D11934
 }
 
+/* Sampled #E9E5D6 — this is --sand, despite the file name. */
 .tmm-ph--linen {
-  background: var(--linen)
+  background: #EAE4D6
 }
 
 .tmm-ph--white {
-  background: var(--white)
+  background: #fff
 }
 
-/* The tan-megaphone graphic sits on WHITE, not sand — the variant is
-   named for its artwork, so the letterbox colour must stay white. */
+/* Tan megaphone on pure white. */
 .tmm-ph--sand {
-  background: var(--white)
+  background: #fff
 }
