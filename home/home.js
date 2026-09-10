@@ -29,13 +29,18 @@ const TMM_CONFIG = {
   },
 
   TIERS: {
+    /* A section set to null is hidden for that tier. Free members can't
+       open events or Say Hello, so those three sections are hidden rather
+       than showing content that links somewhere they can't go.
+       The hero's posts come from FEATURED.SPACES — `hero` here only sets
+       its heading and See all link. */
     free: {
       label: 'Free Member',
-      hero:         { label:'Welcome', spaces:[{id:2505755,space_type:'basic'}], count:3, url:'https://members.themillionairemother.com/c/start-here-3ba756' },
-      contentGrid:  { label:"What's New", spaceId:853914, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/announcements' },
-      featuredEvent:{ label:'Coming Up', spaceId:2491518, space_type:'event', url:'https://members.themillionairemother.com/c/monthly-village-circle-with-cait' },
-      postFeed:     { label:'From the community', spaceId:805666, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/say-hello' },
-      eventsGrid:   { label:'Upcoming Live Events', spaceId:2491518, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/monthly-village-circle-with-cait' },
+      hero:         { label:'Welcome', url:'https://members.themillionairemother.com/c/welome-library' },
+      contentGrid:  { label:'Starter Library', spaceId:2551366, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/free-resources', placeholders:'resource' },
+      featuredEvent: null,
+      postFeed:      null,
+      eventsGrid:    null,
     },
     mother_hub: {
       label: 'The Mother Hub',
@@ -82,11 +87,11 @@ const FEATURED = {
   TOPIC_ID: 538336,   // Circle "topics" id for the `featured` tag
   MAX: 5,             // max cards in the hero
   SPACES: {
-    // Free: Welcome! + Start Here (Welcome Hub) and Resources (Content Hub)
+    // Free: Welcome! only. Free members can also open Start Here and Free
+    // Resources, but the owner features content for them from Welcome!;
+    // Free Resources already has its own section (Starter Library).
     free: [
       2551323, // Welcome!        (welome-library)
-      2505755, // Start Here      (start-here-3ba756)
-      2551366, // Resources       (free-resources)
     ],
     // Mother Hub Plus: free set + the Content Hub library spaces + Plus space.
     // VERIFY this list matches what a Plus member should see featured.
@@ -236,8 +241,23 @@ function fmtShort(iso){ return iso ? new Date(iso).toLocaleDateString('en-US',{m
    card thumbnail instead. Reading only the first meant posts that had a
    perfectly good image still fell through to a placeholder — 6 of the 253 posts
    across the Mother Hub's spaces were hit, including the featured "Matriarch"
-   post. Take whichever one is there. */
-function coverImage(x){ return (x && (x.cover_image_url || x.cardview_thumbnail_url)) || ''; }
+   post. Take whichever one is there.
+   Thumbnail first: the owner makes Mobile Thumbnails for these cards, so when
+   a post has both, show the thumbnail. Circle keeps whatever shape is
+   uploaded — thumbnails are NOT forced to 2:1 — so this only reduces cropping
+   when the thumbnail is exported at 2:1 (1200x600). In our ~1.5:1 slots a 2:1
+   image loses ~25% at the sides; a 2.8:1 one (840x300, the cover shape) ~46%.
+   Checked Sept 2026: 5 of the 6 Free Resources thumbnails are 840x300. */
+function coverImage(x){ return (x && (x.cardview_thumbnail_url || x.cover_image_url)) || ''; }
+
+/* Show or hide a whole section — heading, See all and body — from the id of
+   any element inside it. Inline display rather than the hidden attribute,
+   so no stylesheet rule can override it. Re-run on every init so switching
+   tier in the test banner brings back sections another tier had hidden. */
+function showSection(innerId, on){
+  const sec = document.getElementById(innerId)?.closest('.tmm-section');
+  if (sec) sec.style.display = on ? '' : 'none';
+}
 function initial(name){ return (name||'?').trim().charAt(0).toUpperCase(); }
 function set(id,v){ const el=document.getElementById(id); if(el) el.textContent=v||''; }
 function href(id,u){ const el=document.getElementById(id); if(el) el.href=u||'#'; }
@@ -315,7 +335,9 @@ function wirePlaceholderFallbacks(el){
 function renderHero(posts,cfg){
   set('tmmS1Label',cfg.label); href('tmmS1Url',cfg.url);
   const box=document.getElementById('tmmHero');
-  if (!posts.length){ box.innerHTML='<p class="tmm-empty">No posts yet.</p>'; return; }
+  // Nothing tagged: drop the whole section rather than show "No posts yet".
+  if (!posts.length){ showSection('tmmHero', false); return; }
+  showSection('tmmHero', true);
   const cards = posts.map(p=>{
     const img = coverImage(p);
     return `
@@ -453,21 +475,25 @@ async function init(overrideTierKey){
 
   // Each section fetches + renders on its own. A slow/empty section can no
   // longer block the others (previously one hung fetch froze the whole page).
-  const render = (cfg, fn) =>
+  const render = (cfg, fn, boxId) => {
+    showSection(boxId, !!cfg);
+    if (!cfg) return;
     fetchSection(cfg)
       .then(d => { try { fn(d, cfg); } catch(e){ console.error('render error:', e); } })
       .catch(e => console.error('section error:', e));
+  };
 
   // Hero = posts tagged `featured` community-wide, filtered to the groups
   // this tier can access. Everything else stays per-space.
+  showSection('tmmHero', true);   // skeleton while loading; renderHero decides
   fetchFeatured(tierKey)
-    .then(posts => { try { renderHero(posts, tier.hero); } catch(e){ console.error('hero render error:', e); } })
-    .catch(e => console.error('featured error:', e));
+    .then(posts => { try { renderHero(posts, tier.hero); } catch(e){ console.error('hero render error:', e); showSection('tmmHero', false); } })
+    .catch(e => { console.error('featured error:', e); showSection('tmmHero', false); });
 
-  render(tier.contentGrid,   renderContentGrid);
-  render(tier.featuredEvent, renderFeatured);
-  render(tier.postFeed,      renderFeed);
-  render(tier.eventsGrid,    renderEvents);
+  render(tier.contentGrid,   renderContentGrid, 'tmmGrid');
+  render(tier.featuredEvent, renderFeatured,    'tmmFeat');
+  render(tier.postFeed,      renderFeed,        'tmmFeed');
+  render(tier.eventsGrid,    renderEvents,      'tmmEvents');
 }
 
 /* expose test-tier switcher to window (IIFE hides it otherwise) */
