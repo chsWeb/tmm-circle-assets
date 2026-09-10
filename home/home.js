@@ -17,6 +17,12 @@ const TMM_CONFIG = {
      before real members are let in. */
   TEST_MODE:    false,
 
+  /* The black test banner with the tier dropdown. Separate from TEST_MODE:
+     it used to vanish whenever TEST_MODE was off, which hid it from the test
+     logins that need it. On while test accounts check detection — set false
+     (and remove the banner from body.html) before real members are let in. */
+  SHOW_TEST_BANNER: true,
+
   /* Tier = the member's Circle ACCESS GROUPS, matched by group ID. Not by
      name: groups get renamed (on 10 Sept 2026 "The Mother Hub" became
      "MotherHub" and "Matriarch Network" became "MotherHub Expert Network"),
@@ -552,7 +558,7 @@ function tmmTryBoot(){
   if (!home) return;
   if (home === tmmBootedEl) return;              // this block already initialised
   tmmBootedEl = home;                            // set before init() so DOM edits don't re-trigger
-  if(!TMM_CONFIG.TEST_MODE){ const b=document.getElementById('tmmTestBanner'); if(b) b.style.display='none'; }
+  if(!TMM_CONFIG.SHOW_TEST_BANNER){ const b=document.getElementById('tmmTestBanner'); if(b) b.style.display='none'; }
   init();
 }
 function tmmStart(){

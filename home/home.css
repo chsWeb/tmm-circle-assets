@@ -159,9 +159,20 @@
   border-radius: 4px
 }
 
+/* Cards inside a horizontal scroller: an outline drawn outside the card is
+   clipped by the strip's overflow, leaving a stray red line on two sides.
+   Draw it just inside instead. */
+.tmm-scroll > a:focus-visible,
+.tmm-hero-scroll > a:focus-visible {
+  outline-offset: -2px
+}
+
 /* ---- Top bar (logo + menu) ---- */
 .tmm-topbar {
-  display: flex;
+  /* Hidden: Circle's own header already shows the logo in both the app and
+     Site Builder, so this made two. Markup is gone from body.html too; this
+     rule covers any older paste still carrying it. */
+  display: none;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
