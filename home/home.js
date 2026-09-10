@@ -11,14 +11,41 @@
 const TMM_CONFIG = {
   WORKER_URL:   'https://tmm-circle-proxy.product-10c.workers.dev',
   COMMUNITY_ID: '97488',
-  TEST_MODE:    true,   // ← set false before publishing (also delete the test banner in body.html)
+  /* TEST_MODE true skips member detection and shows everyone the Free page.
+     Off since 10 Sept 2026 so test logins exercise real detection. The
+     test banner in body.html still lets you preview any tier; delete it
+     before real members are let in. */
+  TEST_MODE:    false,
 
-  ACCESS_GROUPS: {
-    inner_circle: 'Inner Circle',
-    foundry:      'Foundry',
-    mother_hub:   'The Mother Hub',
-    free:         'Free',
-  },
+  /* Tier = the member's Circle ACCESS GROUPS, matched by group ID. Not by
+     name: groups get renamed (on 10 Sept 2026 "The Mother Hub" became
+     "MotherHub" and "Matriarch Network" became "MotherHub Expert Network"),
+     and IDs survive that. Not member tags either — real members have none.
+     Checked top to bottom; the first tier with a matching group wins, so a
+     member in two tiers gets the one listed higher. No match -> Free.
+     Group IDs come from the proxy's /access_groups. */
+  TIER_GROUPS: [
+    { tier:'inner_circle',   groups:[
+        105821,  // Inner Circle
+        74507,   // The Inner Circle 2026
+        23929,   // The Inner Circle
+        77964,   // The Vault                      <- CONFIRM: Vault members get the Inner Circle page?
+    ]},
+    { tier:'foundry',        groups:[
+        105820,  // Foundry
+        69954,   // The Foundry 2026
+        22666,   // The Foundry Spring/Fall 2025
+        102378, 102661, 102662,  // Foundry Pod 1, 2, 3
+        117122,  // Foundry Alumni Pod
+    ]},
+    { tier:'expert_network', groups:[
+        132064,  // MotherHub Expert Network (was Matriarch Network)
+    ]},
+    { tier:'mother_hub',     groups:[
+        104172,  // MotherHub (was The Mother Hub)
+        78001,   // Founding Mother Access           <- CONFIRM
+    ]},
+  ],
 
   /* Logo/brand per tier: free → Millionaire Mother, all paid → Mother Hub */
   BRAND_BY_TIER: {
@@ -141,17 +168,20 @@ async function getCurrentMember(){
   }
   return fallback;
 }
+/* The old lookup (/community_members?id=) hit Circle's LIST endpoint, which
+   ignores `id` and returns the first page — so every member got the same
+   person's (empty) tags and landed on Free. This asks for the member's own
+   access groups instead. */
 async function getMemberTierKey(memberId){
   if (!memberId) return 'free';
   try{
-    const res  = await withTimeout(fetch(`${TMM_CONFIG.WORKER_URL}/community_members?id=${memberId}`), 3000, null);
-    if (!res) return 'free';
+    const url = `${TMM_CONFIG.WORKER_URL}/community_members/${encodeURIComponent(memberId)}/access_groups?per_page=100`;
+    const res = await withTimeout(fetch(url), 3000, null);
+    if (!res || !res.ok) return 'free';
     const data = await res.json();
-    const tags = (data?.member_tags || data?.records?.[0]?.member_tags || []).map(t => typeof t==='string'?t:t.name);
-    if (tags.includes(TMM_CONFIG.ACCESS_GROUPS.inner_circle)) return 'inner_circle';
-    if (tags.includes(TMM_CONFIG.ACCESS_GROUPS.foundry))      return 'foundry';
-    if (tags.includes(TMM_CONFIG.ACCESS_GROUPS.mother_hub))   return 'mother_hub';
-    return 'free';
+    const mine = new Set((data?.records || []).map(g => g.id));
+    const hit  = TMM_CONFIG.TIER_GROUPS.find(t => t.groups.some(id => mine.has(id)));
+    return hit ? hit.tier : 'free';
   }catch(e){ return 'free'; }
 }
 
@@ -468,6 +498,11 @@ async function init(overrideTierKey){
   const firstName = member?.firstName || member?.name?.split(' ')[0] || 'Mama';
   const tierKey   = overrideTierKey || (TMM_CONFIG.TEST_MODE ? 'free' : await getMemberTierKey(member?.id));
   const tier      = TMM_CONFIG.TIERS[tierKey] || TMM_CONFIG.TIERS.free;
+  console.info('[tmm-home] member id:', member?.id ?? '(none)', '| tier:', tierKey, TMM_CONFIG.TIERS[tierKey] ? '' : '(no page yet, showing Free)');
+  // Test banner: show the DETECTED tier in its dropdown, so a test login can
+  // see what it was matched to. Skipped when the dropdown itself chose it.
+  const sel = document.querySelector('#tmmTestBanner select');
+  if (sel && !overrideTierKey && [...sel.options].some(o => o.value === tierKey)) sel.value = tierKey;
 
   const root = document.getElementById('tmmHome');
   if (root) root.setAttribute('data-brand', TMM_CONFIG.BRAND_BY_TIER[tierKey] || 'mm');
