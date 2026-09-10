@@ -45,6 +45,12 @@ const TMM_CONFIG = {
         104172,  // MotherHub (was The Mother Hub)
         78001,   // Founding Mother Access           <- CONFIRM
     ]},
+    /* The community is private and free members join through the Free access
+       group. Listed explicitly so the mapping is documented; anyone matching
+       none of these (e.g. only in Cash Flow Challenge) also gets Free. */
+    { tier:'free',           groups:[
+        104197,  // Free
+    ]},
   ],
 
   /* Logo/brand per tier: free → Millionaire Mother, all paid → Mother Hub */
