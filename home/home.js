@@ -73,7 +73,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v14 · 2026-09-28',
+  BUILD: 'v15 · 2026-09-28',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -82,6 +82,13 @@ const TMM_CONFIG = {
      inside the app replaces the screen the tab bar was showing, which left
      members unable to get back — tapping Home did nothing. A new window
      keeps the home screen where it was. */
+  /* Members who bypass the access gate below. The gate asks Circle which
+     spaces a member is in, and admins are usually members of almost none —
+     they can open everything by role instead. Without their ids here, an
+     admin sees an almost empty home screen. Add the owner and any admin who
+     needs to see the real thing. Everyone else is gated. */
+  ADMIN_BYPASS_IDS: [],
+
   SHARE: {
     title:  'Share MotherHub!',
     body:   'Share MotherHub, earn a chance to win a 30 min 1:1 with Cait!',
@@ -238,6 +245,31 @@ async function getMemberTierKey(memberId){
   }catch(e){ return 'free'; }
 }
 
+/* Every space this page can show is private, so Circle listing a member as
+   one of its members IS the access check. Asking per member means a tier
+   mis-assignment can never leak content: the tier picks the layout, this
+   picks what may be fetched at all.
+
+   Returns null when the answer is unknown (request failed, timed out, no
+   member). The caller must then show nothing. Never guess an allow. */
+async function getMemberSpaceIds(memberId){
+  if (!memberId) return null;
+  const ids = new Set();
+  for (let page = 1; page <= 3; page++){
+    const url = `${TMM_CONFIG.WORKER_URL}/community_member_spaces`
+              + `?community_member_id=${encodeURIComponent(memberId)}&per_page=100&page=${page}`;
+    const res = await withTimeout(fetch(url), 5000, null);
+    if (!res || !res.ok){
+      console.error('[tmm-home] space lookup failed:', res ? res.status : 'timeout');
+      return null;
+    }
+    let data; try { data = await res.json(); } catch(e){ return null; }
+    (data?.records || []).forEach(sp => ids.add(sp.id));
+    if (!data?.has_next_page) break;
+  }
+  return ids;
+}
+
 /* ---------- API ---------- */
 async function fetchSection(cfg){
   if (!cfg) return [];
@@ -324,9 +356,12 @@ async function fetchOneSpacePosts(spaceId){
   }catch(e){ console.error('space posts fetch failed', spaceId, e.message); return []; }
 }
 
-async function fetchFeatured(tierKey){
-  const spaceIds = FEATURED.SPACES[tierKey] || FEATURED.SPACES.free;
-  if (!spaceIds.length){ console.error('fetchFeatured: no spaces for tier', tierKey); return []; }
+async function fetchFeatured(tierKey, canSee){
+  const all = FEATURED.SPACES[tierKey] || FEATURED.SPACES.free;
+  /* The hero scans several spaces. Drop the ones this member cannot open
+     before asking for anything, so their posts are never even fetched. */
+  const spaceIds = canSee ? all.filter(canSee) : [];
+  if (!spaceIds.length){ return []; }
   const lists = await Promise.all(spaceIds.map(fetchOneSpacePosts));
   const seen = new Set();
   return lists.flat()
@@ -638,11 +673,61 @@ async function init(overrideTierKey){
   if (root) root.setAttribute('data-brand', TMM_CONFIG.BRAND_BY_TIER[tierKey] || 'mm');
   set('tmmGreeting', `Welcome back, ${firstName}`);
 
+  /* A previous attempt may have left the gate fallback on screen; init can
+     run again from the Try again button or the test banner. Put section 1
+     back the way it loads so a retry does not inherit the failed state. */
+  const seeAll0 = document.getElementById('tmmS1Url');
+  if (seeAll0) seeAll0.style.display = '';
+  const hero0 = document.getElementById('tmmHero');
+  if (hero0 && hero0.querySelector('.tmm-gate')) {
+    hero0.innerHTML = '<div class="tmm-skel" style="height:400px"></div>';
+  }
+
+  /* ---- access gate ----
+     TEST_MODE is a developer surface with no member context, so it is the one
+     case that skips the gate. Everything else is decided by what Circle says
+     this member is in. An unknown answer denies. */
+  const bypass = TMM_CONFIG.TEST_MODE ||
+                 (member?.id != null && TMM_CONFIG.ADMIN_BYPASS_IDS.includes(member.id));
+  const mySpaces = bypass ? null : await getMemberSpaceIds(member?.id);
+  const canSee   = (id) => bypass ? true : (mySpaces ? mySpaces.has(id) : false);
+  const canSeeCfg = (cfg) => {
+    const ids = cfg.spaces ? cfg.spaces.map(sp => sp.id)
+                           : (cfg.spaceId ? [cfg.spaceId] : []);
+    return ids.length > 0 && ids.every(canSee);
+  };
+  console.info('[tmm-home] access:', bypass ? 'bypass (test mode or admin)'
+    : (mySpaces ? `${mySpaces.size} spaces` : 'UNKNOWN — showing nothing'));
+
+  const shareCfg = (tier.share === undefined) ? TMM_CONFIG.SHARE : tier.share;
+
+  /* Could not establish what this member may open. Show nothing rather than
+     risk showing content they cannot. The share card is not gated content. */
+  if (!bypass && !mySpaces){
+    ['tmmGrid','tmmFeat','tmmFeed','tmmEvents'].forEach(id => showSection(id, false));
+    showSection('tmmHero', true);
+    set('tmmS1Label', 'Your home');
+    const seeAll = document.getElementById('tmmS1Url');
+    if (seeAll) seeAll.style.display = 'none';
+    const hero = document.getElementById('tmmHero');
+    if (hero) hero.innerHTML = `
+      <div class="tmm-gate">
+        <div class="tmm-gate-title">We couldn&rsquo;t load your library just now.</div>
+        <div class="tmm-gate-body">This is a connection hiccup, not a problem with your
+          membership. Give it another go.</div>
+        <button class="tmm-btn" type="button" onclick="tmmSetTier()">Try again</button>
+      </div>`;
+    showSection('tmmShare', !!shareCfg);
+    if (shareCfg) { try { renderShare(shareCfg); } catch(e){} }
+    return;
+  }
+
   // Each section fetches + renders on its own. A slow/empty section can no
   // longer block the others (previously one hung fetch froze the whole page).
   const render = (cfg, fn, boxId) => {
-    showSection(boxId, !!cfg);
-    if (!cfg) return;
+    const ok = !!cfg && canSeeCfg(cfg);
+    showSection(boxId, ok);
+    if (!ok) return;
     fetchSection(cfg)
       .then(d => { try { fn(d, cfg); } catch(e){ console.error('render error:', e); } })
       .catch(e => console.error('section error:', e));
@@ -651,15 +736,14 @@ async function init(overrideTierKey){
   // Hero = posts tagged `featured` community-wide, filtered to the groups
   // this tier can access. Everything else stays per-space.
   showSection('tmmHero', true);   // skeleton while loading; renderHero decides
-  fetchFeatured(tierKey)
+  fetchFeatured(tierKey, canSee)
     .then(posts => { try { renderHero(posts, tier.hero); } catch(e){ console.error('hero render error:', e); showSection('tmmHero', false); } })
     .catch(e => { console.error('featured error:', e); showSection('tmmHero', false); });
 
   // Share card: tier value wins when present, otherwise the shared default.
   // null for a tier hides it.
-  const share = (tier.share === undefined) ? TMM_CONFIG.SHARE : tier.share;
-  showSection('tmmShare', !!share);
-  if (share) { try { renderShare(share); } catch(e){ console.error('share render error:', e); } }
+  showSection('tmmShare', !!shareCfg);
+  if (shareCfg) { try { renderShare(shareCfg); } catch(e){ console.error('share render error:', e); } }
 
   render(tier.contentGrid,   renderContentGrid, 'tmmGrid');
   render(tier.featuredEvent, (d,c)=> (c.kind==='posts' ? renderFeatPosts(d,c) : renderFeatured(d,c)), 'tmmFeat');

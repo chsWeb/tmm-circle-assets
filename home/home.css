@@ -817,3 +817,29 @@
 .tmm-ph--sand {
   background: #fff
 }
+
+/* ---- access gate fallback ----
+   Shown when Circle could not tell us which spaces this member is in. The
+   page shows nothing rather than risk showing content they cannot open, so
+   this has to read as a hiccup, not as a locked door. */
+.tmm-home .tmm-gate {
+  background: var(--sand);
+  border-radius: var(--radius-lg);
+  padding: 28px var(--pad);
+  text-align: center
+}
+
+.tmm-home .tmm-gate-title {
+  font-family: var(--font-head);
+  font-size: 17px;
+  color: var(--ink);
+  margin-bottom: 8px
+}
+
+.tmm-home .tmm-gate-body {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 34ch;
+  margin: 0 auto 18px
+}
