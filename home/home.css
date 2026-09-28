@@ -710,30 +710,6 @@
   color: var(--electric-red)
 }
 
-/* Airtable referral form. A cross-origin iframe cannot tell us how tall its
-   content is, so the height is fixed and the form scrolls inside it.
-   The tag also carries width/height attributes: if Circle serves a cached
-   older stylesheet, these rules are missing and the frame would collapse to
-   the browser default of 150px, showing only the form's cover band. */
-.tmm-share-form {
-  width: 100%;
-  height: 533px;
-  margin-top: 12px;
-  border: 0;
-  border-radius: var(--radius);
-  background: #fff;
-  display: block
-}
-
-.tmm-share-fallback {
-  margin-top: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
-  text-decoration: underline;
-  text-underline-offset: 2px
-}
-
 .tmm-share-body {
   font-size: 13px;
   font-weight: 500;

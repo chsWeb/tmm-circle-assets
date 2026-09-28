@@ -80,22 +80,19 @@
     </div>
   </section>
 
-  <!-- 6 · SHARE MOTHERHUB — Airtable referral form, embedded.
-       Must be the /embed/ URL: the form's own page sends
-       X-Frame-Options: SAMEORIGIN and will not render in a frame, which is
-       why the plain link showed nothing in Circle's embed element.
-       Height is set in home.css (a cross-origin frame can't report its own
-       height), so it can be tuned without re-pasting this block. -->
+  <!-- 6 · SHARE MOTHERHUB — title, supporting line, button.
+       The button goes to a Site Builder page that hosts the Airtable
+       referral form. Embedding the form here was tried and dropped: the
+       form's own page refuses to be framed (X-Frame-Options), and the
+       /embed/ version only fits in a fixed-height frame whose cover band
+       pushed the questions out of view on a phone.
+       TODO: swap the href for the Site Builder page URL once it exists —
+       it currently points straight at the Airtable form. -->
   <section class="tmm-section">
     <div class="tmm-share">
-      <!-- No body copy here: the embedded form repeats this line as its own
-           heading, so it would read three times over. -->
       <div class="tmm-share-title">Share MotherHub!</div>
-      <iframe class="tmm-share-form"
-              src="https://airtable.com/embed/appspZ48CnWo2Iisd/pagaEUjnuXCs6MaGy/form"
-              title="Share MotherHub and enter to win"
-              width="100%" height="533" loading="lazy"></iframe>
-      <a class="tmm-share-fallback" href="https://airtable.com/appspZ48CnWo2Iisd/pagaEUjnuXCs6MaGy/form" target="_blank" rel="noopener">Form not loading? Open it in a new tab</a>
+      <div class="tmm-share-body">Share MotherHub, earn a chance to win a 30 min 1:1 with Cait!</div>
+      <a class="tmm-btn" href="https://airtable.com/appspZ48CnWo2Iisd/pagaEUjnuXCs6MaGy/form" target="_blank" rel="noopener">Learn More</a>
     </div>
   </section>
 
