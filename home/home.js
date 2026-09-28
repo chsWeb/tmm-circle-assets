@@ -67,6 +67,19 @@ const TMM_CONFIG = {
     inner_circle: 'hub',
   },
 
+  /* Share card (section 6). Lives here rather than in body.html so it can
+     be changed by deploy like the rest of the page. A tier can override any
+     of these, or set share:null to hide the card for that tier.
+     newTab is off: /share is a Circle page, so it opens in place and
+     Circle's back navigation returns to the home screen. */
+  SHARE: {
+    title:  'Share MotherHub!',
+    body:   'Share MotherHub, earn a chance to win a 30 min 1:1 with Cait!',
+    cta:    'Learn More',
+    url:    'https://members.themillionairemother.com/share',
+    newTab: false,
+  },
+
   TIERS: {
     /* A section set to null is hidden for that tier. Free members can't
        open events or Say Hello, so those three sections are hidden rather
@@ -504,6 +517,18 @@ function renderEvents(events,cfg){
   }).join('');
 }
 
+function renderShare(cfg){
+  const el = document.getElementById('tmmShare');
+  if (!el) return;
+  const ext = cfg.newTab ? ' target="_blank" rel="noopener"' : '';
+  el.innerHTML = `
+    <div class="tmm-share">
+      <div class="tmm-share-title">${esc(cfg.title)}</div>
+      ${cfg.body ? `<div class="tmm-share-body">${esc(cfg.body)}</div>` : ''}
+      <a class="tmm-btn" href="${esc(cfg.url)}"${ext}>${esc(cfg.cta || 'Learn More')}</a>
+    </div>`;
+}
+
 /* ---------- init ---------- */
 async function init(overrideTierKey){
   const member    = await getCurrentMember();
@@ -536,6 +561,12 @@ async function init(overrideTierKey){
   fetchFeatured(tierKey)
     .then(posts => { try { renderHero(posts, tier.hero); } catch(e){ console.error('hero render error:', e); showSection('tmmHero', false); } })
     .catch(e => { console.error('featured error:', e); showSection('tmmHero', false); });
+
+  // Share card: tier value wins when present, otherwise the shared default.
+  // null for a tier hides it.
+  const share = (tier.share === undefined) ? TMM_CONFIG.SHARE : tier.share;
+  showSection('tmmShare', !!share);
+  if (share) { try { renderShare(share); } catch(e){ console.error('share render error:', e); } }
 
   render(tier.contentGrid,   renderContentGrid, 'tmmGrid');
   render(tier.featuredEvent, renderFeatured,    'tmmFeat');
