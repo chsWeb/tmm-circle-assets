@@ -7,96 +7,159 @@
 <!-- ============================================================
      Living map of the members home screen, one column per tier.
 
-     Nobody maintains this page. It loads /home/home.js, reads the
-     deployed config from window.__TMM_CONFIG, then asks Circle (via the
-     proxy) for space names and live content counts. So it always shows
-     what is actually deployed and what members would see right now.
+     Nobody maintains this page. It loads home.js, reads the deployed
+     config from window.__TMM_CONFIG, then asks Circle (via the proxy)
+     for space names and live content counts. So it always shows what
+     is actually deployed and what members would see right now.
 
-     It must live on the same origin as home.js to read the config.
+     TWO WAYS TO USE IT
+     1. As a page:  https://tmm-circle-assets.pages.dev/docs/home-map
+     2. Inside Circle: copy everything between the CIRCLE EMBED markers
+        below into a Custom HTML block on a Site Builder page. That
+        region is self-contained (its own <style>, markup and <script>)
+        and every URL in it is absolute, so it runs on any origin.
+        Every selector is scoped to .tmm-map, so Circle's CSS and this
+        page's CSS cannot reach each other.
      ============================================================ -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  :root{
-    --paper:#FBFAF7; --surface:#fff; --sunk:#F2EEE4; --wire:#E8E2D4;
-    --ink:#14120F; --ink-2:#4E4941; --ink-3:#837C6E; --rule:#E4DED0;
-    --accent:#D11934; --accent-soft:rgba(209,25,52,.09); --accent-line:rgba(209,25,52,.32);
-    --ok:#3E6B4A; --ok-soft:rgba(62,107,74,.10);
-    --warn:#8A5A0B; --warn-soft:rgba(138,90,11,.10);
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 'Work Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:1400px;margin:0 auto;padding:clamp(24px,4vw,56px) clamp(16px,3vw,32px) 80px}
-  h1{font-family:'Bodoni Moda',Georgia,serif;font-size:clamp(32px,5vw,52px);line-height:1.04;letter-spacing:-.015em;margin:0}
-  .standfirst{color:var(--ink-2);max-width:62ch;margin:16px 0 0;font-size:clamp(15px,1.7vw,17.5px)}
-  .meta{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0;padding-top:18px;border-top:1px solid var(--rule)}
-  .meta span{font:12px 'IBM Plex Mono',monospace;color:var(--ink-3);background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:4px 9px}
-  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:18px;margin-top:30px;align-items:start}
-  .tier{background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
-  .tier-h{padding:14px 16px;background:var(--sunk);border-bottom:1px solid var(--rule)}
-  .tier-h b{display:block;font-size:17px;letter-spacing:-.01em}
-  .tier-h em{display:block;font:11.5px 'IBM Plex Mono',monospace;color:var(--ink-3);font-style:normal;margin-top:3px}
-  .sec{padding:12px 16px;border-bottom:1px dashed var(--rule)}
-  .sec:last-child{border-bottom:0}
-  .sec.is-hidden{background:repeating-linear-gradient(135deg,transparent,transparent 7px,var(--sunk) 7px,var(--sunk) 14px)}
-  .sec-top{display:flex;gap:8px;align-items:baseline}
-  .num{font:11px 'IBM Plex Mono',monospace;color:var(--ink-3);border:1px solid var(--rule);border-radius:4px;padding:1px 5px;flex:0 0 auto}
-  .lab{font-weight:700;font-size:14.5px;letter-spacing:-.01em}
-  .src{margin:7px 0 0 0;font-size:13px;color:var(--ink-2)}
-  .src a{color:var(--accent);word-break:break-word}
-  .sid{font:11px 'IBM Plex Mono',monospace;color:var(--ink-3)}
-  .pill{display:inline-block;font:10.5px/1.5 'Work Sans',sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:4px;padding:2px 7px;margin-top:8px}
-  .pill--ok{color:var(--ok);background:var(--ok-soft)}
-  .pill--empty{color:var(--warn);background:var(--warn-soft)}
-  .pill--hidden{color:var(--ink-3);background:var(--sunk)}
-  .pill--tag{color:var(--accent);background:var(--accent-soft)}
-  h2{font-family:'Bodoni Moda',Georgia,serif;font-size:clamp(22px,3vw,30px);margin:52px 0 0;padding-bottom:10px;border-bottom:1px solid var(--rule)}
-  table{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}
-  th{text-align:left;font:10.5px 'Work Sans',sans-serif;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);padding:0 10px 8px 0;border-bottom:1px solid var(--rule)}
-  td{padding:9px 10px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
-  code{font:12.5px 'IBM Plex Mono',monospace;background:var(--sunk);border:1px solid var(--rule);border-radius:4px;padding:1px 5px}
-  .note{margin-top:18px;padding:16px 18px;border-radius:9px;background:var(--accent-soft);border:1px solid var(--accent-line);font-size:14.5px;color:var(--ink-2)}
-  .note b{color:var(--ink)}
-  .loading{padding:40px 0;color:var(--ink-3);font:14px 'IBM Plex Mono',monospace}
-  .err{padding:16px 18px;border-radius:9px;background:var(--warn-soft);border:1px solid var(--warn);color:var(--ink);font-size:14.5px}
-  footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--rule);font-size:13px;color:var(--ink-3);max-width:76ch}
-  @media (prefers-color-scheme:dark){
-    :root{--paper:#141210;--surface:#1C1A17;--sunk:#232019;--wire:#332E25;--ink:#F3EFE5;--ink-2:#BAB3A4;--ink-3:#8B8477;--rule:#332E26;--accent:#F2536A;--accent-soft:rgba(242,83,106,.13);--accent-line:rgba(242,83,106,.34);--ok:#8FBF9C;--ok-soft:rgba(143,191,156,.12);--warn:#D9A441;--warn-soft:rgba(217,164,65,.12)}
-  }
+  html,body{margin:0;background:#F9F9F9}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>Home Screen Map</h1>
-  <p class="standfirst">What every membership level sees on the members home screen, and exactly which Circle space each section pulls from. This page reads the live configuration and asks Circle what is in those spaces right now, so it is never out of date.</p>
-  <div class="meta" id="meta"></div>
-  <div id="app"><p class="loading">Reading the deployed configuration...</p></div>
 
-  <h2>How the top section works</h2>
+<!-- ========== CIRCLE EMBED · BEGIN — copy from here ========== -->
+<style>
+  /* Brand faces, served from Cloudflare Pages with CORS open, so they
+     load whether this runs on Pages or pasted inside Circle. */
+  @font-face{font-family:'TMM Operetta';src:url('https://tmm-circle-assets.pages.dev/home/fonts/Operetta52-Medium.woff2') format('woff2');font-weight:500;font-display:swap}
+  @font-face{font-family:'TMM Sweet Sans';src:url('https://tmm-circle-assets.pages.dev/home/fonts/SweetSansProMedium.woff2') format('woff2');font-weight:500;font-display:swap}
+  @font-face{font-family:'TMM Work Sans';src:url('https://tmm-circle-assets.pages.dev/home/fonts/WorkSans-Regular.woff2') format('woff2');font-weight:400;font-display:swap}
+  @font-face{font-family:'TMM Work Sans';src:url('https://tmm-circle-assets.pages.dev/home/fonts/WorkSans-Medium.woff2') format('woff2');font-weight:500;font-display:swap}
+  @font-face{font-family:'TMM Work Sans';src:url('https://tmm-circle-assets.pages.dev/home/fonts/WorkSans-SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+  @font-face{font-family:'TMM Work Sans';src:url('https://tmm-circle-assets.pages.dev/home/fonts/WorkSans-Bold.woff2') format('woff2');font-weight:700;font-display:swap}
+
+  .tmm-map{
+    /* The community palette, straight from home.css */
+    --white:#F9F9F9; --linen:#EFEBE0; --sand:#EAE4D6; --cream:#F4EDDB;
+    --black:#0F0F0F; --charcoal:#2D2D2D; --sage:#B2AA96; --red:#D11934;
+
+    --paper:var(--white); --surface:#FFFFFF; --sunk:var(--linen);
+    --ink:var(--black); --ink-2:#4D4D4D; --ink-3:#635D54;
+    --rule:#E1DCD0; --rule-soft:#EDE8DC;
+    --red-soft:rgba(209,25,52,.08); --red-line:rgba(209,25,52,.28);
+
+    --font-display:'TMM Operetta',Georgia,serif;
+    --font-head:'TMM Sweet Sans','TMM Work Sans',sans-serif;
+    --font-body:'TMM Work Sans',system-ui,-apple-system,sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+
+    background:var(--paper);
+    color:var(--ink);
+    font:16px/1.6 var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    scrollbar-color:var(--sage) var(--linen);
+  }
+  .tmm-map *{box-sizing:border-box}
+  .tmm-map ::selection{background:var(--red);color:var(--cream)}
+  .tmm-map :focus-visible{outline:2px solid var(--red);outline-offset:2px;border-radius:3px}
+  .tmm-map a{color:var(--red);text-decoration-thickness:1px;text-underline-offset:2px}
+  .tmm-map a:hover{color:var(--black)}
+
+  .tmm-map .wrap{max-width:1520px;margin:0 auto;padding:clamp(24px,4vw,56px) clamp(16px,3vw,32px) 72px}
+  .tmm-map .hd{font-family:var(--font-display);font-weight:500;font-size:clamp(34px,5vw,54px);line-height:1.04;letter-spacing:-.02em;margin:0}
+  .tmm-map .standfirst{color:var(--ink-2);max-width:68ch;margin:18px 0 0;font-size:clamp(15px,1.7vw,17.5px)}
+
+  .tmm-map .meta{display:flex;flex-wrap:wrap;gap:8px;margin:26px 0 0;padding-top:20px;border-top:1px solid var(--rule)}
+  .tmm-map .meta span{font:12px/1.5 var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink-3);background:var(--linen);border-radius:5px;padding:4px 9px}
+
+  /* Legend — the hidden rows are plain neutrals now, so say what they mean. */
+  .tmm-map .legend{display:flex;flex-wrap:wrap;gap:18px;margin:22px 0 0;font:12px/1.4 var(--font-head);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+  .tmm-map .legend i{display:inline-block;width:22px;height:12px;border:1px solid var(--rule);border-radius:3px;margin-right:7px;vertical-align:-1px}
+  .tmm-map .legend .sw-on{background:var(--surface)}
+  .tmm-map .legend .sw-off{background:var(--sunk)}
+
+  .tmm-map .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(236px,1fr));gap:18px;margin-top:26px;align-items:start}
+  .tmm-map .tier{background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(15,15,15,.04),0 10px 24px -18px rgba(15,15,15,.22)}
+  .tmm-map .tier-h{padding:15px 16px;background:var(--sand);border-bottom:1px solid var(--rule)}
+  .tmm-map .tier-h b{display:block;font-family:var(--font-head);font-weight:500;font-size:16.5px;letter-spacing:.005em}
+  .tmm-map .tier-h em{display:block;font:11.5px/1.5 var(--font-mono);color:#5E594F;font-style:normal;margin-top:4px}
+
+  .tmm-map .sec{padding:13px 16px;border-bottom:1px solid var(--rule-soft);background:var(--surface)}
+  .tmm-map .sec:last-child{border-bottom:0}
+  .tmm-map .sec.is-hidden{background:var(--sunk)}
+  .tmm-map .sec.is-hidden .pill--hidden{border-color:#DCD5C4}
+  .tmm-map .sec-top{display:flex;gap:9px;align-items:baseline}
+  .tmm-map .num{font:11px/1.6 var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink-3);border:1px solid var(--rule);border-radius:4px;padding:0 5px;flex:0 0 auto}
+  .tmm-map .lab{font-family:var(--font-head);font-weight:500;font-size:14.5px;letter-spacing:.005em}
+  .tmm-map .lab--off{color:var(--ink-3)}
+  .tmm-map .src{margin:8px 0 0;font-size:13.5px;color:var(--ink-2)}
+  .tmm-map .src a{word-break:break-word}
+  .tmm-map .sid{font:11px/1.5 var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink-3)}
+  .tmm-map .gone{color:var(--red);font-weight:600}
+
+  .tmm-map .pill{display:inline-block;font:10.5px/1.6 var(--font-head);font-weight:500;letter-spacing:.09em;text-transform:uppercase;border-radius:4px;padding:2px 7px;margin:9px 6px 0 0;border:1px solid transparent}
+  .tmm-map .pill--ok{color:var(--charcoal);background:var(--cream);border-color:#DFD4B4}
+  .tmm-map .pill--hidden{color:var(--ink-3);background:transparent;border-color:var(--rule)}
+  .tmm-map .pill--tag{color:var(--red);background:var(--red-soft);border-color:var(--red-line)}
+
+  .tmm-map .sub{font-family:var(--font-display);font-weight:500;font-size:clamp(23px,3vw,31px);letter-spacing:-.015em;margin:56px 0 0;padding-bottom:11px;border-bottom:1px solid var(--rule)}
+  .tmm-map table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px}
+  .tmm-map th{text-align:left;font:10.5px/1.6 var(--font-head);font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);padding:0 12px 9px 0;border-bottom:1px solid var(--rule)}
+  .tmm-map td{padding:10px 12px 10px 0;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+  .tmm-map code{font:12.5px/1.5 var(--font-mono);background:var(--linen);border-radius:4px;padding:1px 5px}
+  .tmm-map .note{margin-top:20px;padding:18px 20px;border-radius:10px;background:var(--linen);border:1px solid var(--rule);font-size:14.5px;color:var(--ink-2)}
+  .tmm-map .note p{margin:0 0 10px}
+  .tmm-map .note p:last-child{margin-bottom:0}
+  .tmm-map .note b{color:var(--ink)}
+  .tmm-map .loading{padding:40px 0;color:var(--ink-3);font:14px/1.6 var(--font-mono)}
+  .tmm-map .err{padding:18px 20px;border-radius:10px;background:var(--red-soft);border:1px solid var(--red-line);color:var(--ink);font-size:14.5px}
+  .tmm-map .foot{margin-top:56px;padding-top:20px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--ink-3);max-width:76ch}
+
+  /* One authored moment: the columns settle in once the live data has
+     arrived, left to right. Nothing else on the page animates. */
+  .tmm-map .tier{animation:tmmMapIn .5s cubic-bezier(.16,1,.3,1) backwards}
+  @keyframes tmmMapIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){
+    .tmm-map .tier{animation:none}
+  }
+</style>
+
+<div class="tmm-map">
+<div class="wrap">
+  <h1 class="hd">Home Screen Map</h1>
+  <p class="standfirst">What every membership level sees on the members home screen, and exactly which Circle space each section pulls from. This page reads the live configuration and asks Circle what is in those spaces right now, so it is never out of date.</p>
+  <div class="meta" id="tmmMapMeta"></div>
+  <p class="legend">
+    <span><i class="sw-on"></i>Shown to members</span>
+    <span><i class="sw-off"></i>Hidden right now</span>
+  </p>
+  <div id="tmmMapApp"><p class="loading">Reading the deployed configuration...</p></div>
+
+  <h2 class="sub">How the top section works</h2>
   <div class="note">
     <p><b>Section 1 is different from the rest.</b> Sections 2 to 5 each show the newest posts from one space. Section 1 looks across several spaces and shows only posts tagged <code>featured</code>. If nothing is tagged, the section disappears rather than showing an empty box.</p>
-    <p style="margin-bottom:0">Sections with nothing to show are hidden too, which is why some levels have shorter pages than others. Hidden sections appear here with diagonal shading.</p>
+    <p>Sections with nothing to show are hidden too, which is why some levels have shorter pages than others. Those rows sit on a grey background here, with a note saying why.</p>
   </div>
 
-  <h2>Which members see which level</h2>
-  <div id="groups"></div>
+  <h2 class="sub">Which members see which level</h2>
+  <div id="tmmMapGroups"></div>
 
-  <footer id="foot"></footer>
+  <p class="foot" id="tmmMapFoot"></p>
+</div>
 </div>
 
-<script src="/home/home.js"></script>
+<script src="https://tmm-circle-assets.pages.dev/home/home.js?v=14"></script>
 <script>
 (async () => {
   try {
   const W = 'https://tmm-circle-proxy.product-10c.workers.dev';
   const CID = '97488';
   const TAG = 'featured';
-  const app = document.getElementById('app');
+  const app = document.getElementById('tmmMapApp');
   const cfg = window.__TMM_CONFIG, feat = window.__TMM_FEATURED;
 
   if (!cfg) {
-    app.innerHTML = '<p class="err">Could not read the configuration from <code>/home/home.js</code>. ' +
+    app.innerHTML = '<p class="err">Could not read the configuration from <code>home.js</code>. ' +
       'That usually means home.js was updated without the line that publishes it. Tell your developer.</p>';
     return;
   }
@@ -150,7 +213,7 @@
 
   const spaceLine = (id) => {
     const s = spaces.get(id);
-    if (!s) return '<p class="src"><b>Space ' + id + '</b> &mdash; <span style="color:var(--warn)">no longer exists in Circle</span></p>';
+    if (!s) return '<p class="src"><b>Space ' + id + '</b> &mdash; <span class="gone">no longer exists in Circle</span></p>';
     return '<p class="src"><b>' + esc(s.name) + '</b><br>' +
       '<a href="https://members.themillionairemother.com/c/' + esc(s.slug) + '" target="_blank" rel="noopener">/c/' + esc(s.slug) + '</a>' +
       '<span class="sid"> &middot; id ' + id + '</span></p>';
@@ -177,7 +240,7 @@
     const secs = [['contentGrid','2'],['featuredEvent','3'],['postFeed','4'],['eventsGrid','5']];
     for (const pair of secs) {
       const c = t[pair[0]], n = pair[1];
-      if (!c) { rows.push('<div class="sec is-hidden"><div class="sec-top"><span class="num">' + n + '</span><span class="lab" style="color:var(--ink-3)">Not shown at this level</span></div><span class="pill pill--hidden">hidden on purpose</span></div>'); continue; }
+      if (!c) { rows.push('<div class="sec is-hidden"><div class="sec-top"><span class="num">' + n + '</span><span class="lab lab--off">Not shown at this level</span></div><span class="pill pill--hidden">hidden on purpose</span></div>'); continue; }
       const isEvent = c.space_type === 'event';
       const live = isEvent ? await countUpcoming(c.spaceId) : await countPosts(c.spaceId, c.topicId);
       const empty = !live;
@@ -194,35 +257,36 @@
     rows.push(share
       ? '<div class="sec"><div class="sec-top"><span class="num">6</span><span class="lab">' + esc(share.title) + '</span></div>' +
         '<p class="src">Fixed text, not from Circle &middot; button opens <a href="' + esc(share.url) + '" target="_blank" rel="noopener">' + esc(share.url.replace(/^https:\/\/[^/]+/, '')) + '</a></p></div>'
-      : '<div class="sec is-hidden"><div class="sec-top"><span class="num">6</span><span class="lab" style="color:var(--ink-3)">Not shown at this level</span></div><span class="pill pill--hidden">hidden on purpose</span></div>');
+      : '<div class="sec is-hidden"><div class="sec-top"><span class="num">6</span><span class="lab lab--off">Not shown at this level</span></div><span class="pill pill--hidden">hidden on purpose</span></div>');
 
-    cols.push('<div class="tier"><div class="tier-h"><b>' + esc(t.label || key) + '</b><em>' + esc(key) + '</em></div>' + rows.join('') + '</div>');
+    cols.push('<div class="tier" style="animation-delay:' + (cols.length * 60) + 'ms">' +
+      '<div class="tier-h"><b>' + esc(t.label || key) + '</b><em>' + esc(key) + '</em></div>' + rows.join('') + '</div>');
   }
 
   app.innerHTML = '<div class="cols">' + cols.join('') + '</div>';
 
   let gm = new Map();
   try { const d = await j('/access_groups?community_id=' + CID + '&per_page=100&page=1'); gm = new Map((d.records || []).map(g => [g.id, g.name.trim()])); } catch (e) {}
-  document.getElementById('groups').innerHTML =
-    '<p class="src" style="color:var(--ink-2)">A member gets the first level below whose access group they belong to. Anyone matching none of them sees the Free page.</p>' +
+  document.getElementById('tmmMapGroups').innerHTML =
+    '<p class="src">A member gets the first level below whose access group they belong to. Anyone matching none of them sees the Free page.</p>' +
     '<table><tr><th>Level</th><th>Circle access groups that grant it</th></tr>' +
     (cfg.TIER_GROUPS || []).map(t => '<tr><td><b>' + esc((cfg.TIERS[t.tier] || {}).label || t.tier) + '</b></td><td>' +
       t.groups.map(id => esc(gm.get(id) || ('group ' + id)) + ' <span class="sid">(' + id + ')</span>').join('<br>') + '</td></tr>').join('') +
     '</table>';
 
-  document.getElementById('meta').innerHTML = [
+  document.getElementById('tmmMapMeta').innerHTML = [
     'build ' + esc(cfg.BUILD || 'unknown'),
     tierOrder.length + ' levels',
     spaces.size + ' spaces in Circle',
     'checked ' + new Date().toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
   ].map(s => '<span>' + s + '</span>').join('');
 
-  document.getElementById('foot').innerHTML =
-    'This page is generated from the live configuration in <code>/home/home.js</code> and from Circle itself, each time it is opened. ' +
+  document.getElementById('tmmMapFoot').innerHTML =
+    'This page is generated from the live configuration in <code>home.js</code> and from Circle itself, each time it is opened. ' +
     'Counts are what Circle returns right now, so a section marked hidden will appear the moment content is added or tagged. ' +
     'Nothing here is typed by hand, so it cannot fall out of date.';
   } catch (err) {
-    document.getElementById('app').innerHTML =
+    document.getElementById('tmmMapApp').innerHTML =
       '<p class="err"><b>This page could not finish loading.</b><br>' +
       String(err && err.message ? err.message : err) +
       '<br>The home screen itself is unaffected &mdash; this is only the map.</p>';
@@ -230,5 +294,7 @@
   }
 })();
 </script>
+<!-- ========== CIRCLE EMBED · END — copy to here ========== -->
+
 </body>
 </html>

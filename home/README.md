@@ -126,3 +126,31 @@ internally. Measured 28 Sept 2026:
 
 Narrower means taller, so keep the block full width in Site Builder, and
 re-measure if fields are added.
+
+## The home screen map (docs/home-map.html)
+
+A living diagram of what each tier's home screen shows and which Circle space
+feeds every section. It loads `home.js`, reads `window.__TMM_CONFIG`, then asks
+Circle through the proxy for space names and live content counts — so it is
+never out of date and nobody has to maintain it.
+
+Two ways to use it:
+
+- **As a page:** <https://tmm-circle-assets.pages.dev/docs/home-map>
+  (the `.html` form 308-redirects here).
+- **Inside the community:** open `docs/home-map.html`, copy everything between
+  the `CIRCLE EMBED · BEGIN` and `CIRCLE EMBED · END` markers, and paste it into
+  a Custom HTML block on a Site Builder page. No iframe, so no fixed height and
+  no inner scrollbars.
+
+That region is self-contained — its own `<style>`, markup and `<script>` — and
+every URL inside it is absolute, so it runs on any origin. Every selector is
+scoped to `.tmm-map` and the element ids are `tmmMap*`, so Circle's CSS and this
+page's CSS cannot reach each other.
+
+Two things to know:
+
+- It uses the **admin** proxy token, so it shows every tier regardless of who is
+  looking. Put it on a page restricted to admins, not one members can open.
+- The `<script src=...home.js?v=N>` version inside the embed only affects how
+  fresh the config is; bump it with the rest when you deploy.
