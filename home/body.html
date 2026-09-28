@@ -81,18 +81,19 @@
   </section>
 
   <!-- 6 · SHARE MOTHERHUB — title, supporting line, button.
-       The button goes to a Site Builder page that hosts the Airtable
-       referral form. Embedding the form here was tried and dropped: the
-       form's own page refuses to be framed (X-Frame-Options), and the
-       /embed/ version only fits in a fixed-height frame whose cover band
-       pushed the questions out of view on a phone.
-       TODO: swap the href for the Site Builder page URL once it exists —
-       it currently points straight at the Airtable form. -->
+       The button opens /share, a Site Builder page holding the Airtable
+       referral form. Embedding the form in this card was tried and
+       dropped: the form's own page refuses to be framed
+       (X-Frame-Options), and the /embed/ version only fits in a
+       fixed-height frame whose cover band pushed the questions out of
+       view on a phone. A full page gives it the room it needs.
+       No target="_blank": /share is inside Circle, so it should open in
+       place and let Circle's own back navigation return here. -->
   <section class="tmm-section">
     <div class="tmm-share">
       <div class="tmm-share-title">Share MotherHub!</div>
       <div class="tmm-share-body">Share MotherHub, earn a chance to win a 30 min 1:1 with Cait!</div>
-      <a class="tmm-btn" href="https://airtable.com/appspZ48CnWo2Iisd/pagaEUjnuXCs6MaGy/form" target="_blank" rel="noopener">Learn More</a>
+      <a class="tmm-btn" href="https://members.themillionairemother.com/share">Learn More</a>
     </div>
   </section>
 
