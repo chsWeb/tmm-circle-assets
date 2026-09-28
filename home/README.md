@@ -55,8 +55,11 @@ In `head.html`, replace `YOUR-PROJECT` with your Pages subdomain, then paste the
 three lines into the head of **both** surfaces (Custom App Builder screen + Site
 Builder page). Paste `body.html` into the Custom HTML block on each.
 
-> Always add a **new** Custom App screen — never paste over an old one. Circle
-> caches the compiled screen and the old cache can't be cleared.
+> If a pasted change doesn't appear in the Custom App, force-quit and reopen
+> the app first, and check the change was published rather than left a draft.
+> Editing an existing screen has worked fine in practice; the original advice
+> here was to always create a new screen, which is a real cost as the
+> community grows, so try the simpler things first.
 
 ---
 
@@ -86,3 +89,40 @@ in `head.html` (`?v=1` → `?v=2`) and re-save the head snippet.
 - Custom App iframe *may* block external `<script src>` via CSP. If the app
   version stays on skeletons while the Site Builder page works, that's the CSP
   block: inline `home.js` inside `body.html` for the app build only (same code).
+
+
+---
+
+## What is pasted vs what is deployed
+
+Deployed from this repo (change, push, done): `home/home.css`, `home/home.js`,
+`home/fonts/*`, `home/assets/*`, `images/*`.
+
+Pasted into Circle by hand: `home/head.html`, `home/body.html`, and the
+splash page's `splash-head.html` / `splash-body.html`. Changing these needs
+someone to paste them into Circle; nothing fetches them from Pages.
+
+Since Sept 2026 the share card's content is in `TMM_CONFIG.SHARE` in
+`home/home.js`, so its wording and link no longer need a paste.
+
+## The /share page (Site Builder, not deployed)
+
+The share card's button opens `/share`, a Circle Site Builder page holding the
+Airtable referral form. It is pasted into Site Builder and is not part of this
+repo's deploy.
+
+Embedding that form needs Airtable's `/embed/` URL. The form's own page sends
+`X-Frame-Options: SAMEORIGIN` and renders blank in a frame, which is why
+pasting the plain link into Circle's embed element shows nothing.
+
+A cross-origin frame cannot report its height and Airtable does not message it
+out, so the frame must be taller than the form or Airtable scrolls it
+internally. Measured 28 Sept 2026:
+
+| Frame width | Form content height | Frame height to use |
+|---|---|---|
+| 390px (phone) | 1352px | 1500px |
+| 1280px (desktop) | 1134px | 1250px |
+
+Narrower means taller, so keep the block full width in Site Builder, and
+re-measure if fields are added.
