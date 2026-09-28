@@ -82,11 +82,12 @@ const TMM_CONFIG = {
      inside the app replaces the screen the tab bar was showing, which left
      members unable to get back — tapping Home did nothing. A new window
      keeps the home screen where it was. */
-  /* Members who bypass the access gate below. The gate asks Circle which
-     spaces a member is in, and admins are usually members of almost none —
-     they can open everything by role instead. Without their ids here, an
-     admin sees an almost empty home screen. Add the owner and any admin who
-     needs to see the real thing. Everyone else is gated. */
+  /* Admins and moderators can open every space by role, so Circle lists them
+     as members of almost none — the gate would leave their own home screen
+     nearly empty. They are bypassed instead, from the role the app SDK
+     reports (see isAdminMember). Circle's Admin API has no role field on any
+     endpoint safe to expose here, so this list stays as the fallback for a
+     surface where the SDK reports no role. Ids only, no names. */
   ADMIN_BYPASS_IDS: [],
 
   SHARE: {
@@ -232,6 +233,25 @@ async function getCurrentMember(){
    ignores `id` and returns the first page — so every member got the same
    person's (empty) tags and landed on Free. This asks for the member's own
    access groups instead. */
+/* Admins and moderators see every space by role. The app SDK is the only
+   place that role is available to this page, and its shape is not documented
+   for custom screens, so accept any of the plausible spellings rather than
+   betting on one. The member-fields line logged in init() shows what this
+   community's SDK actually returns, so this can be narrowed once confirmed.
+
+   Client-side, therefore spoofable with devtools — but it only ever grants
+   what the proxy already hands anyone who opens devtools, so it widens
+   nothing. It is a convenience for admins, not a security boundary. */
+function isAdminMember(m){
+  if (!m) return false;
+  const r = m.roles;
+  if (r && typeof r === 'object' && !Array.isArray(r) && (r.admin || r.moderator)) return true;
+  const list = Array.isArray(r) ? r : [];
+  if (list.some(x => /admin|moderator/i.test(String(x)))) return true;
+  if (typeof m.role === 'string' && /admin|moderator/i.test(m.role)) return true;
+  return !!(m.is_admin || m.admin || m.is_moderator || m.moderator || m.is_community_admin);
+}
+
 async function getMemberTierKey(memberId){
   if (!memberId) return 'free';
   try{
@@ -395,6 +415,15 @@ function coverImage(x){ return (x && (x.cardview_thumbnail_url || x.cover_image_
    any element inside it. Inline display rather than the hidden attribute,
    so no stylesheet rule can override it. Re-run on every init so switching
    tier in the test banner brings back sections another tier had hidden. */
+/* Denying a section must remove its content, not just hide it. init() can run
+   again in the same page (Try again, or the test banner), and a hidden node
+   still holding another tier's posts is indistinguishable from a leak. */
+function denySection(innerId){
+  const el = document.getElementById(innerId);
+  if (el) el.innerHTML = '';
+  showSection(innerId, false);
+}
+
 function showSection(innerId, on){
   const sec = document.getElementById(innerId)?.closest('.tmm-section');
   if (sec) sec.style.display = on ? '' : 'none';
@@ -477,7 +506,7 @@ function renderHero(posts,cfg){
   set('tmmS1Label',cfg.label); href('tmmS1Url',cfg.url);
   const box=document.getElementById('tmmHero');
   // Nothing tagged: drop the whole section rather than show "No posts yet".
-  if (!posts.length){ showSection('tmmHero', false); return; }
+  if (!posts.length){ denySection('tmmHero'); return; }
   showSection('tmmHero', true);
   const cards = posts.map(p=>{
     const img = coverImage(p);
@@ -521,7 +550,7 @@ function setupHeroCarousel(){
 function renderContentGrid(posts,cfg){
   set('tmmS2Label',cfg.label); href('tmmS2Url',cfg.url);
   const el=document.getElementById('tmmGrid');
-  if(!posts.length){ showSection('tmmGrid', false); return; }   // empty -> no section
+  if(!posts.length){ denySection('tmmGrid'); return; }   // empty -> no section
   const phSet = cfg.placeholders;
   const start = placeholderStart(phSet);
   el.innerHTML = posts.map((p,i)=>{
@@ -539,7 +568,7 @@ function renderContentGrid(posts,cfg){
 function renderFeatured(events,cfg){
   set('tmmS3Label',cfg.label); href('tmmS3Url',cfg.url);
   const el=document.getElementById('tmmFeat');
-  if(!events.length){ showSection('tmmFeat', false); return; }   // empty -> no section
+  if(!events.length){ denySection('tmmFeat'); return; }   // empty -> no section
   // Was pinned to one August 2026 event by slug, which outranked whatever was
   // actually next. Events now arrive soonest-first, so the next one is [0].
   const ev=events[0];
@@ -562,7 +591,7 @@ function renderFeatured(events,cfg){
 function renderFeed(posts,cfg){
   set('tmmS4Label',cfg.label); href('tmmS4Url',cfg.url);
   const el=document.getElementById('tmmFeed');
-  if(!posts.length){ showSection('tmmFeed', false); return; }    // empty -> no section
+  if(!posts.length){ denySection('tmmFeed'); return; }    // empty -> no section
   el.innerHTML = posts.map(p=>{
     const av = p.user_avatar_url
       ? `<img class="tmm-avatar" src="${esc(p.user_avatar_url)}" alt="">`
@@ -582,7 +611,7 @@ function renderFeed(posts,cfg){
 function renderEvents(events,cfg){
   set('tmmS5Label',cfg.label); href('tmmS5Url',cfg.url);
   const el=document.getElementById('tmmEvents');
-  if(!events.length){ showSection('tmmEvents', false); return; } // empty -> no section
+  if(!events.length){ denySection('tmmEvents'); return; } // empty -> no section
   el.innerHTML = events.map(ev=>{
     const dt=ev.starts_at||ev.published_at;
     const img=coverImage(ev);
@@ -618,7 +647,7 @@ function renderShare(cfg){
 function renderFeatPosts(posts,cfg){
   set('tmmS3Label',cfg.label); href('tmmS3Url',cfg.url);
   const el=document.getElementById('tmmFeat');
-  if(!posts.length){ showSection('tmmFeat', false); return; }
+  if(!posts.length){ denySection('tmmFeat'); return; }
   showSection('tmmFeat', true);
   const phSet = cfg.placeholders;
   const start = placeholderStart(phSet);
@@ -687,7 +716,7 @@ async function init(overrideTierKey){
      TEST_MODE is a developer surface with no member context, so it is the one
      case that skips the gate. Everything else is decided by what Circle says
      this member is in. An unknown answer denies. */
-  const bypass = TMM_CONFIG.TEST_MODE ||
+  const bypass = TMM_CONFIG.TEST_MODE || isAdminMember(member) ||
                  (member?.id != null && TMM_CONFIG.ADMIN_BYPASS_IDS.includes(member.id));
   const mySpaces = bypass ? null : await getMemberSpaceIds(member?.id);
   const canSee   = (id) => bypass ? true : (mySpaces ? mySpaces.has(id) : false);
@@ -696,7 +725,11 @@ async function init(overrideTierKey){
                            : (cfg.spaceId ? [cfg.spaceId] : []);
     return ids.length > 0 && ids.every(canSee);
   };
-  console.info('[tmm-home] access:', bypass ? 'bypass (test mode or admin)'
+  /* Field names only, never values: this line is for wiring up isAdminMember
+     during testing and must not put member data in the console. */
+  console.info('[tmm-home] member fields:', member ? Object.keys(member).join(',') : '(none)');
+  console.info('[tmm-home] access:', bypass
+    ? (TMM_CONFIG.TEST_MODE ? 'bypass (test mode)' : 'bypass (admin or moderator)')
     : (mySpaces ? `${mySpaces.size} spaces` : 'UNKNOWN — showing nothing'));
 
   const shareCfg = (tier.share === undefined) ? TMM_CONFIG.SHARE : tier.share;
@@ -704,7 +737,7 @@ async function init(overrideTierKey){
   /* Could not establish what this member may open. Show nothing rather than
      risk showing content they cannot. The share card is not gated content. */
   if (!bypass && !mySpaces){
-    ['tmmGrid','tmmFeat','tmmFeed','tmmEvents'].forEach(id => showSection(id, false));
+    ['tmmGrid','tmmFeat','tmmFeed','tmmEvents'].forEach(denySection);
     showSection('tmmHero', true);
     set('tmmS1Label', 'Your home');
     const seeAll = document.getElementById('tmmS1Url');
@@ -726,8 +759,8 @@ async function init(overrideTierKey){
   // longer block the others (previously one hung fetch froze the whole page).
   const render = (cfg, fn, boxId) => {
     const ok = !!cfg && canSeeCfg(cfg);
-    showSection(boxId, ok);
-    if (!ok) return;
+    if (!ok) { denySection(boxId); return; }
+    showSection(boxId, true);
     fetchSection(cfg)
       .then(d => { try { fn(d, cfg); } catch(e){ console.error('render error:', e); } })
       .catch(e => console.error('section error:', e));
@@ -737,8 +770,8 @@ async function init(overrideTierKey){
   // this tier can access. Everything else stays per-space.
   showSection('tmmHero', true);   // skeleton while loading; renderHero decides
   fetchFeatured(tierKey, canSee)
-    .then(posts => { try { renderHero(posts, tier.hero); } catch(e){ console.error('hero render error:', e); showSection('tmmHero', false); } })
-    .catch(e => { console.error('featured error:', e); showSection('tmmHero', false); });
+    .then(posts => { try { renderHero(posts, tier.hero); } catch(e){ console.error('hero render error:', e); denySection('tmmHero'); } })
+    .catch(e => { console.error('featured error:', e); denySection('tmmHero'); });
 
   // Share card: tier value wins when present, otherwise the shared default.
   // null for a tier hides it.
