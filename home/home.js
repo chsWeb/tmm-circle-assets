@@ -67,6 +67,13 @@ const TMM_CONFIG = {
     inner_circle: 'hub',
   },
 
+  /* Stamped into the test banner at run time, so you can see which build a
+     surface is actually running. The app and the Site Builder page each have
+     their own head snippet and their own cache, so one can be stale while
+     the other is current. No stamp visible at all = old JS. Bump this when
+     you bump ?v= in head.html. */
+  BUILD: 'v12 · 2026-09-28',
+
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
      of these, or set share:null to hide the card for that tier.
@@ -538,6 +545,16 @@ async function init(overrideTierKey){
   console.info('[tmm-home] member id:', member?.id ?? '(none)', '| tier:', tierKey, TMM_CONFIG.TIERS[tierKey] ? '' : '(no page yet, showing Free)');
   // Test banner: show the DETECTED tier in its dropdown, so a test login can
   // see what it was matched to. Skipped when the dropdown itself chose it.
+  // Show the running build in the test banner (test surfaces only).
+  const banner = document.getElementById('tmmTestBanner');
+  if (banner && !banner.querySelector('.tmm-build')) {
+    const tag = document.createElement('span');
+    tag.className = 'tmm-build';
+    tag.style.cssText = 'margin-left:auto;font:11px/1.2 ui-monospace,monospace;color:#8A8477;white-space:nowrap';
+    banner.appendChild(tag);
+  }
+  if (banner) banner.querySelector('.tmm-build').textContent = `${TMM_CONFIG.BUILD} · ${tierKey}`;
+
   const sel = document.querySelector('#tmmTestBanner select');
   if (sel && !overrideTierKey && [...sel.options].some(o => o.value === tierKey)) sel.value = tierKey;
 
