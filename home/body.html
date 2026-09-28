@@ -80,15 +80,22 @@
     </div>
   </section>
 
-  <!-- 6 · SHARE MOTHERHUB (static; button opens the Airtable referral form)
-       The form's own page sends X-Frame-Options: SAMEORIGIN, so it cannot be
-       iframed and Circle's embed element can't show it. Opening it in a new
-       tab avoids that entirely and works in the app and on the web. -->
+  <!-- 6 · SHARE MOTHERHUB — Airtable referral form, embedded.
+       Must be the /embed/ URL: the form's own page sends
+       X-Frame-Options: SAMEORIGIN and will not render in a frame, which is
+       why the plain link showed nothing in Circle's embed element.
+       Height is set in home.css (a cross-origin frame can't report its own
+       height), so it can be tuned without re-pasting this block. -->
   <section class="tmm-section">
     <div class="tmm-share">
+      <!-- No body copy here: the embedded form repeats this line as its own
+           heading, so it would read three times over. -->
       <div class="tmm-share-title">Share MotherHub!</div>
-      <div class="tmm-share-body">Share MotherHub, earn a chance to win a 30 min 1:1 with Cait!</div>
-      <a class="tmm-btn" href="https://airtable.com/appspZ48CnWo2Iisd/pagaEUjnuXCs6MaGy/form" target="_blank" rel="noopener">Learn More</a>
+      <iframe class="tmm-share-form"
+              src="https://airtable.com/embed/appspZ48CnWo2Iisd/pagaEUjnuXCs6MaGy/form"
+              title="Share MotherHub and enter to win"
+              loading="lazy"></iframe>
+      <a class="tmm-share-fallback" href="https://airtable.com/appspZ48CnWo2Iisd/pagaEUjnuXCs6MaGy/form" target="_blank" rel="noopener">Form not loading? Open it in a new tab</a>
     </div>
   </section>
 
