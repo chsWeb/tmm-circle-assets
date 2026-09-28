@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Home Screen Map — The Millionaire Mother</title>
+<!-- ============================================================
+     Living map of the members home screen, one column per tier.
+
+     Nobody maintains this page. It loads /home/home.js, reads the
+     deployed config from window.__TMM_CONFIG, then asks Circle (via the
+     proxy) for space names and live content counts. So it always shows
+     what is actually deployed and what members would see right now.
+
+     It must live on the same origin as home.js to read the config.
+     ============================================================ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --paper:#FBFAF7; --surface:#fff; --sunk:#F2EEE4; --wire:#E8E2D4;
+    --ink:#14120F; --ink-2:#4E4941; --ink-3:#837C6E; --rule:#E4DED0;
+    --accent:#D11934; --accent-soft:rgba(209,25,52,.09); --accent-line:rgba(209,25,52,.32);
+    --ok:#3E6B4A; --ok-soft:rgba(62,107,74,.10);
+    --warn:#8A5A0B; --warn-soft:rgba(138,90,11,.10);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 'Work Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1400px;margin:0 auto;padding:clamp(24px,4vw,56px) clamp(16px,3vw,32px) 80px}
+  h1{font-family:'Bodoni Moda',Georgia,serif;font-size:clamp(32px,5vw,52px);line-height:1.04;letter-spacing:-.015em;margin:0}
+  .standfirst{color:var(--ink-2);max-width:62ch;margin:16px 0 0;font-size:clamp(15px,1.7vw,17.5px)}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0;padding-top:18px;border-top:1px solid var(--rule)}
+  .meta span{font:12px 'IBM Plex Mono',monospace;color:var(--ink-3);background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:4px 9px}
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:18px;margin-top:30px;align-items:start}
+  .tier{background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+  .tier-h{padding:14px 16px;background:var(--sunk);border-bottom:1px solid var(--rule)}
+  .tier-h b{display:block;font-size:17px;letter-spacing:-.01em}
+  .tier-h em{display:block;font:11.5px 'IBM Plex Mono',monospace;color:var(--ink-3);font-style:normal;margin-top:3px}
+  .sec{padding:12px 16px;border-bottom:1px dashed var(--rule)}
+  .sec:last-child{border-bottom:0}
+  .sec.is-hidden{background:repeating-linear-gradient(135deg,transparent,transparent 7px,var(--sunk) 7px,var(--sunk) 14px)}
+  .sec-top{display:flex;gap:8px;align-items:baseline}
+  .num{font:11px 'IBM Plex Mono',monospace;color:var(--ink-3);border:1px solid var(--rule);border-radius:4px;padding:1px 5px;flex:0 0 auto}
+  .lab{font-weight:700;font-size:14.5px;letter-spacing:-.01em}
+  .src{margin:7px 0 0 0;font-size:13px;color:var(--ink-2)}
+  .src a{color:var(--accent);word-break:break-word}
+  .sid{font:11px 'IBM Plex Mono',monospace;color:var(--ink-3)}
+  .pill{display:inline-block;font:10.5px/1.5 'Work Sans',sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:4px;padding:2px 7px;margin-top:8px}
+  .pill--ok{color:var(--ok);background:var(--ok-soft)}
+  .pill--empty{color:var(--warn);background:var(--warn-soft)}
+  .pill--hidden{color:var(--ink-3);background:var(--sunk)}
+  .pill--tag{color:var(--accent);background:var(--accent-soft)}
+  h2{font-family:'Bodoni Moda',Georgia,serif;font-size:clamp(22px,3vw,30px);margin:52px 0 0;padding-bottom:10px;border-bottom:1px solid var(--rule)}
+  table{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}
+  th{text-align:left;font:10.5px 'Work Sans',sans-serif;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);padding:0 10px 8px 0;border-bottom:1px solid var(--rule)}
+  td{padding:9px 10px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+  code{font:12.5px 'IBM Plex Mono',monospace;background:var(--sunk);border:1px solid var(--rule);border-radius:4px;padding:1px 5px}
+  .note{margin-top:18px;padding:16px 18px;border-radius:9px;background:var(--accent-soft);border:1px solid var(--accent-line);font-size:14.5px;color:var(--ink-2)}
+  .note b{color:var(--ink)}
+  .loading{padding:40px 0;color:var(--ink-3);font:14px 'IBM Plex Mono',monospace}
+  .err{padding:16px 18px;border-radius:9px;background:var(--warn-soft);border:1px solid var(--warn);color:var(--ink);font-size:14.5px}
+  footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--rule);font-size:13px;color:var(--ink-3);max-width:76ch}
+  @media (prefers-color-scheme:dark){
+    :root{--paper:#141210;--surface:#1C1A17;--sunk:#232019;--wire:#332E25;--ink:#F3EFE5;--ink-2:#BAB3A4;--ink-3:#8B8477;--rule:#332E26;--accent:#F2536A;--accent-soft:rgba(242,83,106,.13);--accent-line:rgba(242,83,106,.34);--ok:#8FBF9C;--ok-soft:rgba(143,191,156,.12);--warn:#D9A441;--warn-soft:rgba(217,164,65,.12)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Home Screen Map</h1>
+  <p class="standfirst">What every membership level sees on the members home screen, and exactly which Circle space each section pulls from. This page reads the live configuration and asks Circle what is in those spaces right now, so it is never out of date.</p>
+  <div class="meta" id="meta"></div>
+  <div id="app"><p class="loading">Reading the deployed configuration...</p></div>
+
+  <h2>How the top section works</h2>
+  <div class="note">
+    <p><b>Section 1 is different from the rest.</b> Sections 2 to 5 each show the newest posts from one space. Section 1 looks across several spaces and shows only posts tagged <code>featured</code>. If nothing is tagged, the section disappears rather than showing an empty box.</p>
+    <p style="margin-bottom:0">Sections with nothing to show are hidden too, which is why some levels have shorter pages than others. Hidden sections appear here with diagonal shading.</p>
+  </div>
+
+  <h2>Which members see which level</h2>
+  <div id="groups"></div>
+
+  <footer id="foot"></footer>
+</div>
+
+<script src="/home/home.js"></script>
+<script>
+(async () => {
+  try {
+  const W = 'https://tmm-circle-proxy.product-10c.workers.dev';
+  const CID = '97488';
+  const TAG = 'featured';
+  const app = document.getElementById('app');
+  const cfg = window.__TMM_CONFIG, feat = window.__TMM_FEATURED;
+
+  if (!cfg) {
+    app.innerHTML = '<p class="err">Could not read the configuration from <code>/home/home.js</code>. ' +
+      'That usually means home.js was updated without the line that publishes it. Tell your developer.</p>';
+    return;
+  }
+
+  const j = async (p) => { const r = await fetch(W + p); if (!r.ok) throw new Error(r.status); return r.json(); };
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  const spaces = new Map();
+  for (const page of [1, 2]) {
+    const d = await j('/spaces?community_id=' + CID + '&per_page=100&page=' + page);
+    (d.records || []).forEach(s => spaces.set(s.id, s));
+    if (!d.has_next_page) break;
+  }
+
+  // One request per space, run in parallel and cached: several tiers point at
+  // the same space, and doing these one after another took the best part of a
+  // minute. A plain total needs one record; counting tagged posts needs the
+  // page of posts so their tags can be read.
+  const cache = new Map();
+  const count = (kind, id, topicId) => {
+    const k = kind + ':' + id + ':' + (topicId || '');
+    if (!cache.has(k)) cache.set(k, (async () => {
+      try {
+        if (kind === 'event') {
+          const d = await j('/events?space_id=' + id + '&per_page=50&page=1');
+          return (d.records || []).filter(e => { const w = e.starts_at || e.published_at; return w && new Date(w) > new Date(); }).length;
+        }
+        if (topicId) {
+          const d = await j('/posts?community_id=' + CID + '&space_id=' + id + '&per_page=100&page=1');
+          return (d.records || []).filter(p => (p.topics || []).some(x => Number(typeof x === 'object' ? x.id : x) === Number(topicId))).length;
+        }
+        const d = await j('/posts?community_id=' + CID + '&space_id=' + id + '&per_page=1&page=1');
+        return typeof d.count === 'number' ? d.count : (d.records || []).length;
+      } catch (e) { return null; }
+    })());
+    return cache.get(k);
+  };
+  const countPosts = (id, topicId) => count('post', id, topicId);
+  const countUpcoming = (id) => count('event', id);
+
+  // Start every lookup at once, so the render below reads finished results.
+  const warm = [];
+  for (const key of Object.keys(cfg.TIERS)) {
+    ((feat && feat.SPACES && feat.SPACES[key]) || []).forEach(id => warm.push(countPosts(id, feat.TOPIC_ID)));
+    ['contentGrid','featuredEvent','postFeed','eventsGrid'].forEach(k => {
+      const c = cfg.TIERS[key][k];
+      if (c) warm.push(c.space_type === 'event' ? countUpcoming(c.spaceId) : countPosts(c.spaceId, c.topicId));
+    });
+  }
+  await Promise.all(warm);
+
+  const spaceLine = (id) => {
+    const s = spaces.get(id);
+    if (!s) return '<p class="src"><b>Space ' + id + '</b> &mdash; <span style="color:var(--warn)">no longer exists in Circle</span></p>';
+    return '<p class="src"><b>' + esc(s.name) + '</b><br>' +
+      '<a href="https://members.themillionairemother.com/c/' + esc(s.slug) + '" target="_blank" rel="noopener">/c/' + esc(s.slug) + '</a>' +
+      '<span class="sid"> &middot; id ' + id + '</span></p>';
+  };
+
+  const tierOrder = Object.keys(cfg.TIERS);
+  const cols = [];
+
+  for (const key of tierOrder) {
+    const t = cfg.TIERS[key];
+    const rows = [];
+
+    const heroIds = (feat && feat.SPACES && feat.SPACES[key]) || [];
+    let tagged = 0;
+    for (const id of heroIds) { const n = await countPosts(id, feat.TOPIC_ID); if (n) tagged += n; }
+    rows.push('<div class="sec ' + (tagged ? '' : 'is-hidden') + '">' +
+      '<div class="sec-top"><span class="num">1</span><span class="lab">' + esc((t.hero && t.hero.label) || 'Featured') + '</span></div>' +
+      heroIds.map(spaceLine).join('') +
+      '<span class="pill pill--tag">posts tagged ' + TAG + '</span>' +
+      (tagged ? '<span class="pill pill--ok">' + tagged + ' tagged now</span>'
+              : '<span class="pill pill--hidden">hidden &mdash; nothing tagged</span>') +
+      '</div>');
+
+    const secs = [['contentGrid','2'],['featuredEvent','3'],['postFeed','4'],['eventsGrid','5']];
+    for (const pair of secs) {
+      const c = t[pair[0]], n = pair[1];
+      if (!c) { rows.push('<div class="sec is-hidden"><div class="sec-top"><span class="num">' + n + '</span><span class="lab" style="color:var(--ink-3)">Not shown at this level</span></div><span class="pill pill--hidden">hidden on purpose</span></div>'); continue; }
+      const isEvent = c.space_type === 'event';
+      const live = isEvent ? await countUpcoming(c.spaceId) : await countPosts(c.spaceId, c.topicId);
+      const empty = !live;
+      rows.push('<div class="sec ' + (empty ? 'is-hidden' : '') + '">' +
+        '<div class="sec-top"><span class="num">' + n + '</span><span class="lab">' + esc(c.label) + '</span></div>' +
+        spaceLine(c.spaceId) +
+        (c.topicId ? '<span class="pill pill--tag">posts tagged ' + TAG + '</span>' : '') +
+        (empty ? '<span class="pill pill--hidden">hidden &mdash; ' + (isEvent ? 'no upcoming events' : 'nothing to show') + '</span>'
+               : '<span class="pill pill--ok">' + live + ' ' + (isEvent ? 'upcoming' : 'post' + (live === 1 ? '' : 's')) + '</span>') +
+        '</div>');
+    }
+
+    const share = (t.share === undefined) ? cfg.SHARE : t.share;
+    rows.push(share
+      ? '<div class="sec"><div class="sec-top"><span class="num">6</span><span class="lab">' + esc(share.title) + '</span></div>' +
+        '<p class="src">Fixed text, not from Circle &middot; button opens <a href="' + esc(share.url) + '" target="_blank" rel="noopener">' + esc(share.url.replace(/^https:\/\/[^/]+/, '')) + '</a></p></div>'
+      : '<div class="sec is-hidden"><div class="sec-top"><span class="num">6</span><span class="lab" style="color:var(--ink-3)">Not shown at this level</span></div><span class="pill pill--hidden">hidden on purpose</span></div>');
+
+    cols.push('<div class="tier"><div class="tier-h"><b>' + esc(t.label || key) + '</b><em>' + esc(key) + '</em></div>' + rows.join('') + '</div>');
+  }
+
+  app.innerHTML = '<div class="cols">' + cols.join('') + '</div>';
+
+  let gm = new Map();
+  try { const d = await j('/access_groups?community_id=' + CID + '&per_page=100&page=1'); gm = new Map((d.records || []).map(g => [g.id, g.name.trim()])); } catch (e) {}
+  document.getElementById('groups').innerHTML =
+    '<p class="src" style="color:var(--ink-2)">A member gets the first level below whose access group they belong to. Anyone matching none of them sees the Free page.</p>' +
+    '<table><tr><th>Level</th><th>Circle access groups that grant it</th></tr>' +
+    (cfg.TIER_GROUPS || []).map(t => '<tr><td><b>' + esc((cfg.TIERS[t.tier] || {}).label || t.tier) + '</b></td><td>' +
+      t.groups.map(id => esc(gm.get(id) || ('group ' + id)) + ' <span class="sid">(' + id + ')</span>').join('<br>') + '</td></tr>').join('') +
+    '</table>';
+
+  document.getElementById('meta').innerHTML = [
+    'build ' + esc(cfg.BUILD || 'unknown'),
+    tierOrder.length + ' levels',
+    spaces.size + ' spaces in Circle',
+    'checked ' + new Date().toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
+  ].map(s => '<span>' + s + '</span>').join('');
+
+  document.getElementById('foot').innerHTML =
+    'This page is generated from the live configuration in <code>/home/home.js</code> and from Circle itself, each time it is opened. ' +
+    'Counts are what Circle returns right now, so a section marked hidden will appear the moment content is added or tagged. ' +
+    'Nothing here is typed by hand, so it cannot fall out of date.';
+  } catch (err) {
+    document.getElementById('app').innerHTML =
+      '<p class="err"><b>This page could not finish loading.</b><br>' +
+      String(err && err.message ? err.message : err) +
+      '<br>The home screen itself is unaffected &mdash; this is only the map.</p>';
+    throw err;
+  }
+})();
+</script>
+</body>
+</html>

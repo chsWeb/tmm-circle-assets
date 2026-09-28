@@ -668,6 +668,13 @@ async function init(overrideTierKey){
 /* expose test-tier switcher to window (IIFE hides it otherwise) */
 window.tmmSetTier = (k)=>init(k);
 
+/* Published for /docs/home-map.html, the living map of what each tier's home
+   screen shows. That page loads this file and reads the config straight from
+   here, so the map can never drift from what is actually deployed. Read-only
+   copies; nothing in the page reads them back. */
+window.__TMM_CONFIG   = TMM_CONFIG;
+window.__TMM_FEATURED = FEATURED;
+
 /* ---------- boot ----------
    Circle is a single-page app: it may inject our HTML block AFTER this
    script runs, and DOMContentLoaded may have already fired. So instead of
