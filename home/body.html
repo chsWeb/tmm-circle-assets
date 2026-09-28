@@ -80,12 +80,15 @@
     </div>
   </section>
 
-  <!-- 6 · SHARE THE APP (static; upsell links wired later) -->
+  <!-- 6 · SHARE MOTHERHUB (static; button opens the Airtable referral form)
+       The form's own page sends X-Frame-Options: SAMEORIGIN, so it cannot be
+       iframed and Circle's embed element can't show it. Opening it in a new
+       tab avoids that entirely and works in the app and on the web. -->
   <section class="tmm-section">
     <div class="tmm-share">
-      <div class="tmm-share-title">Share the app</div>
-      <div class="tmm-share-body">Invite a friend into the community and grow your circle of boss mamas.</div>
-      <a class="tmm-btn" href="https://themillionairemother.com/" target="_blank" rel="noopener">Learn More</a>
+      <div class="tmm-share-title">Share MotherHub!</div>
+      <div class="tmm-share-body">Share MotherHub, earn a chance to win a 30 min 1:1 with Cait!</div>
+      <a class="tmm-btn" href="https://airtable.com/appspZ48CnWo2Iisd/pagaEUjnuXCs6MaGy/form" target="_blank" rel="noopener">Learn More</a>
     </div>
   </section>
 
