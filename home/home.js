@@ -73,19 +73,21 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v13 · 2026-09-28',
+  BUILD: 'v14 · 2026-09-28',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
      of these, or set share:null to hide the card for that tier.
-     newTab is off: /share is a Circle page, so it opens in place and
-     Circle's back navigation returns to the home screen. */
+     newTab is ON: /share is a Site Builder page, and opening it in place
+     inside the app replaces the screen the tab bar was showing, which left
+     members unable to get back — tapping Home did nothing. A new window
+     keeps the home screen where it was. */
   SHARE: {
     title:  'Share MotherHub!',
     body:   'Share MotherHub, earn a chance to win a 30 min 1:1 with Cait!',
     cta:    'Learn More',
     url:    'https://members.themillionairemother.com/share',
-    newTab: false,
+    newTab: true,
   },
 
   TIERS: {
