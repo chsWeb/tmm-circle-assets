@@ -524,6 +524,12 @@
   transition: var(--transition)
 }
 
+/* Comfortable tap target on a phone. Excludes .tmm-btn--sm, the little RSVP
+   pills in the event cards, which would otherwise grow and unbalance them. */
+.tmm-home .tmm-btn:not(.tmm-btn--sm) {
+  min-height: 44px
+}
+
 .tmm-home a.tmm-btn,
 .tmm-home a.tmm-btn:link,
 .tmm-home a.tmm-btn:visited,
@@ -747,6 +753,18 @@
 
   .tmm-feat {
     min-height: 400px
+  }
+}
+
+/* The share button spans the card on a phone, which is right there, but at
+   tablet width and up an 880px-wide button reads as a banner. Shrink it to
+   its label and sit it at the left, in line with the copy above it. */
+@media (min-width:768px) {
+  .tmm-share .tmm-btn {
+    width: auto;
+    align-self: flex-start;
+    padding-left: 32px;
+    padding-right: 32px
   }
 }
 
