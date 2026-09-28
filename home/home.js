@@ -63,8 +63,9 @@ const TMM_CONFIG = {
   BRAND_BY_TIER: {
     free:         'mm',
     mother_hub:   'hub',
-    foundry:      'hub',
-    inner_circle: 'hub',
+    foundry:        'hub',
+    inner_circle:   'hub',
+    expert_network: 'hub',
   },
 
   /* Stamped into the test banner at run time, so you can see which build a
@@ -72,7 +73,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v12 · 2026-09-28',
+  BUILD: 'v13 · 2026-09-28',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -103,27 +104,45 @@ const TMM_CONFIG = {
     },
     mother_hub: {
       label: 'The Mother Hub',
-      hero:         { label:'Announcements', spaces:[{id:853914,space_type:'basic'}], count:3, url:'https://members.themillionairemother.com/c/announcements' },
-      contentGrid:  { label:'Business Resources', spaceId:853992, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/business-questions', placeholders:'resource' },
-      featuredEvent:{ label:'Coming Up', spaceId:802308, space_type:'event', url:'https://members.themillionairemother.com/c/group-coaching' },
-      postFeed:     { label:'From the community', spaceId:853990, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/motherhood-questions' },
-      eventsGrid:   { label:'Upcoming Live Events', spaceId:802308, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/group-coaching' },
+      hero:         { label:'Announcements', url:'https://members.themillionairemother.com/c/motherhood' },
+      contentGrid:  { label:'Connect with vetted Experts', spaceId:2468301, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/the-expert-network', placeholders:'resource' },
+      featuredEvent:{ label:'Coming Up', spaceId:2491518, space_type:'event', url:'https://members.themillionairemother.com/c/monthly-village-circle-with-cait' },
+      postFeed:     { label:'From the community', spaceId:2823968, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/motherhub-conversations-d9bb26' },
+      eventsGrid:   { label:'Upcoming Live Events', spaceId:2491518, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/monthly-village-circle-with-cait' },
+    },
+
+    /* NEW TIER. Same as Mother Hub except its events and group chat are the
+       Expert Network's own. Detected via the "MotherHub Expert Network"
+       access group (was called Matriarch Network). */
+    expert_network: {
+      label: 'MotherHub Expert Network',
+      hero:         { label:'Announcements', url:'https://members.themillionairemother.com/c/motherhood' },
+      contentGrid:  { label:'Connect with vetted Experts', spaceId:2468301, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/the-expert-network', placeholders:'resource' },
+      featuredEvent:{ label:'Coming Up', spaceId:2839754, space_type:'event', url:'https://members.themillionairemother.com/c/motherhub-expert-network-events' },
+      postFeed:     { label:'From the Expert Network', spaceId:2632318, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/member-spotlight' },
+      eventsGrid:   { label:'Upcoming Live Events', spaceId:2839754, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/motherhub-expert-network-events' },
     },
     foundry: {
       label: 'Foundry Member',
-      hero:         { label:'Announcements', spaces:[{id:2349055,space_type:'basic'},{id:853914,space_type:'basic'}], count:3, url:'https://members.themillionairemother.com/c/announcements-c79c49' },
-      contentGrid:  { label:'Coaching Q&A', spaceId:2349045, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/coaching-q-a' },
-      featuredEvent:{ label:'Coming Up', spaceId:2491518, space_type:'event', url:'https://members.themillionairemother.com/c/monthly-village-circle-with-cait' },
-      postFeed:     { label:'From the community', spaceId:2349020, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/marketing-lab' },
-      eventsGrid:   { label:'Upcoming Live Events', spaceId:2491518, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/monthly-village-circle-with-cait' },
+      hero:         { label:'Announcements', url:'https://members.themillionairemother.com/c/announcements-c79c49' },
+      contentGrid:  { label:'Coaching Q&A', spaceId:2349045, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/coaching-q-a', placeholders:'resource' },
+      /* kind:'posts' puts a shelf of posts in section 3 instead of the event
+         banner. topicId keeps only posts tagged `featured` — "tagged
+         programs in the MME Program Library". 538336 is that tag's id. */
+      featuredEvent:{ label:'Inside the vault', spaceId:2361522, space_type:'basic', kind:'posts', topicId:538336, count:6, url:'https://members.themillionairemother.com/c/mme-program-library', placeholders:'resource' },
+      postFeed:     { label:'Foundry Celebrations!', spaceId:2349052, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/celebrations-f9f0b0' },
+      eventsGrid:   null,
     },
+    /* Deliberately minimal: the vault only. Sections 4 and 5 and the share
+       card are hidden per the content map. */
     inner_circle: {
       label: 'Inner Circle',
-      hero:         { label:'Announcements', spaces:[{id:2349055,space_type:'basic'},{id:853914,space_type:'basic'},{id:2530145,space_type:'basic'}], count:3, url:'https://members.themillionairemother.com/c/announcements-c79c49' },
-      contentGrid:  { label:'Coaching Q&A', spaceId:2349045, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/coaching-q-a' },
-      featuredEvent:{ label:'Coming Up', spaceId:2491518, space_type:'event', url:'https://members.themillionairemother.com/c/monthly-village-circle-with-cait' },
-      postFeed:     { label:'From the community', spaceId:853992, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/business-questions' },
-      eventsGrid:   { label:'Upcoming Live Events', spaceId:802308, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/group-coaching' },
+      hero:         { label:'Inside the vault', url:'https://members.themillionairemother.com/c/mme-program-library' },
+      contentGrid:  { label:'Top Guest Experts', spaceId:802279, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/guest-experts', placeholders:'resource' },
+      featuredEvent:{ label:'Masterclass Library', spaceId:802277, space_type:'basic', kind:'posts', count:6, url:'https://members.themillionairemother.com/c/masterclass-library', placeholders:'resource' },
+      postFeed:     null,
+      eventsGrid:   null,
+      share:        null,
     },
   },
 };
@@ -152,16 +171,16 @@ const FEATURED = {
     free: [
       2551323, // Welcome!        (welome-library)
     ],
-    // Mother Hub Plus: free set + the Content Hub library spaces + Plus space.
-    // VERIFY this list matches what a Plus member should see featured.
+    /* Per the content map (10 Sept): the two library spaces only. Identity,
+       Home and Money were merged away by Circle and returned 404 on every
+       load; MotherHub Plus 404s too. All four removed. */
     mother_hub: [
-      2551323, 2505755, 2551366,          // (inherits free)
-      2571702, // Identity
-      2571703, // Home
-      2571704, // Motherhood
-      2571705, // Business
-      2571707, // Money
-      2701022, // MotherHub Plus
+      2571704, // Home & Motherhood
+      2571705, // Business & Money
+    ],
+    expert_network: [
+      2571704, // Home & Motherhood
+      2571705, // Business & Money
     ],
     // Foundry (legacy): Foundry Community spaces. VERIFY / adjust.
     foundry: [
@@ -174,11 +193,11 @@ const FEATURED = {
       2672218, // Peer Accountability Hub
       2672173, // Ai & Ops Channel
     ],
-    // Inner Circle (legacy): The Vault space(s). VERIFY / adjust.
+    /* "Inside the vault" = programs tagged `featured` in the MME Program
+       Library. Guest Experts and Masterclass Library have their own
+       sections now, so they are not scanned for the hero. */
     inner_circle: [
-      802279,  // Top Guest Experts (Vault)
-      802277,  // Masterclass Library (Vault)
-      2361522, // MME Program Library (Vault)
+      2361522, // MME Program Library
     ],
   },
 };
@@ -237,7 +256,15 @@ async function fetchSection(cfg){
       if (!res){ console.error(`fetchSection ${ep} space ${sp.id}: timeout/failed`); return []; }
       if (!res.ok){ console.error(`fetchSection ${ep} space ${sp.id}: HTTP ${res.status}`); return []; }
       const data = await res.json();
-      return (data.records || []).map(r => isEvent
+      // Circle returns past events too. Sections called "Coming Up" and
+      // "Upcoming Live Events" must not show finished ones, so drop anything
+      // that has already started. Nothing upcoming -> section hides itself.
+      const records = (data.records || []).filter(r => {
+        if (!isEvent) return true;
+        const when = r.starts_at || r.published_at;
+        return !when || new Date(when).getTime() > Date.now();
+      });
+      return records.map(r => isEvent
         ? { ...r, name:r.name||'Untitled Event', user_name:r.user_name||'Host',
             published_at:r.starts_at||r.published_at, body:{ body:r.body?.body||r.description||'' } }
         : r);
@@ -245,6 +272,17 @@ async function fetchSection(cfg){
   }));
 
   let records = all.flat();
+
+  // Keep only posts carrying a given tag id. Circle returns `topics` as
+  // numbers, e.g. [538336] for `featured`, which the name-matching filter
+  // below can never match — hence this one.
+  if (cfg.topicId){
+    const want = Number(cfg.topicId);
+    const tagged = records.filter(r => (r.topics || []).some(x =>
+      Number(typeof x === 'object' ? x.id : x) === want));
+    if (!tagged.length) console.warn(`fetchSection: nothing tagged ${want} in space ${spaces.map(s=>s.id).join(',')}`);
+    records = tagged;
+  }
 
   // Tag filter (used by the featured/hero area). Circle calls tags "topics".
   // Only posts carrying the configured tag are kept. Matches defensively on
@@ -260,8 +298,12 @@ async function fetchSection(cfg){
     records = tagged;   // strict: show ONLY tagged posts (empty if none tagged)
   }
 
+  const isEventCfg = spaces.some(s => s.space_type === 'event');
   return records
-    .sort((a,b)=> new Date(b.published_at||0) - new Date(a.published_at||0))
+    // Events: soonest first. Posts: newest first.
+    .sort((a,b)=> isEventCfg
+      ? new Date(a.starts_at||a.published_at||0) - new Date(b.starts_at||b.published_at||0)
+      : new Date(b.published_at||0) - new Date(a.published_at||0))
     .slice(0, n);
 }
 
@@ -442,7 +484,7 @@ function setupHeroCarousel(){
 function renderContentGrid(posts,cfg){
   set('tmmS2Label',cfg.label); href('tmmS2Url',cfg.url);
   const el=document.getElementById('tmmGrid');
-  if(!posts.length){ el.innerHTML='<p class="tmm-empty">No posts yet.</p>'; return; }
+  if(!posts.length){ showSection('tmmGrid', false); return; }   // empty -> no section
   const phSet = cfg.placeholders;
   const start = placeholderStart(phSet);
   el.innerHTML = posts.map((p,i)=>{
@@ -460,13 +502,10 @@ function renderContentGrid(posts,cfg){
 function renderFeatured(events,cfg){
   set('tmmS3Label',cfg.label); href('tmmS3Url',cfg.url);
   const el=document.getElementById('tmmFeat');
-  if(!events.length){ el.innerHTML='<p class="tmm-empty">No upcoming events.</p>'; return; }
-  const PIN='money-marriage-motherhood-the-unspoken-dynamics-of-earning-more'; // set to '' to un-pin
-  const PIN_TITLE='money, marriage & motherhood';
-  const ev=events.find(e=>
-        (e.url||'').includes(PIN) || (e.slug||'')===PIN ||
-        (e.name||'').toLowerCase().startsWith(PIN_TITLE)
-      )||events[0];
+  if(!events.length){ showSection('tmmFeat', false); return; }   // empty -> no section
+  // Was pinned to one August 2026 event by slug, which outranked whatever was
+  // actually next. Events now arrive soonest-first, so the next one is [0].
+  const ev=events[0];
   const dt=ev.starts_at||ev.published_at;
   const featImg=coverImage(ev);
   el.innerHTML = `
@@ -486,7 +525,7 @@ function renderFeatured(events,cfg){
 function renderFeed(posts,cfg){
   set('tmmS4Label',cfg.label); href('tmmS4Url',cfg.url);
   const el=document.getElementById('tmmFeed');
-  if(!posts.length){ el.innerHTML='<p class="tmm-empty">No posts yet.</p>'; return; }
+  if(!posts.length){ showSection('tmmFeed', false); return; }    // empty -> no section
   el.innerHTML = posts.map(p=>{
     const av = p.user_avatar_url
       ? `<img class="tmm-avatar" src="${esc(p.user_avatar_url)}" alt="">`
@@ -506,7 +545,7 @@ function renderFeed(posts,cfg){
 function renderEvents(events,cfg){
   set('tmmS5Label',cfg.label); href('tmmS5Url',cfg.url);
   const el=document.getElementById('tmmEvents');
-  if(!events.length){ el.innerHTML='<p class="tmm-empty">No events yet.</p>'; return; }
+  if(!events.length){ showSection('tmmEvents', false); return; } // empty -> no section
   el.innerHTML = events.map(ev=>{
     const dt=ev.starts_at||ev.published_at;
     const img=coverImage(ev);
@@ -536,6 +575,28 @@ function renderShare(cfg){
     </div>`;
 }
 
+/* Section 3 as a shelf of posts, for tiers where it isn't an event:
+   Inner Circle's Masterclass Library, Foundry's Inside the vault. Same card
+   as the content grid, in section 3's container. */
+function renderFeatPosts(posts,cfg){
+  set('tmmS3Label',cfg.label); href('tmmS3Url',cfg.url);
+  const el=document.getElementById('tmmFeat');
+  if(!posts.length){ showSection('tmmFeat', false); return; }
+  showSection('tmmFeat', true);
+  const phSet = cfg.placeholders;
+  const start = placeholderStart(phSet);
+  el.innerHTML = `<div class="tmm-scroll">` + posts.map((p,i)=>{
+    const img = coverImage(p);
+    return `
+    <a class="tmm-card" href="${esc(p.url||'#')}" target="_blank" rel="noopener">
+      ${img ? `<img class="tmm-card-img" src="${esc(img)}" alt="" loading="lazy">` : placeholderImg(i,start,'tmm-card-img',phSet)}
+      <div class="tmm-card-title">${esc(p.name||'Untitled')}</div>
+      <div class="tmm-card-desc">${esc(strip(p.body?.body||'').slice(0,80))}</div>
+    </a>`;
+  }).join('') + `</div>`;
+  wirePlaceholderFallbacks(el);
+}
+
 /* ---------- init ---------- */
 async function init(overrideTierKey){
   const member    = await getCurrentMember();
@@ -554,6 +615,19 @@ async function init(overrideTierKey){
     banner.appendChild(tag);
   }
   if (banner) banner.querySelector('.tmm-build').textContent = `${TMM_CONFIG.BUILD} · ${tierKey}`;
+
+  // Build the tier options from TIERS, so a new tier (Expert Network) shows
+  // up in the dropdown without re-pasting body.html.
+  const sel0 = document.querySelector('#tmmTestBanner select');
+  if (sel0) {
+    const want = Object.keys(TMM_CONFIG.TIERS);
+    const have = [...sel0.options].map(o=>o.value);
+    if (want.some(k=>!have.includes(k))) {
+      const keep = sel0.value;
+      sel0.innerHTML = want.map(k=>`<option value="${k}">${esc(TMM_CONFIG.TIERS[k].label || k)}</option>`).join('');
+      if (want.includes(keep)) sel0.value = keep;
+    }
+  }
 
   const sel = document.querySelector('#tmmTestBanner select');
   if (sel && !overrideTierKey && [...sel.options].some(o => o.value === tierKey)) sel.value = tierKey;
@@ -586,7 +660,7 @@ async function init(overrideTierKey){
   if (share) { try { renderShare(share); } catch(e){ console.error('share render error:', e); } }
 
   render(tier.contentGrid,   renderContentGrid, 'tmmGrid');
-  render(tier.featuredEvent, renderFeatured,    'tmmFeat');
+  render(tier.featuredEvent, (d,c)=> (c.kind==='posts' ? renderFeatPosts(d,c) : renderFeatured(d,c)), 'tmmFeat');
   render(tier.postFeed,      renderFeed,        'tmmFeed');
   render(tier.eventsGrid,    renderEvents,      'tmmEvents');
 }
