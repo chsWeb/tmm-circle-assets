@@ -73,7 +73,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v17 · 2026-09-29',
+  BUILD: 'v18 · 2026-09-29',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -84,10 +84,9 @@ const TMM_CONFIG = {
      keeps the home screen where it was. */
   /* Admins and moderators can open every space by role, so Circle lists them
      as members of almost none — the gate would leave their own home screen
-     nearly empty. They are bypassed instead, from the role the app SDK
-     reports (see isAdminMember). Circle's Admin API has no role field on any
-     endpoint safe to expose here, so this list stays as the fallback for a
-     surface where the SDK reports no role. Ids only, no names. */
+     nearly empty. They are bypassed instead, straight from the isAdmin /
+     isModerator flags Circle puts on window.circleUser. This list is only a
+     manual fallback for someone those flags miss. Ids only, no names. */
   ADMIN_BYPASS_IDS: [],
 
   SHARE: {
@@ -221,107 +220,69 @@ function withTimeout(promise, ms, fallback){
   ]);
 }
 
-async function getCurrentMember(){
-  const fallback = { id:null, firstName:'Mama' };
-  if (window.CircleApps && typeof window.CircleApps.getCurrentMember === 'function'){
-    try { return await withTimeout(window.CircleApps.getCurrentMember(), 2500, fallback); }
-    catch(e){}
-  }
-  return fallback;
+/* Circle's documented webview API. It is injected into custom HTML rendered
+   inside the Circle Plus mobile app:
+
+     window.circleUser = { name, email, publicUid, isAdmin, isModerator }
+     window.isInsideCircleMobileWebview
+
+   Note what is NOT there: any numeric id. Every Circle API the gate needs is
+   keyed by community_member_id, so publicUid is resolved to one by the worker
+   (see /member_context). We never send the email anywhere: publicUid is
+   already public, an email address in a query string is not.
+
+   Nothing equivalent is documented for Site Builder pages on the web, so on
+   that surface there is no viewer to identify and the page falls back to
+   public spaces only. */
+function getCurrentMember(){
+  const u = window.circleUser;
+  if (!u) return { publicUid:null, firstName:'Mama', isStaff:false, inApp:!!window.isInsideCircleMobileWebview };
+  return {
+    publicUid: u.publicUid || null,
+    firstName: (u.name || '').trim().split(/\s+/)[0] || 'Mama',
+    isStaff:   !!(u.isAdmin || u.isModerator),
+    inApp:     !!window.isInsideCircleMobileWebview,
+  };
 }
 /* The old lookup (/community_members?id=) hit Circle's LIST endpoint, which
    ignores `id` and returns the first page — so every member got the same
    person's (empty) tags and landed on Free. This asks for the member's own
    access groups instead. */
-/* Admins and moderators see every space by role. The app SDK is the only
-   place that role is available to this page, and its shape is not documented
-   for custom screens, so accept any of the plausible spellings rather than
-   betting on one. The member-fields line logged in init() shows what this
-   community's SDK actually returns, so this can be narrowed once confirmed.
+/* Everything the page needs about the viewer, in one request, as ids.
 
-   Client-side, therefore spoofable with devtools — but it only ever grants
-   what the proxy already hands anyone who opens devtools, so it widens
-   nothing. It is a convenience for admins, not a security boundary. */
-function isAdminMember(m){
-  if (!m) return false;
-  const r = m.roles;
-  if (r && typeof r === 'object' && !Array.isArray(r) && (r.admin || r.moderator)) return true;
-  const list = Array.isArray(r) ? r : [];
-  if (list.some(x => /admin|moderator/i.test(String(x)))) return true;
-  if (typeof m.role === 'string' && /admin|moderator/i.test(m.role)) return true;
-  return !!(m.is_admin || m.admin || m.is_moderator || m.moderator || m.is_community_admin);
-}
+   The worker resolves publicUid to a community_member_id, then answers with
+   the member's access groups (which tier to show) and every space they may
+   open (what may be loaded into it). Doing both here means one round trip and
+   no chicken-and-egg: the tier decides the layout, the space list decides the
+   content, and the page never has to know which spaces are private.
 
-async function getMemberTierKey(memberId){
-  if (!memberId) return 'free';
-  try{
-    const url = `${TMM_CONFIG.WORKER_URL}/community_members/${encodeURIComponent(memberId)}/access_groups?per_page=100`;
-    const res = await withTimeout(fetch(url), 3000, null);
-    if (!res || !res.ok) return 'free';
-    const data = await res.json();
-    const mine = new Set((data?.records || []).map(g => g.id));
-    const hit  = TMM_CONFIG.TIER_GROUPS.find(t => t.groups.some(id => mine.has(id)));
-    return hit ? hit.tier : 'free';
-  }catch(e){ return 'free'; }
-}
-
-/* Which of this tier's spaces the signed-in member may actually open.
-
-   The worker decides, not this page. A member may open a space if Circle
-   lists them as one of its members OR the space is not private, and whether
-   a space is private is a live setting the owner changes — Welcome! and Free
-   Resources were switched to public on 29 Sept. A copy of that answer in
-   here would be wrong in one direction or the other, and one of those
-   directions leaks. So the page sends ids and gets back the subset.
-
-   Returns null when the answer is unknown (no member, request failed,
-   timed out, malformed). The caller must then show nothing: never guess an
-   allow. An empty Set is a real answer meaning "none of these". */
-/* Why the last gate lookup failed, in a form safe to show on screen. The
-   retry card carries it, because this fails in the iOS app where nobody can
-   open a console, and "couldn't load" with no reason is unsupportable. */
-let gateFailure = '';
-
-async function getVisibleSpaces(memberId, spaceIds){
-  gateFailure = '';
-  if (!memberId){ gateFailure = 'no-member-id'; return null; }
-  if (!spaceIds.length) return new Set();
-  const url = `${TMM_CONFIG.WORKER_URL}/visible_spaces`
-            + `?community_member_id=${encodeURIComponent(memberId)}`
-            + `&space_ids=${spaceIds.join(',')}`;
+   Returns null only when the answer is unknown — request failed, timed out,
+   malformed. Never guess an allow. */
+async function getMemberContext(publicUid){
+  const url = `${TMM_CONFIG.WORKER_URL}/member_context`
+            + (publicUid ? `?public_uid=${encodeURIComponent(publicUid)}` : '');
   const res = await withTimeout(fetch(url), 6000, null);
   if (!res){
     gateFailure = 'timeout';
-    console.error('[tmm-home] access lookup timed out');
+    console.error('[tmm-home] member context timed out');
     return null;
   }
   if (!res.ok){
     gateFailure = 'http-' + res.status;
-    /* The worker's body names the cause — a 404 from Circle usually means
-       the id we were handed is not a community_member_id. Worth logging. */
     let detail = '';
     try { detail = (await res.text()).slice(0, 300); } catch(e){}
-    console.error('[tmm-home] access lookup failed:', res.status, detail);
+    console.error('[tmm-home] member context failed:', res.status, detail);
     return null;
   }
   try {
     const data = await res.json();
-    if (!Array.isArray(data?.visible)){ gateFailure = 'bad-answer'; return null; }
-    return new Set(data.visible.map(Number));
+    if (!Array.isArray(data?.spaces)){ gateFailure = 'bad-answer'; return null; }
+    return {
+      memberId: data.member_id ?? null,
+      groups:   new Set((data.access_groups || []).map(Number)),
+      spaces:   new Set(data.spaces.map(Number)),
+    };
   } catch(e){ gateFailure = 'bad-json'; return null; }
-}
-
-/* Every space this tier could ask for, in one list, so the gate is a single
-   request rather than one per section. */
-function tierSpaceIds(tierKey, tier){
-  const ids = new Set(FEATURED.SPACES[tierKey] || []);
-  ['contentGrid','featuredEvent','postFeed','eventsGrid'].forEach(k => {
-    const cfg = tier[k];
-    if (!cfg) return;
-    if (cfg.spaces) cfg.spaces.forEach(sp => ids.add(sp.id));
-    else if (cfg.spaceId) ids.add(cfg.spaceId);
-  });
-  return [...ids];
 }
 
 /* ---------- API ---------- */
@@ -701,9 +662,19 @@ function renderFeatPosts(posts,cfg){
 async function init(overrideTierKey){
   const member    = await getCurrentMember();
   const firstName = member?.firstName || member?.name?.split(' ')[0] || 'Mama';
-  const tierKey   = overrideTierKey || (TMM_CONFIG.TEST_MODE ? 'free' : await getMemberTierKey(member?.id));
+  /* One request answers both questions. TEST_MODE skips it: that surface has
+     no viewer at all. */
+  const ctx = TMM_CONFIG.TEST_MODE ? null : await getMemberContext(member.publicUid);
+  const detectedTier = ctx
+    ? (TMM_CONFIG.TIER_GROUPS.find(t => t.groups.some(id => ctx.groups.has(id)))?.tier || 'free')
+    : 'free';
+  const tierKey   = overrideTierKey || (TMM_CONFIG.TEST_MODE ? 'free' : detectedTier);
   const tier      = TMM_CONFIG.TIERS[tierKey] || TMM_CONFIG.TIERS.free;
-  console.info('[tmm-home] member id:', member?.id ?? '(none)', '| tier:', tierKey, TMM_CONFIG.TIERS[tierKey] ? '' : '(no page yet, showing Free)');
+  console.info('[tmm-home] viewer:', member.publicUid || '(no identity)',
+    '| in app:', member.inApp, '| staff:', member.isStaff,
+    '| member id:', ctx?.memberId ?? '(unresolved)',
+    '| groups:', ctx ? [...ctx.groups].join(',') || 'none' : '(unknown)',
+    '| tier:', tierKey);
   // Test banner: show the DETECTED tier in its dropdown, so a test login can
   // see what it was matched to. Skipped when the dropdown itself chose it.
   // Show the running build in the test banner (test surfaces only).
@@ -750,21 +721,18 @@ async function init(overrideTierKey){
      TEST_MODE is a developer surface with no member context, so it is the one
      case that skips the gate. Everything else is decided by what Circle says
      this member is in. An unknown answer denies. */
-  const bypass = TMM_CONFIG.TEST_MODE || isAdminMember(member) ||
-                 (member?.id != null && TMM_CONFIG.ADMIN_BYPASS_IDS.includes(member.id));
-  const mySpaces = bypass ? null : await getVisibleSpaces(member?.id, tierSpaceIds(tierKey, tier));
+  const bypass = TMM_CONFIG.TEST_MODE || member.isStaff ||
+                 (ctx?.memberId != null && TMM_CONFIG.ADMIN_BYPASS_IDS.includes(ctx.memberId));
+  const mySpaces = bypass ? null : (ctx ? ctx.spaces : null);
   const canSee   = (id) => bypass ? true : (mySpaces ? mySpaces.has(id) : false);
   const canSeeCfg = (cfg) => {
     const ids = cfg.spaces ? cfg.spaces.map(sp => sp.id)
                            : (cfg.spaceId ? [cfg.spaceId] : []);
     return ids.length > 0 && ids.every(canSee);
   };
-  /* Field names only, never values: this line is for wiring up isAdminMember
-     during testing and must not put member data in the console. */
-  console.info('[tmm-home] member fields:', member ? Object.keys(member).join(',') : '(none)');
   console.info('[tmm-home] access:', bypass
     ? (TMM_CONFIG.TEST_MODE ? 'bypass (test mode)' : 'bypass (admin or moderator)')
-    : (mySpaces ? `${mySpaces.size} of this tier's spaces visible` : 'UNKNOWN — showing nothing'));
+    : (mySpaces ? `${mySpaces.size} spaces openable` : 'UNKNOWN — showing nothing'));
 
   const shareCfg = (tier.share === undefined) ? TMM_CONFIG.SHARE : tier.share;
 
@@ -783,7 +751,7 @@ async function init(overrideTierKey){
         <div class="tmm-gate-body">This is a connection hiccup, not a problem with your
           membership. Give it another go.</div>
         <button class="tmm-btn" type="button" onclick="tmmSetTier()">Try again</button>
-        <div class="tmm-gate-ref">${esc(gateFailure || 'unknown')} &middot; ${esc(String(member?.id ?? 'no id'))} &middot; ${esc(TMM_CONFIG.BUILD)}</div>
+        <div class="tmm-gate-ref">${esc(gateFailure || 'unknown')} &middot; ${esc(member.publicUid || 'no uid')} &middot; ${esc(TMM_CONFIG.BUILD)}</div>
       </div>`;
     showSection('tmmShare', !!shareCfg);
     if (shareCfg) { try { renderShare(shareCfg); } catch(e){} }

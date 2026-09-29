@@ -154,3 +154,39 @@ Two things to know:
   looking. Put it on a page restricted to admins, not one members can open.
 - The `<script src=...home.js?v=N>` version inside the embed only affects how
   fresh the config is; bump it with the rest when you deploy.
+
+## How the page knows who is looking
+
+Circle injects this into custom HTML **inside the Circle Plus mobile app only**
+([Custom HTML API reference](https://api.circle.so/apis/circle-plus/custom-html-api-reference)):
+
+```js
+window.circleUser = { name, email, publicUid, isAdmin, isModerator }
+window.isInsideCircleMobileWebview
+```
+
+Note what is missing: any numeric id. Every Circle API the access gate needs is
+keyed by `community_member_id`, and there is no lookup by `public_uid`, so the
+worker builds that mapping from the roster and caches it. `publicUid` is used
+rather than `email` because it is already public — it is in every profile URL —
+so no email address goes into a query string or an edge log.
+
+`GET /member_context?public_uid=…` returns, as ids only:
+
+```json
+{ "member_id": 123, "access_groups": [104197], "spaces": [2551323, 2551366] }
+```
+
+`access_groups` picks the tier (the layout). `spaces` is every space that member
+may open — the ones Circle lists them in, plus every space that is not private —
+and each section is gated on it. So the tier decides the layout and the space
+list decides the content, and a wrong tier match cannot leak anything.
+
+`isAdmin` / `isModerator` bypass the gate: staff can open every space by role, so
+Circle lists them as members of almost none and the gate would empty their own
+home screen.
+
+**On the web there is no documented equivalent**, so a Site Builder page has no
+viewer to identify. With no `public_uid` the endpoint degrades to the public
+spaces alone, which every signed-in member can already open — the Free page,
+and nothing gated. That is the floor, not an error.
