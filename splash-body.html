@@ -96,6 +96,11 @@
   </div>
 </section>
 
+<!-- The four "Login" links use target="_top". Circle renders this markup in
+     an iframe, and without it the sign-in page loads inside the embedded
+     block — the same trap we hit with the /share page, where getting back
+     was near impossible. On an unframed page target="_top" does nothing, so
+     it is safe either way. -->
 <section class="tmm-join" id="tmm-join" aria-labelledby="tmm-join-title">
   <div class="tmm-join__header">
     <div class="tmm-join__lockup">
@@ -112,7 +117,7 @@
     </h2>
     <div class="tmm-join__actions">
       <a class="tmm-join__button" href="#tmm-pricing">Join Us</a>
-      <p class="tmm-join__login">Already have an account? <a href="https://members.themillionairemother.com/users/sign_in">Login</a></p>
+      <p class="tmm-join__login">Already have an account? <a href="https://members.themillionairemother.com/sign_in#email" target="_top">Login</a></p>
     </div>
   </div>
   <!-- Figma 9820:1042: 30px deep-brown over 16px brand-primary, sitting
@@ -159,7 +164,7 @@
         </div>
 
         <a class="tmm-pricing-card__button" href="https://members.themillionairemother.com/join?invitation_token=ec4bbe4587d6e43472d79639dfa3892b1c63afae-a146d0b0-00ca-4cf1-b82e-f86504a850c4">Explore</a>
-        <p class="tmm-pricing-card__login">Already have an account? <a href="https://members.themillionairemother.com/users/sign_in">Login</a></p>
+        <p class="tmm-pricing-card__login">Already have an account? <a href="https://members.themillionairemother.com/sign_in#email" target="_top">Login</a></p>
       </article>
 
       <article class="tmm-pricing-card tmm-pricing-card--hub">
@@ -180,7 +185,7 @@
         </div>
 
         <a class="tmm-pricing-card__button" href="https://themillionairemother.com/motherhub/">Learn more</a>
-        <p class="tmm-pricing-card__login">Already have an account? <a href="https://members.themillionairemother.com/users/sign_in">Login</a></p>
+        <p class="tmm-pricing-card__login">Already have an account? <a href="https://members.themillionairemother.com/sign_in#email" target="_top">Login</a></p>
       </article>
 
       <article class="tmm-pricing-card tmm-pricing-card--matriarch">
@@ -202,7 +207,7 @@
         </div>
 
         <a class="tmm-pricing-card__button" href="https://themillionairemother.com/mh-expert-network/">Apply Now</a>
-        <p class="tmm-pricing-card__login">Already have an account? <a href="https://members.themillionairemother.com/users/sign_in">Login</a></p>
+        <p class="tmm-pricing-card__login">Already have an account? <a href="https://members.themillionairemother.com/sign_in#email" target="_top">Login</a></p>
       </article>
     </div>
 
