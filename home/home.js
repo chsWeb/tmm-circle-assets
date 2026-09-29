@@ -73,7 +73,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v15 · 2026-09-28',
+  BUILD: 'v16 · 2026-09-29',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -265,29 +265,47 @@ async function getMemberTierKey(memberId){
   }catch(e){ return 'free'; }
 }
 
-/* Every space this page can show is private, so Circle listing a member as
-   one of its members IS the access check. Asking per member means a tier
-   mis-assignment can never leak content: the tier picks the layout, this
-   picks what may be fetched at all.
+/* Which of this tier's spaces the signed-in member may actually open.
 
-   Returns null when the answer is unknown (request failed, timed out, no
-   member). The caller must then show nothing. Never guess an allow. */
-async function getMemberSpaceIds(memberId){
+   The worker decides, not this page. A member may open a space if Circle
+   lists them as one of its members OR the space is not private, and whether
+   a space is private is a live setting the owner changes — Welcome! and Free
+   Resources were switched to public on 29 Sept. A copy of that answer in
+   here would be wrong in one direction or the other, and one of those
+   directions leaks. So the page sends ids and gets back the subset.
+
+   Returns null when the answer is unknown (no member, request failed,
+   timed out, malformed). The caller must then show nothing: never guess an
+   allow. An empty Set is a real answer meaning "none of these". */
+async function getVisibleSpaces(memberId, spaceIds){
   if (!memberId) return null;
-  const ids = new Set();
-  for (let page = 1; page <= 3; page++){
-    const url = `${TMM_CONFIG.WORKER_URL}/community_member_spaces`
-              + `?community_member_id=${encodeURIComponent(memberId)}&per_page=100&page=${page}`;
-    const res = await withTimeout(fetch(url), 5000, null);
-    if (!res || !res.ok){
-      console.error('[tmm-home] space lookup failed:', res ? res.status : 'timeout');
-      return null;
-    }
-    let data; try { data = await res.json(); } catch(e){ return null; }
-    (data?.records || []).forEach(sp => ids.add(sp.id));
-    if (!data?.has_next_page) break;
+  if (!spaceIds.length) return new Set();
+  const url = `${TMM_CONFIG.WORKER_URL}/visible_spaces`
+            + `?community_member_id=${encodeURIComponent(memberId)}`
+            + `&space_ids=${spaceIds.join(',')}`;
+  const res = await withTimeout(fetch(url), 6000, null);
+  if (!res || !res.ok){
+    console.error('[tmm-home] access lookup failed:', res ? res.status : 'timeout');
+    return null;
   }
-  return ids;
+  try {
+    const data = await res.json();
+    if (!Array.isArray(data?.visible)) return null;
+    return new Set(data.visible.map(Number));
+  } catch(e){ return null; }
+}
+
+/* Every space this tier could ask for, in one list, so the gate is a single
+   request rather than one per section. */
+function tierSpaceIds(tierKey, tier){
+  const ids = new Set(FEATURED.SPACES[tierKey] || []);
+  ['contentGrid','featuredEvent','postFeed','eventsGrid'].forEach(k => {
+    const cfg = tier[k];
+    if (!cfg) return;
+    if (cfg.spaces) cfg.spaces.forEach(sp => ids.add(sp.id));
+    else if (cfg.spaceId) ids.add(cfg.spaceId);
+  });
+  return [...ids];
 }
 
 /* ---------- API ---------- */
@@ -718,7 +736,7 @@ async function init(overrideTierKey){
      this member is in. An unknown answer denies. */
   const bypass = TMM_CONFIG.TEST_MODE || isAdminMember(member) ||
                  (member?.id != null && TMM_CONFIG.ADMIN_BYPASS_IDS.includes(member.id));
-  const mySpaces = bypass ? null : await getMemberSpaceIds(member?.id);
+  const mySpaces = bypass ? null : await getVisibleSpaces(member?.id, tierSpaceIds(tierKey, tier));
   const canSee   = (id) => bypass ? true : (mySpaces ? mySpaces.has(id) : false);
   const canSeeCfg = (cfg) => {
     const ids = cfg.spaces ? cfg.spaces.map(sp => sp.id)
@@ -730,7 +748,7 @@ async function init(overrideTierKey){
   console.info('[tmm-home] member fields:', member ? Object.keys(member).join(',') : '(none)');
   console.info('[tmm-home] access:', bypass
     ? (TMM_CONFIG.TEST_MODE ? 'bypass (test mode)' : 'bypass (admin or moderator)')
-    : (mySpaces ? `${mySpaces.size} spaces` : 'UNKNOWN — showing nothing'));
+    : (mySpaces ? `${mySpaces.size} of this tier's spaces visible` : 'UNKNOWN — showing nothing'));
 
   const shareCfg = (tier.share === undefined) ? TMM_CONFIG.SHARE : tier.share;
 
