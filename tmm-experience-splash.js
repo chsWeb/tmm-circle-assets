@@ -216,37 +216,6 @@
     });
   };
 
-  const formatPrice = (value) => {
-    return value === "0" ? "$0" : `$${value}`;
-  };
-
-  const updatePricingSection = (section, billingCycle) => {
-    section.dataset.billing = billingCycle;
-
-    section.querySelectorAll(".tmm-pricing__toggle-button").forEach((button) => {
-      button.setAttribute("aria-pressed", String(button.dataset.billingToggle === billingCycle));
-    });
-
-    section.querySelectorAll(".tmm-pricing-card").forEach((card) => {
-      const price = card.querySelector(".tmm-pricing-card__price");
-      const period = card.querySelector(".tmm-pricing-card__period");
-      const priceValue = card.dataset[`${billingCycle}Price`];
-      const periodValue = card.dataset[`${billingCycle}Period`];
-
-      if (!price || !period || !priceValue || !periodValue) {
-        return;
-      }
-
-      price.classList.add("is-changing");
-
-      window.setTimeout(() => {
-        price.textContent = formatPrice(priceValue);
-        period.textContent = periodValue;
-        price.classList.remove("is-changing");
-      }, 120);
-    });
-  };
-
   const setupPricingSections = (root = document) => {
     root.querySelectorAll(".tmm-pricing").forEach((section) => {
       if (handledPricingSections.has(section)) {
@@ -254,13 +223,6 @@
       }
 
       handledPricingSections.add(section);
-      updatePricingSection(section, section.dataset.billing || "annual");
-
-      section.querySelectorAll(".tmm-pricing__toggle-button").forEach((button) => {
-        button.addEventListener("click", () => {
-          updatePricingSection(section, button.dataset.billingToggle || "annual");
-        });
-      });
 
       const carousel = section.querySelector(".tmm-pricing__plans");
       const cards = [...section.querySelectorAll(".tmm-pricing-card")];
@@ -712,6 +674,10 @@
         if (nextButton) {
           nextButton.disabled = index === slides.length - 1;
         }
+
+        // Drives the Continue link and fades the spent next chevron out.
+        // Swiping down was the only way on from here and nothing said so.
+        section.classList.toggle("is-end", index === slides.length - 1);
       };
 
       const goToSlide = (next) => {

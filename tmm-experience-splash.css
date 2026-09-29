@@ -1049,64 +1049,6 @@
   line-height: 1.55;
 }
 
-.tmm-pricing__toggle {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  width: min(100%, 360px);
-  padding: 4px;
-  border: 1px solid color-mix(in srgb, var(--tmm-color-electric-red) 18%, transparent);
-  border-radius: 999px;
-  background: var(--tmm-color-fresh-white);
-}
-
-.tmm-pricing__toggle::before {
-  content: "";
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  z-index: 0;
-  width: calc(50% - 6px);
-  height: calc(100% - 8px);
-  border-radius: 999px;
-  background: var(--tmm-color-electric-red);
-  transform: translateX(0);
-  transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.tmm-pricing[data-billing="annual"] .tmm-pricing__toggle::before {
-  transform: translateX(calc(100% + 4px));
-}
-
-.tmm-pricing__toggle-button {
-  appearance: none;
-  position: relative;
-  z-index: 1;
-  min-height: 44px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--tmm-body-copy-color);
-  font: inherit;
-  font-family: var(--tmm-font-head);
-  font-size: 0.95rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  transition:
-    color 220ms ease,
-    transform 220ms ease;
-}
-
-.tmm-pricing__toggle-button[aria-pressed="true"] {
-  color: var(--tmm-color-fresh-white);
-}
-
-.tmm-pricing__toggle-button:active {
-  transform: scale(0.98);
-}
-
 .tmm-pricing__plans {
   display: flex;
   gap: 14px;
@@ -1209,11 +1151,6 @@
   transition:
     opacity 180ms ease,
     transform 180ms ease;
-}
-
-.tmm-pricing-card__price.is-changing {
-  opacity: 0;
-  transform: translateY(4px);
 }
 
 .tmm-pricing-card__period {
@@ -1553,17 +1490,8 @@
     gap: 12px;
   }
 
-  .tmm-pricing__header>div:not(.tmm-pricing__toggle) {
-    order: 1;
-  }
-
   .tmm-pricing__lede {
     order: 2;
-  }
-
-  .tmm-pricing__toggle {
-    order: 3;
-    width: min(100%, 312px);
   }
 
   .tmm-pricing__title {
@@ -1571,11 +1499,6 @@
     letter-spacing: 0.2em;
     line-height: 1.125;
     text-wrap: balance;
-  }
-
-  .tmm-pricing__toggle-button {
-    min-height: 38px;
-    font-size: 0.88rem;
   }
 
   .tmm-pricing-card__button {
@@ -2279,65 +2202,10 @@
   text-align: left;
 }
 
-/* --- Billing toggle --- */
-
-.tmm-pricing__toggle {
-  display: flex;
-  width: 100%;
-  max-width: var(--tmm-card-width);
-  margin: 0;
-  padding: 2px;
-  border: 1px solid var(--tmm-color-linen);
-  border-radius: 99999px;
-  background: #fff;
-  gap: 0;
-}
-
 /* Sliding fill. The older rule sized this for a 4px-padded grid with a
    gap; this container is a 2px-padded flex pair with no gap, so the pill
    is exactly half the inner width and travels by its own width. */
-.tmm-pricing__toggle::before {
-  content: "";
-  display: block;
-  position: absolute;
-  z-index: 0;
-  top: 2px;
-  left: 2px;
-  width: calc(50% - 2px);
-  height: calc(100% - 4px);
-  border-radius: 9999px;
-  background: var(--tmm-color-brand-primary);
-  transform: translateX(0);
-  transition: transform var(--tmm-motion-base) var(--tmm-ease-in-out);
-}
-
-.tmm-pricing[data-billing="annual"] .tmm-pricing__toggle::before {
-  transform: translateX(100%);
-}
-
-.tmm-pricing__toggle-button {
-  flex: 1 1 0;
-  min-height: 34px;
-  padding: 5px 16px;
-  border: 0;
-  border-radius: 9999px;
-  background: transparent;
-  color: var(--tmm-color-light-sage);
-  font-family: var(--tmm-font-head);
-  font-size: clamp(15px, 3.86vw, 17px);
-  font-weight: 500;
-  letter-spacing: 0;
-  line-height: 1.32;
-  cursor: pointer;
-  transition: color var(--tmm-motion-base) var(--tmm-ease-in-out);
-}
-
 /* Only the label changes; the fill behind it is the sliding pill. */
-.tmm-pricing__toggle-button[aria-pressed="true"] {
-  background: transparent;
-  color: var(--tmm-color-fresh-white);
-}
-
 /* --- Cards --- */
 
 /* Full-bleed scroller: pulled out to the section edges and padded back
@@ -2531,4 +2399,73 @@
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.3;
+}
+
+/* ---- Continue (last slide) ----
+   The next chevron runs out of slides and a greyed arrow reads as broken,
+   so on the last slide it fades out and this fades in between the two
+   arrows. Solid fill because it sits over a photograph, and it is the
+   primary action at that point rather than a hint. Hidden state uses
+   visibility so it stays out of the tab order until it is offered. */
+
+.tmm-intro__continue {
+  position: absolute;
+  z-index: 4;
+  top: calc(
+    var(--tmm-chrome-offset, 0px) +
+    (100% - var(--tmm-chrome-offset, 0px) - var(--tmm-chrome-bottom, 0px)) / 2
+  );
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 26px;
+  border-radius: 999px;
+  background: var(--tmm-splash-accent);
+  box-shadow: 0 2px 6px rgba(15, 15, 15, 0.14), 0 14px 30px -18px rgba(15, 15, 15, 0.5);
+  color: var(--tmm-color-cream);
+  font-family: var(--tmm-font-head);
+  font-size: 0.94rem;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, calc(-50% + 6px));
+  transition:
+    opacity var(--tmm-motion-slow, 0.45s) var(--tmm-ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    transform var(--tmm-motion-slow, 0.45s) var(--tmm-ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    visibility var(--tmm-motion-slow, 0.45s) linear;
+}
+
+.tmm-intro.is-end .tmm-intro__continue {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%);
+}
+
+.tmm-intro__continue:hover,
+.tmm-intro__continue:focus-visible {
+  background: var(--tmm-color-deep-brown, #5E0D11);
+}
+
+.tmm-intro__continue:focus-visible {
+  outline: 2px solid var(--tmm-color-cream);
+  outline-offset: 3px;
+}
+
+/* The arrow it replaces. Disabled already, so this only removes the
+   greyed-out chevron that made the end of the carousel look broken. */
+.tmm-intro.is-end .tmm-intro__nav--next {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tmm-intro__continue {
+    transform: translate(-50%, -50%);
+    transition: opacity 0.01s linear, visibility 0.01s linear;
+  }
 }

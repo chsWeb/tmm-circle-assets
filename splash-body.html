@@ -82,6 +82,13 @@
     </svg>
   </button>
 
+  <!-- On the last slide the next chevron has nothing left to do, and a
+       greyed-out arrow reads as broken rather than finished. It fades out
+       and this takes its place, centred between the two arrows. It is a
+       plain in-page link, so the anchor handler in the stylesheet's script
+       gives it the same eased scroll (and host-chrome offset) as Join Us. -->
+  <a class="tmm-intro__continue" href="#tmm-join">Continue</a>
+
   <div class="tmm-intro__progress" aria-label="Choose a slide">
     <button class="tmm-intro__segment" type="button" aria-label="Show slide 1" aria-current="true" data-intro-slide="0"><span></span></button>
     <button class="tmm-intro__segment" type="button" aria-label="Show slide 2" aria-current="false" data-intro-slide="1"><span></span></button>
@@ -89,7 +96,7 @@
   </div>
 </section>
 
-<section class="tmm-join" aria-labelledby="tmm-join-title">
+<section class="tmm-join" id="tmm-join" aria-labelledby="tmm-join-title">
   <div class="tmm-join__header">
     <div class="tmm-join__lockup">
       <p class="tmm-join__eyebrow">Welcome to</p>
@@ -120,23 +127,15 @@
   </div>
 </section>
 
-<!-- Billing cycles are Quarterly | Annual, defaulting to Annual.
-     Only The MotherHub has both prices, so it is the only card carrying
-     data-quarterly-* / data-annual-* attributes. Free shows no price at
-     all, and Matriarch is annual-only — the toggle handler skips any card
-     missing the attributes for the selected cycle, so both sit still while
-     the MotherHub figure swaps. Revisit once the founding-rate note and
-     the quarterly breakdown are settled. -->
-<section id="tmm-pricing" class="tmm-pricing tmm-pricing--fresh-body" data-billing="annual" aria-labelledby="tmm-pricing-title">
+<!-- One price per card, so there is no billing toggle. The Quarterly |
+     Annual switch is gone, along with the data-quarterly-* / data-annual-*
+     attributes it read — every figure below is plain markup now, and the
+     price row no longer needs aria-live because nothing swaps it. -->
+<section id="tmm-pricing" class="tmm-pricing tmm-pricing--fresh-body" aria-labelledby="tmm-pricing-title">
   <div class="tmm-pricing__inner">
     <div class="tmm-pricing__header">
       <h2 class="tmm-pricing__title" id="tmm-pricing-title">Choose Your<br>Membership</h2>
-      <p class="tmm-pricing__lede">Three ways in: look around for free, get fully resourced inside The MotherHub, or take your seat among the women other mothers turn to. Start where you are — you can move up whenever the season changes.</p>
-
-      <div class="tmm-pricing__toggle" role="group" aria-label="Choose billing cycle">
-        <button class="tmm-pricing__toggle-button" type="button" data-billing-toggle="quarterly" aria-pressed="false">Quarterly</button>
-        <button class="tmm-pricing__toggle-button" type="button" data-billing-toggle="annual" aria-pressed="true">Annual</button>
-      </div>
+      <p class="tmm-pricing__lede">Three ways in: look around for free, get fully resourced inside The MotherHub, or apply to be the resource other mothers reach for. Start where you are &mdash; you can move up whenever the season changes.</p>
     </div>
 
     <div class="tmm-pricing__plans">
@@ -154,59 +153,55 @@
             </div>
             <div class="tmm-pricing-card__detail">
               <h4 class="tmm-pricing-card__detail-title">The Starter Library</h4>
-              <p class="tmm-pricing-card__detail-body">A curated set of foundational tools - SOPs, playlists, and key PDFs including the Family Boardroom - ready to use immediately</p>
+              <p class="tmm-pricing-card__detail-body">A curated set of foundational tools - SOPs, playlists, and key PDFs - ready to use immediately</p>
             </div>
           </div>
         </div>
 
-        <a class="tmm-pricing-card__button" href="https://members.themillionairemother.com/checkout/free?coupon_code=WELCOME">Join Now</a>
+        <a class="tmm-pricing-card__button" href="https://members.themillionairemother.com/join?invitation_token=ec4bbe4587d6e43472d79639dfa3892b1c63afae-a146d0b0-00ca-4cf1-b82e-f86504a850c4">Explore</a>
         <p class="tmm-pricing-card__login">Already have an account? <a href="https://members.themillionairemother.com/users/sign_in">Login</a></p>
       </article>
 
-      <article class="tmm-pricing-card tmm-pricing-card--hub" data-quarterly-price="141" data-quarterly-period="/ quarter" data-annual-price="495" data-annual-period="/ year">
+      <article class="tmm-pricing-card tmm-pricing-card--hub">
         <h3 class="tmm-pricing-card__name">The MotherHub</h3>
-        <p class="tmm-pricing-card__description">The full membership for the ambitious mother building business and life in the same season.</p>
+        <p class="tmm-pricing-card__description">The #1 Membership &amp; Community for Ambitious Mother Entrepreneurs.</p>
 
         <div class="tmm-pricing-card__body">
-          <div class="tmm-pricing-card__price-row" aria-live="polite">
-            <span class="tmm-pricing-card__price">$495</span>
+          <div class="tmm-pricing-card__price-row">
+            <span class="tmm-pricing-card__price">$697</span>
             <span class="tmm-pricing-card__period">/ year</span>
           </div>
           <ul class="tmm-pricing-card__features">
             <li>The MotherHub Vault + Exclusive New Resources</li>
-            <li>The Community Hub</li>
-            <li>The Preferred Provider Network</li>
-            <li>Monthly Calls + Guest Experts</li>
+            <li>The MotherHub Concierge</li>
+            <li>Office Hours With Cait + Live Expert Workshops</li>
+            <li>Monthly Village Perks From Our Expert Network</li>
           </ul>
         </div>
 
-        <a class="tmm-pricing-card__button" href="https://members.themillionairemother.com/checkout/the-mother-hub">Join Now</a>
+        <a class="tmm-pricing-card__button" href="https://themillionairemother.com/motherhub/">Learn more</a>
         <p class="tmm-pricing-card__login">Already have an account? <a href="https://members.themillionairemother.com/users/sign_in">Login</a></p>
       </article>
 
       <article class="tmm-pricing-card tmm-pricing-card--matriarch">
-        <h3 class="tmm-pricing-card__name">Matriarch Network</h3>
-        <p class="tmm-pricing-card__description">MotherHub gets you resourced. The Matriarch Network makes you the resource.</p>
+        <h3 class="tmm-pricing-card__name">The MotherHub Expert Network</h3>
+        <p class="tmm-pricing-card__description">MotherHub gets you resourced. The Expert Network makes you the resource.</p>
 
         <div class="tmm-pricing-card__body">
-          <!-- Annual only — no data-*-price attributes, so the billing
-               toggle leaves this figure alone. -->
           <div class="tmm-pricing-card__price-row">
             <span class="tmm-pricing-card__price">$3,997</span>
             <span class="tmm-pricing-card__period">/ Year</span>
           </div>
           <p class="tmm-pricing-card__note">Application Only</p>
           <ul class="tmm-pricing-card__features">
-            <li>Full MotherHub Membership included</li>
-            <li>Matriarch badge + network status</li>
-            <li>Platform visibility — directory listing + custom landing page</li>
-            <li>Matriarch-only networking events</li>
+            <li>A private room of vetted mother founders + monthly closed-door calls</li>
+            <li>Expert Network badge + network status</li>
+            <li>Platform visibility &mdash; directory listing + custom landing page</li>
+            <li>Expert-only networking events</li>
           </ul>
         </div>
 
-        <!-- TODO: the application flow does not exist yet. This href is a
-             placeholder — wire it before this screen goes live. -->
-        <a class="tmm-pricing-card__button" href="#tmm-pricing" data-tmm-todo="apply-link">Apply Now</a>
+        <a class="tmm-pricing-card__button" href="https://themillionairemother.com/mh-expert-network/">Apply Now</a>
         <p class="tmm-pricing-card__login">Already have an account? <a href="https://members.themillionairemother.com/users/sign_in">Login</a></p>
       </article>
     </div>
@@ -214,7 +209,7 @@
     <div class="tmm-pricing__dots" aria-label="Choose a pricing tier">
       <button class="tmm-pricing__dot" type="button" aria-label="Show Free plan" aria-current="true" data-pricing-slide="0"></button>
       <button class="tmm-pricing__dot" type="button" aria-label="Show The MotherHub plan" aria-current="false" data-pricing-slide="1"></button>
-      <button class="tmm-pricing__dot" type="button" aria-label="Show Matriarch Network plan" aria-current="false" data-pricing-slide="2"></button>
+      <button class="tmm-pricing__dot" type="button" aria-label="Show The MotherHub Expert Network plan" aria-current="false" data-pricing-slide="2"></button>
     </div>
   </div>
 </section>
