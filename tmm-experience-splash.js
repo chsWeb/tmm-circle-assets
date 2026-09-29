@@ -36,6 +36,53 @@
       : 1 - Math.pow(-2 * progress + 2, 3) / 2;
   };
 
+  /* Can this document scroll itself? Inside Circle our markup is an iframe
+     sized to its own content, so the frame has nothing to scroll and
+     window.scrollTo is a silent no-op — the parent document is what moves.
+     scrollToTarget even bails early there, because its clamped distance
+     rounds to zero. */
+  const canScrollSelf = () =>
+    document.documentElement.scrollHeight > window.innerHeight + 2;
+
+  /* scrollIntoView is the only thing that can ask a cross-origin parent to
+     scroll, so it owns the embedded case. The eased scroll is kept for a
+     standalone page, where it is nicer and can honour the header offset. */
+  const scrollToSection = (target) => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduce || !canScrollSelf()) {
+      target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      if (canScrollSelf()) {
+        window.scrollBy(0, -getScrollOffset());
+      }
+      return;
+    }
+
+    scrollToTarget(target, 950, getScrollOffset());
+  };
+
+  /* Circle's sanitiser can drop id attributes from pasted markup, and a
+     missing target used to make these links do nothing at all. Each section
+     also carries a class of the same name, so fall back to that. */
+  const anchorTarget = (hash) =>
+    document.querySelector(hash) || document.querySelector(`.${hash.slice(1)}`);
+
+  const bindAnchorLinks = (section) => {
+    section.querySelectorAll('a[href^="#"]').forEach((link) => {
+      link.addEventListener("click", (event) => {
+        const target = anchorTarget(link.getAttribute("href"));
+
+        if (!target) {
+          console.warn("[tmm-splash] no target for", link.getAttribute("href"));
+          return;
+        }
+
+        event.preventDefault();
+        scrollToSection(target);
+      });
+    });
+  };
+
   const scrollToTarget = (target, duration, offset = 0) => {
     const startY = window.scrollY;
     const targetY = target.getBoundingClientRect().top + window.scrollY - offset;
@@ -580,25 +627,7 @@
         );
       });
 
-      section.querySelectorAll('a[href^="#"]').forEach((link) => {
-        link.addEventListener("click", (event) => {
-          const target = document.querySelector(link.getAttribute("href"));
-
-          if (!target) {
-            return;
-          }
-
-          event.preventDefault();
-
-          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-            target.scrollIntoView({ behavior: "auto", block: "start" });
-            window.scrollBy(0, -getScrollOffset());
-            return;
-          }
-
-          scrollToTarget(target, 950, getScrollOffset());
-        });
-      });
+      bindAnchorLinks(section);
     });
   };
 
@@ -612,25 +641,7 @@
 
       handledIntroCarousels.add(section);
 
-      section.querySelectorAll('a[href^="#"]').forEach((link) => {
-        link.addEventListener("click", (event) => {
-          const target = document.querySelector(link.getAttribute("href"));
-
-          if (!target) {
-            return;
-          }
-
-          event.preventDefault();
-
-          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-            target.scrollIntoView({ behavior: "auto", block: "start" });
-            window.scrollBy(0, -getScrollOffset());
-            return;
-          }
-
-          scrollToTarget(target, 950, getScrollOffset());
-        });
-      });
+      bindAnchorLinks(section);
 
       const track = section.querySelector(".tmm-intro__track");
       const slides = [...section.querySelectorAll(".tmm-intro__slide")];
