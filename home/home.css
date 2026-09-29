@@ -843,3 +843,16 @@
   max-width: 34ch;
   margin: 0 auto 18px
 }
+
+/* The reason the gate could not answer, plus the member id it tried and the
+   build. Small and quiet, but on screen: this card appears inside the iOS
+   app where there is no console to read. */
+.tmm-home .tmm-gate-ref {
+  margin-top: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+  opacity: .75;
+  word-break: break-word
+}

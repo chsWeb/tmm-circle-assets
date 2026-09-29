@@ -73,7 +73,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v16 · 2026-09-29',
+  BUILD: 'v17 · 2026-09-29',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -277,22 +277,38 @@ async function getMemberTierKey(memberId){
    Returns null when the answer is unknown (no member, request failed,
    timed out, malformed). The caller must then show nothing: never guess an
    allow. An empty Set is a real answer meaning "none of these". */
+/* Why the last gate lookup failed, in a form safe to show on screen. The
+   retry card carries it, because this fails in the iOS app where nobody can
+   open a console, and "couldn't load" with no reason is unsupportable. */
+let gateFailure = '';
+
 async function getVisibleSpaces(memberId, spaceIds){
-  if (!memberId) return null;
+  gateFailure = '';
+  if (!memberId){ gateFailure = 'no-member-id'; return null; }
   if (!spaceIds.length) return new Set();
   const url = `${TMM_CONFIG.WORKER_URL}/visible_spaces`
             + `?community_member_id=${encodeURIComponent(memberId)}`
             + `&space_ids=${spaceIds.join(',')}`;
   const res = await withTimeout(fetch(url), 6000, null);
-  if (!res || !res.ok){
-    console.error('[tmm-home] access lookup failed:', res ? res.status : 'timeout');
+  if (!res){
+    gateFailure = 'timeout';
+    console.error('[tmm-home] access lookup timed out');
+    return null;
+  }
+  if (!res.ok){
+    gateFailure = 'http-' + res.status;
+    /* The worker's body names the cause — a 404 from Circle usually means
+       the id we were handed is not a community_member_id. Worth logging. */
+    let detail = '';
+    try { detail = (await res.text()).slice(0, 300); } catch(e){}
+    console.error('[tmm-home] access lookup failed:', res.status, detail);
     return null;
   }
   try {
     const data = await res.json();
-    if (!Array.isArray(data?.visible)) return null;
+    if (!Array.isArray(data?.visible)){ gateFailure = 'bad-answer'; return null; }
     return new Set(data.visible.map(Number));
-  } catch(e){ return null; }
+  } catch(e){ gateFailure = 'bad-json'; return null; }
 }
 
 /* Every space this tier could ask for, in one list, so the gate is a single
@@ -767,6 +783,7 @@ async function init(overrideTierKey){
         <div class="tmm-gate-body">This is a connection hiccup, not a problem with your
           membership. Give it another go.</div>
         <button class="tmm-btn" type="button" onclick="tmmSetTier()">Try again</button>
+        <div class="tmm-gate-ref">${esc(gateFailure || 'unknown')} &middot; ${esc(String(member?.id ?? 'no id'))} &middot; ${esc(TMM_CONFIG.BUILD)}</div>
       </div>`;
     showSection('tmmShare', !!shareCfg);
     if (shareCfg) { try { renderShare(shareCfg); } catch(e){} }
