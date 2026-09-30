@@ -708,8 +708,15 @@
       const track = section.querySelector(".tmm-intro__track");
       const slides = [...section.querySelectorAll(".tmm-intro__slide")];
       const segments = [...section.querySelectorAll(".tmm-intro__segment")];
-      const prevButton = section.querySelector(".tmm-intro__nav--prev");
-      const nextButton = section.querySelector(".tmm-intro__nav--next");
+      /* v2 gives every slide its own nav row, so there are three of each
+         chevron rather than one. querySelector would have bound only the
+         first slide's pair, leaving the other two inert. */
+      const prevButtons = [...section.querySelectorAll(".tmm-intro__nav--prev")];
+      const nextButtons = [...section.querySelectorAll(".tmm-intro__nav--next")];
+      /* Dots carry data-intro-slide exactly as the v1 segments do. Their
+         current state is hardcoded per slide in the markup, so nothing here
+         has to update them. */
+      const jumpers = [...section.querySelectorAll("[data-intro-slide]")];
 
       // Only the track and slides are essential. The progress bar and
       // chevrons are optional, so stale pasted markup degrades to a
@@ -740,13 +747,8 @@
           segment.style.setProperty("--tmm-segment-fill", isCurrent ? "1" : "0");
         });
 
-        if (prevButton) {
-          prevButton.disabled = index === 0;
-        }
-
-        if (nextButton) {
-          nextButton.disabled = index === slides.length - 1;
-        }
+        prevButtons.forEach((b) => { b.disabled = index === 0; });
+        nextButtons.forEach((b) => { b.disabled = index === slides.length - 1; });
 
         // Drives the Continue link and fades the spent next chevron out.
         // Swiping down was the only way on from here and nothing said so.
@@ -764,14 +766,14 @@
         render();
       };
 
-      segments.forEach((segment) => {
-        segment.addEventListener("click", () => {
-          goToSlide(Number.parseInt(segment.dataset.introSlide || "0", 10));
+      jumpers.forEach((jumper) => {
+        jumper.addEventListener("click", () => {
+          goToSlide(Number.parseInt(jumper.dataset.introSlide || "0", 10));
         });
       });
 
-      prevButton?.addEventListener("click", () => goToSlide(index - 1));
-      nextButton?.addEventListener("click", () => goToSlide(index + 1));
+      prevButtons.forEach((b) => b.addEventListener("click", () => goToSlide(index - 1)));
+      nextButtons.forEach((b) => b.addEventListener("click", () => goToSlide(index + 1)));
 
       track.tabIndex = 0;
       track.setAttribute("role", "group");

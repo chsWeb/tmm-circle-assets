@@ -2825,3 +2825,296 @@
     transform: none;
   }
 }
+
+/* ============================================================
+   V2 — the September 30 redesign (Figma 9846:500)
+
+   Every rule here is gated behind .tmm-intro--v2 / .tmm-join--v2, so
+   the v1 body keeps rendering the v1 design from this same file.
+   Rolling back is pasting the old body: no deploy, no head change.
+
+   What it changes:
+   • One carousel header — black "Welcome to" box over the logo
+     lockup, identical on every slide, so the top of the page stops
+     changing shape as you swipe.
+   • The segmented bar at the very top is gone. It sat inside the
+     zone Circle's app covers with a translucent header, which is
+     what made it look blurred; nothing lives there now.
+   • Navigation moved beneath the text: chevron, dots, chevron. Each
+     slide carries its own row, so the current dot needs no script
+     and the last slide simply has Continue where the dots go.
+   • Imagery flush to the foot of each slide.
+   • The join panel loses "Welcome to" and both bar devices.
+   ============================================================ */
+
+/* ---- 1 · carousel header ---- */
+
+.tmm-intro--v2 .tmm-intro__masthead {
+  padding: clamp(18px, 5vw, 28px) var(--tmm-splash-pad) clamp(14px, 4vw, 22px);
+}
+
+.tmm-intro--v2 .tmm-intro__lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 3vw, 14px);
+}
+
+/* Same device as the join panel's, which is where it came from. */
+.tmm-intro--v2 .tmm-intro__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 11px 16px 10px;
+  background: var(--tmm-color-black);
+  color: var(--tmm-color-fresh-white);
+  font-family: var(--tmm-font-head);
+  font-size: clamp(13px, 3.6vw, 16px);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-indent: 0.2em;
+  text-transform: uppercase;
+}
+
+.tmm-intro--v2 .tmm-intro__logo {
+  display: block;
+  width: min(100%, 300px);
+  height: auto;
+  color: var(--tmm-color-black);
+}
+
+/* Belt and braces: the v2 body has no progress bar, but a stale paste
+   would otherwise leave it under the app's translucent header. */
+.tmm-intro--v2 .tmm-intro__progress { display: none }
+
+/* ---- 2 · slide: text, nav row, then imagery flush at the foot ---- */
+
+.tmm-intro--v2 .tmm-intro__slide {
+  justify-content: flex-start;
+  padding-bottom: 0;
+}
+
+.tmm-intro--v2 .tmm-intro__header {
+  flex: 0 0 auto;
+  gap: clamp(12px, 3vw, 18px);
+}
+
+/* The imagery ABSORBS the leftover height rather than being pushed to the
+   foot of it. margin-top:auto looked right on paper but just moved the void
+   from below the picture to above it — the mock has the imagery filling that
+   space and cropping at the edges, which is what flex:1 does. */
+.tmm-intro--v2 .tmm-intro__media,
+.tmm-intro--v2 .tmm-intro__collage {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.tmm-intro--v2 .tmm-intro__media {
+  height: auto;
+  max-height: none;
+  aspect-ratio: auto;
+}
+
+.tmm-intro--v2 .tmm-intro__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center var(--tmm-media-anchor, bottom);
+}
+
+/* The collage keeps its proportions and grows past the slide's sides, where
+   the slide's own overflow:hidden crops it — the same bleed the comp has. */
+.tmm-intro--v2 .tmm-intro__collage {
+  width: auto;
+  max-width: none;
+  margin-inline: auto;
+  aspect-ratio: 440 / 362;
+}
+
+/* ---- 3 · the nav row ---- */
+
+.tmm-intro--v2 .tmm-intro__nav-row {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding-block: clamp(12px, 3.5vw, 20px);
+}
+
+/* Out of v1's absolute centring and into the row. */
+.tmm-intro--v2 .tmm-intro__nav {
+  position: static;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  flex: 0 0 auto;
+  transform: none;
+}
+
+.tmm-intro--v2 .tmm-intro__dots {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.tmm-intro--v2 .tmm-intro__dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--tmm-color-linen);
+  appearance: none;
+  cursor: pointer;
+  transition: background-color var(--tmm-motion-fast, 0.22s) var(--tmm-ease-in-out, ease);
+}
+
+.tmm-intro--v2 .tmm-intro__dot[aria-current="true"] {
+  background: var(--tmm-splash-accent);
+}
+
+.tmm-intro--v2 .tmm-intro__dot:focus-visible {
+  outline: 2px solid var(--tmm-splash-accent);
+  outline-offset: 3px;
+}
+
+/* In the row it needs no margin of its own, and the row centres it. */
+.tmm-intro--v2 .tmm-intro__nav-row .tmm-intro__continue {
+  margin: 0;
+}
+
+/* ---- 4 · join panel ---- */
+
+.tmm-join--v2 {
+  border-top: 0;
+}
+
+.tmm-join--v2 .tmm-join__bars { display: none }
+
+/* One continuous sentence in the carousel's treatment at every width —
+   v1 only did this on desktop, and stacked three blocks on a phone. */
+.tmm-join--v2 .tmm-join__subtitle {
+  display: block;
+  width: auto;
+  max-width: 30ch;
+  margin-inline: auto;
+  font-family: var(--tmm-font-head);
+  font-size: clamp(16px, 4.545vw, 20px);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.tmm-join--v2 .tmm-join__line,
+.tmm-join--v2 .tmm-join__line--start,
+.tmm-join--v2 .tmm-join__line--end {
+  display: inline;
+  text-align: inherit;
+}
+
+.tmm-join--v2 .tmm-join__dreams {
+  display: inline;
+  margin: 0;
+  color: var(--tmm-splash-accent);
+  font-family: inherit;
+  font-size: inherit;
+  font-style: normal;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  text-transform: inherit;
+}
+
+/* Out of v1's absolute placement — which is what let it sit over the
+   copy — and into the flow, driven to the foot by margin-top:auto. */
+.tmm-join--v2 .tmm-join__media {
+  position: static;
+  z-index: 1;
+  inset: auto;
+  width: min(100%, 420px);
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: auto auto 0;
+  transform: none;
+  aspect-ratio: 300.96 / 485.75;
+}
+
+.tmm-join--v2 .tmm-join__header {
+  flex: 0 0 auto;
+}
+
+/* ---- 5 · desktop keeps the two columns ---- */
+
+@media (min-width: 1024px) {
+  /* The lockup aligns with the text column's left edge rather than
+     floating centred above two left-aligned columns. */
+  .tmm-intro--v2 .tmm-intro__masthead {
+    width: 100%;
+    max-width: var(--tmm-slide-max, 1120px);
+    margin-inline: auto;
+    padding-inline: var(--tmm-slide-pad, clamp(28px, 3.5vw, 56px));
+    padding-top: clamp(28px, 4vh, 48px);
+  }
+
+  .tmm-intro--v2 .tmm-intro__lockup {
+    align-items: flex-start;
+  }
+
+  .tmm-intro--v2 .tmm-intro__logo {
+    width: min(100%, 320px);
+  }
+
+  /* Text, nav row and imagery are all grid items, so the row sits under
+     the copy in the left column and the picture keeps the right. */
+  .tmm-intro--v2 .tmm-intro__slide {
+    grid-template-areas:
+      "text  media"
+      "nav   media";
+    grid-template-rows: auto auto;
+    align-content: center;
+  }
+
+  .tmm-intro--v2 .tmm-intro__header { grid-area: text }
+  .tmm-intro--v2 .tmm-intro__nav-row { grid-area: nav }
+  .tmm-intro--v2 .tmm-intro__media,
+  .tmm-intro--v2 .tmm-intro__collage { grid-area: media; margin-top: 0 }
+
+  .tmm-intro--v2 .tmm-intro__nav-row {
+    justify-content: flex-start;
+    gap: clamp(16px, 2vw, 28px);
+    padding-block: clamp(16px, 2.5vh, 26px) 0;
+  }
+
+  /* The mobile rules size the imagery off the flex column: width:auto plus an
+     aspect-ratio, with the height coming from flex:1. Inside this grid that
+     is circular — an auto row feeding an auto width — and the collage
+     collapsed to nothing. Give both a width again and let the ratio set the
+     height, as the v1 desktop block did. */
+  .tmm-intro--v2 .tmm-intro__collage {
+    width: min(86%, 500px);
+    height: auto;
+    aspect-ratio: 440 / 362;
+  }
+
+  .tmm-intro--v2 .tmm-intro__media {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    max-height: min(68vh, 600px);
+  }
+
+  .tmm-join--v2 .tmm-join__media {
+    margin: 0 auto;
+  }
+}
