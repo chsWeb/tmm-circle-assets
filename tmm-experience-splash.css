@@ -2532,14 +2532,18 @@
   }
 
   /* These carry phone widths (344–378px) that would strand the type in the
-     left column. */
+     left column.
+
+     ONE SIZE FOR BOTH. The base rule sets subhead and headline from a single
+     declaration, so slide 1 and slides 2–3 are the same size on a phone.
+     Sizing them apart here broke that: slides 2 and 3 went to 40px against
+     slide 1's 21px. */
   .tmm-intro__subhead,
   .tmm-intro__headline {
     width: auto;
-    max-width: 22ch;
+    max-width: 26ch;
+    font-size: clamp(17px, 1.5vw, 21px);
   }
-  .tmm-intro__subhead { font-size: clamp(17px, 1.5vw, 21px) }
-  .tmm-intro__headline { font-size: clamp(28px, 2.5vw, 40px) }
 
   /* Fills its column instead of being capped at 440px. The frames are
      absolutely positioned and bleed past this box by design, so it keeps a
