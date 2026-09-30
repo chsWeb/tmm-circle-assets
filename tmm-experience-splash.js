@@ -1023,6 +1023,11 @@
       const positionMedia = () => {
         let tallest = 0;
 
+        // Cleared first: in v2 the CSS floors every header at this same
+        // value, so measuring without resetting would read back the last
+        // result and the block could only ever grow.
+        section.style.setProperty("--tmm-intro-header-h", "auto");
+
         slides.forEach((slide) => {
           const header = slide.querySelector(".tmm-intro__header");
 
@@ -1035,6 +1040,14 @@
           const gap = 28;
 
           section.style.setProperty("--tmm-media-top", `${Math.round(tallest + gap)}px`);
+
+          // v2 puts the nav row directly under the copy, so the row would
+          // sit at a different height on each slide — the subheadings run to
+          // three, four and five lines depending on the width. Flooring
+          // every header at the tallest holds the row still at any width,
+          // which no CSS reserve can do: the slides are stacked absolutely
+          // and none of them knows how the others wrapped.
+          section.style.setProperty("--tmm-intro-header-h", `${Math.ceil(tallest)}px`);
         }
 
         // Where the track starts, so the chevrons can be centred on the

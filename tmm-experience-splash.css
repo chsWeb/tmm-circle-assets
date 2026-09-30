@@ -2866,7 +2866,10 @@
   align-items: center;
   justify-content: center;
   margin: 0;
-  padding: 11px 16px 10px;
+  /* Tightened from 11/10 to the comp's proportions: the box is a caption
+     around the word, not a band. 1px less at the foot than the head is the
+     optical correction for an all-caps line, which has no descenders. */
+  padding: 5px 16px 4px;
   background: var(--tmm-color-black);
   color: var(--tmm-color-fresh-white);
   font-family: var(--tmm-font-head);
@@ -2878,10 +2881,14 @@
   text-transform: uppercase;
 }
 
+/* Height-driven, not width-driven: 64px tall with the width following the
+   viewBox (285 x 82 -> 222px). Sizing it by width made the lockup grow and
+   shrink with the viewport while the "Welcome to" box above it did not. */
 .tmm-intro--v2 .tmm-intro__logo {
   display: block;
-  width: min(100%, 300px);
-  height: auto;
+  width: auto;
+  height: 64px;
+  max-width: 100%;
   color: var(--tmm-color-black);
 }
 
@@ -2901,12 +2908,26 @@
   gap: clamp(12px, 3vw, 18px);
 }
 
-/* The imagery ABSORBS the leftover height rather than being pushed to the
-   foot of it. margin-top:auto looked right on paper but just moved the void
-   from below the picture to above it — the mock has the imagery filling that
-   space and cropping at the edges, which is what flex:1 does. */
-.tmm-intro--v2 .tmm-intro__media,
-.tmm-intro--v2 .tmm-intro__collage {
+/* The nav row has to sit at the same height on all three slides, and the
+   copy above it runs to three, four or five lines depending on the slide and
+   the width. The script measures the tallest of the three and publishes it
+   here, so every header is floored at the same height and the row holds
+   still. The 3.375em (3 lines x the 1.125 line-height, in em so it tracks
+   the clamped font size) is the pre-script floor, for the frame before the
+   measurement lands and if the script never runs at all. */
+.tmm-intro--v2 .tmm-intro__header {
+  min-height: var(--tmm-intro-header-h, auto);
+}
+
+.tmm-intro--v2 .tmm-intro__headline,
+.tmm-intro--v2 .tmm-intro__subhead {
+  min-height: 3.375em;
+}
+
+/* Photography ABSORBS the leftover height rather than being pushed to the
+   foot of it: the mock has it filling that space and cropping at the edges,
+   which is what flex:1 does. The collage is NOT treated this way — see below. */
+.tmm-intro--v2 .tmm-intro__media {
   flex: 1 1 auto;
   min-height: 0;
   margin-top: 0;
@@ -2926,12 +2947,17 @@
   object-position: center var(--tmm-media-anchor, bottom);
 }
 
-/* The collage keeps its proportions and grows past the slide's sides, where
-   the slide's own overflow:hidden crops it — the same bleed the comp has. */
+/* The collage is sized exactly as it is in v1 — the section's width plus the
+   two gutters, capped at 440px, at 440/362 — and driven to the foot of the
+   slide by margin-top:auto. Letting it take flex:1 like the photography did
+   was the bug behind the enormous first slide: an auto width fed by an
+   aspect-ratio and a filled height came out 642px wide on a 390px phone. */
 .tmm-intro--v2 .tmm-intro__collage {
-  width: auto;
-  max-width: none;
-  margin-inline: auto;
+  flex: 0 0 auto;
+  width: calc(100% + var(--tmm-splash-pad) * 2);
+  max-width: 440px;
+  margin-block: auto 0;
+  margin-inline: calc(var(--tmm-splash-pad) * -1);
   aspect-ratio: 440 / 362;
 }
 
@@ -2944,6 +2970,10 @@
   justify-content: space-between;
   gap: 12px;
   width: 100%;
+  /* The height of the Continue button, so the row is the same height whether
+     it holds 9px dots or a 44px pill. Without it the chevrons sat 17px
+     higher on the first two slides than on the last. */
+  min-height: 44px;
   padding-block: clamp(12px, 3.5vw, 20px);
 }
 
@@ -3071,24 +3101,38 @@
     align-items: flex-start;
   }
 
+  /* Height only. Setting a width here against the 64px height would scale
+     the two axes independently and stretch the wordmark. */
   .tmm-intro--v2 .tmm-intro__logo {
-    width: min(100%, 320px);
+    height: 72px;
   }
 
   /* Text, nav row and imagery are all grid items, so the row sits under
      the copy in the left column and the picture keeps the right. */
+  /* Four rows, not two: the two 1fr spacers make the grid fill the slide and
+     split the slack evenly above and below the copy, so the text and the nav
+     row land at the same height on all three slides. With two auto rows the
+     imagery spanned them both and its height stretched them — the 362px-tall
+     collage and the 600px-tall photography put the nav row 60px apart. */
   .tmm-intro--v2 .tmm-intro__slide {
     grid-template-areas:
-      "text  media"
-      "nav   media";
-    grid-template-rows: auto auto;
-    align-content: center;
+      "pad-top     media"
+      "text        media"
+      "nav         media"
+      "pad-bottom  media";
+    grid-template-rows: 1fr auto auto 1fr;
+    align-content: normal;
   }
 
-  .tmm-intro--v2 .tmm-intro__header { grid-area: text }
+  .tmm-intro--v2 .tmm-intro__header { grid-area: text; justify-content: flex-end }
   .tmm-intro--v2 .tmm-intro__nav-row { grid-area: nav }
   .tmm-intro--v2 .tmm-intro__media,
-  .tmm-intro--v2 .tmm-intro__collage { grid-area: media; margin-top: 0 }
+  .tmm-intro--v2 .tmm-intro__collage {
+    grid-area: media;
+    align-self: center;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
 
   .tmm-intro--v2 .tmm-intro__nav-row {
     justify-content: flex-start;
@@ -3104,6 +3148,7 @@
   .tmm-intro--v2 .tmm-intro__collage {
     width: min(86%, 500px);
     height: auto;
+    margin-inline: auto;
     aspect-ratio: 440 / 362;
   }
 
