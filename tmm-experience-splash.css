@@ -2512,15 +2512,24 @@
      were 460 + 520 + gap + padding = 1113px, which does not fit at the
      1024 breakpoint itself: the collage bled past the right edge and the
      slide's overflow:hidden clipped a frame off. */
+  /* Held as variables because the Continue button is a child of the section,
+     not of the slide, so it has to reconstruct the left column's centre from
+     the same numbers the grid uses. */
+  .tmm-intro {
+    --tmm-slide-max: 1120px;
+    --tmm-slide-pad: clamp(28px, 3.5vw, 56px);
+    --tmm-slide-gap: clamp(28px, 3.5vw, 72px);
+  }
+
   .tmm-intro__slide {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
     align-items: center;
-    column-gap: clamp(28px, 3.5vw, 72px);
+    column-gap: var(--tmm-slide-gap);
     width: 100%;
-    max-width: 1120px;
+    max-width: var(--tmm-slide-max);
     margin-inline: auto;
-    padding: 0 clamp(28px, 3.5vw, 56px) clamp(40px, 6vh, 72px);
+    padding: 0 var(--tmm-slide-pad) clamp(40px, 6vh, 72px);
     text-align: left;
   }
 
@@ -2572,14 +2581,31 @@
   .tmm-intro__nav--prev { left: max(24px, calc((100vw - 1180px) / 2)) }
   .tmm-intro__nav--next { right: max(24px, calc((100vw - 1180px) / 2)) }
 
-  /* Continue sits under the words, not over the picture. */
+  /* Continue sits directly under the text, centred on the text column.
+
+     Vertically: it was pinned near the section floor, which left 228px of
+     nothing between the copy and the button. The text block is centred in
+     the track, and the track sits under a masthead of fixed height, so the
+     text's bottom edge moves linearly with the section — measured at
+     105px + 52.1% of section height across 768, 900 and 1100px tall
+     windows, exact at all three. Anchoring to that keeps the button a
+     constant 28px under the copy at any window height.
+
+     Horizontally: rebuilt from the grid's own variables, since this element
+     is a child of the section and knows nothing about the columns. */
   .tmm-intro__continue {
-    top: auto;
-    bottom: clamp(40px, 6vh, 72px);
-    left: max(clamp(28px, 3.5vw, 56px), calc(50% - 560px + clamp(28px, 3.5vw, 56px)));
-    transform: none;
+    --tmm-slide-w: min(100%, var(--tmm-slide-max));
+    --tmm-text-col: calc(
+      (var(--tmm-slide-w) - var(--tmm-slide-pad) * 2 - var(--tmm-slide-gap)) / 2.15
+    );
+    top: calc(52.1% + 133px);
+    bottom: auto;
+    left: calc(
+      (100% - var(--tmm-slide-w)) / 2 + var(--tmm-slide-pad) + var(--tmm-text-col) / 2
+    );
+    transform: translateX(-50%);
   }
-  .tmm-intro.is-end .tmm-intro__continue { transform: none }
+  .tmm-intro.is-end .tmm-intro__continue { transform: translateX(-50%) }
 
   /* ---- 2 · the join panel ---- */
 
