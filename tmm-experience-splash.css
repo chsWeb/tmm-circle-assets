@@ -1798,6 +1798,15 @@
   transform: rotate(-7.83deg);
 }
 
+/* v2 only, so a rollback to the v1 body still renders the collage it
+   shipped with. Pixels rather than the percentages around them because
+   this frame is being placed against the box's corner, which does not
+   move when the collage scales. */
+.tmm-intro--v2 .tmm-intro__frame--a {
+  left: -16px;
+  top: 8px;
+}
+
 /* --- Slide media --- */
 
 /* Height fills everything between the dots and the bottom edge, rather
@@ -1950,16 +1959,19 @@
   gap: clamp(18px, 7.27vw, 32px);
 }
 
+/* The same box as the carousel's, at both widths — it used to be 6/4/4 on a
+   0.65 line-height here and 11/16/10 with a flex centre on desktop. */
 .tmm-join__eyebrow {
   margin: 0;
-  padding: 6px 4px 4px;
+  padding: 8px 16px;
   background: var(--tmm-color-black);
   color: var(--tmm-color-fresh-white);
   font-family: var(--tmm-font-head);
   font-size: clamp(16px, 4.545vw, 20px);
   font-weight: 500;
   letter-spacing: 0.2em;
-  line-height: 0.65;
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
   text-indent: 0.2em;
   text-transform: uppercase;
 }
@@ -2798,18 +2810,6 @@
     line-height: 1;
   }
 
-  /* The black block sat with 4px of side padding and a 0.65 line-height, so
-     the words were crushed against its edges. Symmetric padding and a flex
-     centre; the text-indent stays because letter-spacing adds a trailing
-     space after the last letter, which would otherwise pull the word left. */
-  .tmm-join__eyebrow {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 11px 16px 10px;
-    line-height: 1;
-  }
-
   /* Out of the absolute positioning that put it on top of the copy, and
      into the right column. */
   .tmm-join__media {
@@ -2862,16 +2862,17 @@
   gap: clamp(10px, 3vw, 14px);
 }
 
-/* Same device as the join panel's, which is where it came from. */
+/* Same device as the join panel's, which is where it came from.
+
+   text-box: trim-both cap alphabetic does the optical correction that the
+   asymmetric padding used to fake: the box is trimmed to the cap height and
+   the baseline, so 8px of padding is 8px of actual space above the caps
+   rather than 8px plus whatever leading the font carries. A browser without
+   it (pre-133 Chrome, pre-18.2 Safari) ignores the line and renders the
+   8/8 box, which is the same design a little looser. */
 .tmm-intro--v2 .tmm-intro__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   margin: 0;
-  /* Tightened from 11/10 to the comp's proportions: the box is a caption
-     around the word, not a band. 1px less at the foot than the head is the
-     optical correction for an all-caps line, which has no descenders. */
-  padding: 5px 16px 4px;
+  padding: 8px 16px;
   background: var(--tmm-color-black);
   color: var(--tmm-color-fresh-white);
   font-family: var(--tmm-font-head);
@@ -2879,6 +2880,7 @@
   font-weight: 500;
   letter-spacing: 0.2em;
   line-height: 1;
+  text-box: trim-both cap alphabetic;
   text-indent: 0.2em;
   text-transform: uppercase;
 }
@@ -2990,11 +2992,15 @@
    from flex:1 rather than a bounded band. */
 .tmm-intro--v2 .tmm-intro__collage {
   flex: 0 0 auto;
+  /* align-self, not margin-inline:auto: auto margins resolve to zero when the
+     free space is negative, so a collage wider than the slide was landing
+     against the left gutter and bleeding off one side only. */
+  align-self: center;
   width: auto;
   max-width: min(128vw, 560px);
   height: var(--tmm-v2-band, 46%);
   margin-block: auto 0;
-  margin-inline: auto;
+  margin-inline: 0;
   aspect-ratio: 440 / 362;
 }
 
@@ -3148,14 +3154,31 @@
 /* ---- 5 · desktop keeps the two columns ---- */
 
 @media (min-width: 1024px) {
-  /* The lockup aligns with the text column's left edge rather than
-     floating centred above two left-aligned columns. */
+  /* THE LOCKUP JOINS THE COPY.
+
+     On a phone the masthead is the top of the screen. On desktop it belongs
+     in the left column with the text it introduces, so the centred block
+     reads brand, sentence, navigation, with the photography beside all of
+     it. The element is a sibling of the track, not part of a slide, so it
+     comes out of the flow and is placed into a row the slide grid reserves
+     for it: --tmm-v2-brand-h is the row, --tmm-v2-brand-top is where the
+     script measured that row to be. Without the script both are 0 and the
+     lockup sits at the top of the section, which is where it used to be. */
+  .tmm-intro--v2 {
+    position: relative;
+  }
+
   .tmm-intro--v2 .tmm-intro__masthead {
+    position: absolute;
+    z-index: 2;
+    top: var(--tmm-v2-brand-top, 0px);
+    right: 0;
+    left: 0;
     width: 100%;
     max-width: var(--tmm-slide-max, 1120px);
     margin-inline: auto;
+    padding-block: 0;
     padding-inline: var(--tmm-slide-pad, clamp(28px, 3.5vw, 56px));
-    padding-top: clamp(28px, 4vh, 48px);
   }
 
   .tmm-intro--v2 .tmm-intro__lockup {
@@ -3178,10 +3201,11 @@
   .tmm-intro--v2 .tmm-intro__slide {
     grid-template-areas:
       "pad-top     media"
+      "brand       media"
       "text        media"
       "nav         media"
       "pad-bottom  media";
-    grid-template-rows: 1fr auto auto 1fr;
+    grid-template-rows: 1fr var(--tmm-v2-brand-h, 0px) auto auto 1fr;
     align-content: normal;
   }
 

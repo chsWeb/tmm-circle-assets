@@ -1073,6 +1073,37 @@
           section.style.setProperty("--tmm-v2-band", `${band}px`);
         }
 
+        // v2 on desktop: the masthead is placed into the left column with the
+        // copy instead of sitting at the top of the section. It is a sibling
+        // of the track, so on desktop the stylesheet takes it out of the flow
+        // and the slide grid reserves a row for it; these two numbers are the
+        // row's height and where that row ended up. Order matters — the row
+        // has to exist before the header's position means anything, and
+        // reading the rect between the two writes is what forces that.
+        const brand = section.querySelector(".tmm-intro__masthead");
+        const desktop = window.matchMedia("(min-width: 1024px)").matches;
+
+        if (brand && desktop) {
+          const BRAND_GAP = 24;
+          const brandRow = brand.offsetHeight + BRAND_GAP;
+
+          section.style.setProperty("--tmm-v2-brand-h", `${brandRow}px`);
+
+          const header = slides[0].querySelector(".tmm-intro__header");
+
+          if (header) {
+            const top =
+              header.getBoundingClientRect().top -
+              section.getBoundingClientRect().top -
+              brandRow;
+
+            section.style.setProperty("--tmm-v2-brand-top", `${Math.round(top)}px`);
+          }
+        } else if (brand) {
+          section.style.removeProperty("--tmm-v2-brand-h");
+          section.style.removeProperty("--tmm-v2-brand-top");
+        }
+
         // Where the track starts, so the chevrons can be centred on the
         // imagery rather than on the section — the two drift apart as the
         // section grows, which is what left them sitting low.
