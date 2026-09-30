@@ -2605,14 +2605,19 @@
 
   /* ---- 2 · the join panel ---- */
 
+  /* The section stays full-bleed and the CONTENT is centred with padding.
+     Capping the section itself with max-width + margin auto also capped its
+     background and the two decorative bars at the foot, which are absolutely
+     positioned inside it — they stopped 160px short of each edge. */
   .tmm-join {
     display: grid;
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     align-items: center;
     column-gap: clamp(32px, 4vw, 88px);
-    max-width: 1120px;
-    margin-inline: auto;
-    padding-inline: clamp(28px, 3.5vw, 56px);
+    padding-inline: max(
+      clamp(28px, 3.5vw, 56px),
+      calc((100% - 1120px) / 2 + clamp(28px, 3.5vw, 56px))
+    );
     text-align: left;
   }
 
@@ -2623,12 +2628,62 @@
     text-align: left;
   }
   .tmm-join__lockup { align-items: flex-start }
-  .tmm-join__actions { align-items: flex-start }
 
+  /* More room between the button and the sign-in line than the 9px the
+     mobile stack uses. */
+  .tmm-join__actions {
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  /* One continuous sentence. The three spans are stacked blocks on a phone —
+     left, right, then the italic line — which reads as deliberate at 430px
+     and as broken line breaks across a desktop column. Inline here, so they
+     set as a paragraph and wrap on their own; the whitespace between the
+     spans in the markup supplies the word spaces. */
   .tmm-join__subtitle {
+    display: block;
     width: auto;
-    max-width: 26ch;
-    font-size: clamp(22px, 2vw, 30px);
+    max-width: none;
+    font-family: var(--tmm-font-display);
+    font-size: clamp(26px, 2.5vw, 38px);
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+  .tmm-join__line,
+  .tmm-join__line--start,
+  .tmm-join__line--end {
+    display: inline;
+    text-align: inherit;
+  }
+  /* Stays the italic accent face, now inline and scaled to the sentence
+     rather than sitting two sizes smaller on its own line. */
+  .tmm-join__dreams {
+    display: inline;
+    margin: 0;
+    color: var(--tmm-splash-accent);
+    font-size: 0.95em;
+    letter-spacing: 0;
+    text-align: inherit;
+  }
+
+  /* Was 11px, and tight under the button. */
+  .tmm-join__login {
+    font-size: clamp(12px, 1vw, 13.5px);
+    letter-spacing: -0.01em;
+  }
+
+  /* The black block sat with 4px of side padding and a 0.65 line-height, so
+     the words were crushed against its edges. Symmetric padding and a flex
+     centre; the text-indent stays because letter-spacing adds a trailing
+     space after the last letter, which would otherwise pull the word left. */
+  .tmm-join__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 16px 10px;
+    line-height: 1;
   }
 
   /* Out of the absolute positioning that put it on top of the copy, and
