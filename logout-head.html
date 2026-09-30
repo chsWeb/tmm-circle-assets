@@ -1,97 +1,49 @@
-<!-- ============================================================
-     TMM Signed-Out Door — HEAD snippet for /logout
+<!-- TMM signed-out door — HEAD code for the /logout page only.
+     Styles Circle's own Site Builder markup. Nothing to deploy.
 
-     Paste into the HEAD code of the Circle Site Builder page at
-     members.themillionairemother.com/logout. This is the whole
-     thing: replace the field's contents with it. Nothing to
-     deploy.
+     Not scoped to a body class on purpose: Circle only puts
+     .is-signed-out on <body> when you are signed out, so an earlier
+     version vanished for admins viewing the page while logged in.
+     This lives in one page's head code, so it needs no scope.
 
-     ONLY put this on that page. It is scoped to body.is-signed-out,
-     which Circle also applies to /signup, so in the community-wide
-     head snippet it would restyle that page's headings too.
+     !important is needed because Circle's builder writes inline
+     styles on these elements from its design panel.
 
-     The page is built from Circle's own Site Builder elements, so
-     this styles Circle's markup rather than replacing it:
+     The field colour follows var(--theme-website-color-5) — the
+     section's own colour — so changing it in the builder changes
+     this with it.
 
-       h1   .wb-text-h1 / .wb-font-h1 ...
-       h6   .wb-text-h6 ...
-       text .wb-text-p1 ...
-       btns a.wb-pt-button-secondary-top ... (both buttons come off
-            the same secondary token set, so they are told apart by
-            order — reorder them and Sign In stops being the filled
-            one)
-
-     Matched on the stable token part of each class, because the
-     rest of Circle's class list is not stable.
-
-     THE FIELD COLOUR IS NOT HARDCODED. It reads
-     var(--theme-website-color-5) — the section's own colour, set in
-     the builder — so changing it there changes everything here with
-     it. An earlier version hardcoded #D11934 and went out of step
-     the moment the section was changed to #841519.
-
-     WHY SO MANY !important
-     Circle's builder writes inline styles onto these elements from
-     its design panel: the body copy carries
-     color: var(--theme-website-primary-button-default-text-color)
-     and the second button carries background-color: transparent.
-     An inline style beats any selector, so those properties can
-     only be reached with !important. Every one here was verified
-     against the live page; properties Circle does not set inline
-     are left plain.
-
-     WHAT THIS FIXES
-     • The line under the title was near-black on red — 3.7:1 and
-       muddy. Now cream, in the brand's uppercase treatment.
-     • Both buttons rendered identically from one token set. Now a
-       filled cream pill and an outlined one.
-     • A white band sat below the red section, because the page
-       wrapper is .wb-bg-primary. Everything down to <body> is now
-       painted, so no white and no mismatched red can show.
-     • Circle's column padding is 112px, which with full-height
-       centring left the content marooned. Reduced to 64px.
-
-     STILL TO DO IN THE BUILDER: both buttons are href="#". Set
-     them to /sign_in#email and /signup.
-     ============================================================ -->
+     Still to do in the builder: both buttons are href="#". Point
+     them at /sign_in#email and /signup. -->
 <style>
-  /* Brand faces, served from Cloudflare Pages with CORS open. */
   @font-face{font-family:'TMM Operetta';src:url('https://tmm-circle-assets.pages.dev/home/fonts/Operetta52-Medium.woff2') format('woff2');font-weight:500;font-display:swap}
   @font-face{font-family:'TMM Sweet Sans';src:url('https://tmm-circle-assets.pages.dev/home/fonts/SweetSansProMedium.woff2') format('woff2');font-weight:500;font-display:swap}
 
-  body.is-signed-out{
-    --tmm-field:var(--theme-website-color-5,#841519);   /* the section's own colour */
+  :root{
+    --tmm-field:var(--theme-website-color-5,#841519);
     --tmm-cream:#F4EDDB;
     --tmm-sand:#EAE4D6;
     --tmm-white:#F9F9F9;
   }
 
-  /* ---- one field, all the way down ----
-     The red block sat inside a white .wb-bg-primary wrapper, inside a white
-     .bg-primary page, on a #F7F9FA body. Paint all of them the field colour
-     so nothing else can ever show through, then stretch the block and centre
-     its content. 57px is Circle's header, positioned absolutely over the top. */
-  body.is-signed-out,
-  body.is-signed-out .bg-primary,
-  body.is-signed-out .bg-secondary,
-  body.is-signed-out .wb-bg-primary{background:var(--tmm-field) !important}
+  /* One field all the way down, so no white band shows under the section.
+     div.bg-primary, not .bg-primary: the <header> carries that class too. */
+  body,
+  div.bg-primary,
+  div.bg-secondary,
+  .wb-bg-primary{background:var(--tmm-field) !important}
 
-  body.is-signed-out .wb-bg-secondary{
-    min-height:calc(100dvh - 57px);
-    display:flex;
-    align-items:center;
-  }
-  body.is-signed-out .wb-bg-secondary > .wb-max-w-7xl{width:100%}
-
-  /* Circle's own 112px column padding fights the centring. */
-  body.is-signed-out .wb-bg-secondary [class*="wb-py-12"]{
+  /* Fill the screen and centre the content. 57px is Circle's header. */
+  .wb-bg-secondary{min-height:calc(100dvh - 57px);display:flex;align-items:center}
+  .wb-bg-secondary > .wb-max-w-7xl{width:100%}
+  .wb-bg-secondary [class*="wb-py-12"]{
     padding-top:clamp(40px,7vw,64px) !important;
     padding-bottom:clamp(40px,7vw,64px) !important;
   }
 
-  /* ---- the name, in the brand's display face ---- */
-  body.is-signed-out [class*="wb-text-h1"],
-  body.is-signed-out [class*="wb-text-h1"] p{
+  /* The name */
+  [class*="wb-text-h1"],
+  [class*="wb-text-h1"] p{
     color:var(--tmm-cream) !important;
     font-family:'TMM Operetta',Georgia,serif !important;
     font-size:clamp(38px,9vw,64px) !important;
@@ -100,9 +52,9 @@
     line-height:1 !important;
   }
 
-  /* ---- the line under it ---- */
-  body.is-signed-out [class*="wb-text-h6"],
-  body.is-signed-out [class*="wb-text-h6"] p{
+  /* The line under it — was near-black on red, 3.7:1 and muddy */
+  [class*="wb-text-h6"],
+  [class*="wb-text-h6"] p{
     color:var(--tmm-cream) !important;
     font-family:'TMM Sweet Sans','Work Sans',sans-serif !important;
     font-size:clamp(13px,3.6vw,16px) !important;
@@ -112,23 +64,22 @@
     text-transform:uppercase !important;
   }
 
-  /* ---- the two sentences ---- */
-  body.is-signed-out [class*="wb-text-p1"]{
+  /* The two sentences */
+  [class*="wb-text-p1"]{
     max-width:34rem;
     margin-inline:auto;
     color:var(--tmm-sand) !important;
     font-size:clamp(15px,4vw,17px) !important;
     line-height:1.6 !important;
   }
-  body.is-signed-out [class*="wb-text-p1"] p+p{margin-top:.8em}
-  body.is-signed-out [class*="wb-text-p1"] b,
-  body.is-signed-out [class*="wb-text-p1"] strong{
-    color:var(--tmm-white) !important;
-    font-weight:500;
-  }
+  [class*="wb-text-p1"] p+p{margin-top:.8em}
+  [class*="wb-text-p1"] b,
+  [class*="wb-text-p1"] strong{color:var(--tmm-white) !important;font-weight:500}
 
-  /* ---- the two ways in ---- */
-  body.is-signed-out a[class*="wb-pt-button-secondary"]{
+  /* The two ways in. Both come off Circle's one secondary token set, so
+     they are told apart by order — reorder them and Sign In stops being
+     the filled one. */
+  a[class*="wb-pt-button-secondary"]{
     min-height:50px;
     padding:12px 30px !important;
     border:1px solid var(--tmm-cream) !important;
@@ -139,41 +90,33 @@
     letter-spacing:.18em !important;
     text-transform:uppercase !important;
     box-shadow:none !important;
-    transition:background-color .22s cubic-bezier(.4,0,.2,1),
-               color .22s cubic-bezier(.4,0,.2,1),
-               border-color .22s cubic-bezier(.4,0,.2,1);
+    transition:background-color .22s ease,color .22s ease,border-color .22s ease;
   }
-  body.is-signed-out a[class*="wb-pt-button-secondary"] p{
+  a[class*="wb-pt-button-secondary"] p{
     font:inherit !important;
     letter-spacing:inherit !important;
     text-transform:inherit !important;
     color:inherit !important;
   }
-
-  body.is-signed-out a[class*="wb-pt-button-secondary"]:first-child{
+  a[class*="wb-pt-button-secondary"]:first-child{
     background:var(--tmm-cream) !important;
     color:var(--tmm-field) !important;
   }
-  body.is-signed-out a[class*="wb-pt-button-secondary"]:first-child:hover{
-    background:var(--tmm-white) !important;
-    border-color:var(--tmm-white) !important;
-  }
-  body.is-signed-out a[class*="wb-pt-button-secondary"]:last-child{
+  a[class*="wb-pt-button-secondary"]:last-child{
     background:transparent !important;
     color:var(--tmm-cream) !important;
   }
-  body.is-signed-out a[class*="wb-pt-button-secondary"]:last-child:hover{
+  a[class*="wb-pt-button-secondary"]:hover{
     background:var(--tmm-white) !important;
     border-color:var(--tmm-white) !important;
     color:var(--tmm-field) !important;
   }
-  body.is-signed-out a[class*="wb-pt-button-secondary"]:focus-visible{
+  a[class*="wb-pt-button-secondary"]:focus-visible{
     outline:2px solid var(--tmm-cream);
     outline-offset:3px;
   }
 
-  /* Thumb-width targets on a phone; Circle puts them side by side from md. */
   @media (max-width:767px){
-    body.is-signed-out a[class*="wb-pt-button-secondary"]{width:100%}
+    a[class*="wb-pt-button-secondary"]{width:100%}
   }
 </style>
