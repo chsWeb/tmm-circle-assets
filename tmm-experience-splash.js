@@ -1,4 +1,18 @@
 (() => {
+  /* Circle's iOS app lays a translucent, blurred header and tab bar OVER the
+     webview rather than beside it, so anything at the very top or bottom of
+     our markup renders under frosted glass — the progress bar was coming out
+     blurred and washed. window.isInsideCircleMobileWebview is Circle's own
+     documented flag for that surface, so the class goes on <html> and the
+     stylesheet gives those sections real chrome offsets. Every rule that
+     needs to already reads --tmm-chrome-offset / --tmm-chrome-bottom.
+
+     Set before anything else runs: it changes layout, so it must not land
+     after the first paint. */
+  if (window.isInsideCircleMobileWebview) {
+    document.documentElement.classList.add("tmm-in-app");
+  }
+
   const handledSplashes = new WeakSet();
   const handledWelcomeSections = new WeakSet();
   const handledPricingSections = new WeakSet();

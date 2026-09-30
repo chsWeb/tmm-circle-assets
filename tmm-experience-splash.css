@@ -247,6 +247,31 @@
   --tmm-scroll-offset: var(--tmm-chrome-offset, 0px);
 }
 
+/* ---- Circle's iOS app ----
+   The app lays a translucent, blurred header and tab bar OVER the webview
+   instead of beside it, so anything at the very top or bottom of our markup
+   renders under frosted glass. The progress bar sat at --tmm-chrome-offset,
+   which the head snippet declares as 0 for this surface, so it was being
+   blurred by the header above it.
+
+   The script adds .tmm-in-app from Circle's own isInsideCircleMobileWebview
+   flag, and these give the sections real offsets. Every rule that needs to
+   already reads them — the progress bar's top, the section padding, the
+   chevrons' midpoint, the join photo's height.
+
+   TUNING: if the bar still catches the blur, or now clears it by too much,
+   override just these two in the App Builder head snippet:
+     :root { --tmm-app-chrome-top: 64px; --tmm-app-chrome-bottom: 84px; }
+   They are separate from --tmm-chrome-offset on purpose, so the web surface
+   is untouched. */
+.tmm-in-app .tmm-intro,
+.tmm-in-app .tmm-join,
+.tmm-in-app .tmm-pricing,
+.tmm-in-app .tmm-experience-splash {
+  --tmm-chrome-offset: var(--tmm-app-chrome-top, 56px);
+  --tmm-chrome-bottom: var(--tmm-app-chrome-bottom, 76px);
+}
+
 /* Circle wraps custom HTML in a .wb-p-5 padding utility. Site Builder can
    wrap each top-level section separately, so every full-bleed section
    needs its own reset — otherwise the padding shows as a strip along the
@@ -2431,14 +2456,15 @@
    primary action at that point rather than a hint. Hidden state uses
    visibility so it stays out of the tab order until it is offered. */
 
+/* In the flow of the last slide's header, so it lands under the text on
+   every surface. It used to be absolutely positioned and vertically centred
+   on the section, which put it over the photograph on a phone — in the iOS
+   app, across Cait's face. Alignment comes from the header: centred on a
+   phone, flush left on desktop, with nothing to keep in sync. */
 .tmm-intro__continue {
-  position: absolute;
+  position: static;
   z-index: 4;
-  top: calc(
-    var(--tmm-chrome-offset, 0px) +
-    (100% - var(--tmm-chrome-offset, 0px) - var(--tmm-chrome-bottom, 0px)) / 2
-  );
-  left: 50%;
+  margin-top: clamp(18px, 5vw, 26px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2456,7 +2482,7 @@
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
-  transform: translate(-50%, calc(-50% + 6px));
+  transform: translateY(6px);
   transition:
     opacity var(--tmm-motion-slow, 0.45s) var(--tmm-ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
     transform var(--tmm-motion-slow, 0.45s) var(--tmm-ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
@@ -2466,7 +2492,7 @@
 .tmm-intro.is-end .tmm-intro__continue {
   opacity: 1;
   visibility: visible;
-  transform: translate(-50%, -50%);
+  transform: none;
 }
 
 .tmm-intro__continue:hover,
@@ -2488,7 +2514,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .tmm-intro__continue {
-    transform: translate(-50%, -50%);
+    transform: none;
     transition: opacity 0.01s linear, visibility 0.01s linear;
   }
 }
@@ -2604,27 +2630,11 @@
   .tmm-intro__nav--prev { left: max(24px, calc((100vw - 1180px) / 2)) }
   .tmm-intro__nav--next { right: max(24px, calc((100vw - 1180px) / 2)) }
 
-  /* Continue sits directly under the text, centred on the text column.
-
-     Vertically: it was pinned near the section floor, which left 228px of
-     nothing between the copy and the button. The text block is centred in
-     the track, and the track sits under a masthead of fixed height, so the
-     text's bottom edge moves linearly with the section — measured at
-     105px + 52.1% of section height across 768, 900 and 1100px tall
-     windows, exact at all three. Anchoring to that keeps the button a
-     constant 28px under the copy at any window height.
-
-     Horizontally: flush with the text's own left edge, which is the left
-     column's content edge. Rebuilt from the grid's variables, since this
-     element is a child of the section and knows nothing about the columns. */
-  .tmm-intro__continue {
-    --tmm-slide-w: min(100%, var(--tmm-slide-max));
-    top: calc(52.1% + 133px);
-    bottom: auto;
-    left: calc((100% - var(--tmm-slide-w)) / 2 + var(--tmm-slide-pad));
-    transform: none;
-  }
-  .tmm-intro.is-end .tmm-intro__continue { transform: none }
+  /* Continue needs nothing here any more. It flows inside the last slide's
+     header, and .tmm-intro__header switches to align-items: flex-start on
+     desktop, so it left-aligns with the text on its own. The 52.1% + 133px
+     anchor this replaces existed only because the button used to live at the
+     section level, outside the grid. */
 
   /* ---- 2 · the join panel ---- */
 

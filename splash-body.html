@@ -61,6 +61,12 @@
     <article class="tmm-intro__slide">
       <div class="tmm-intro__header">
         <h2 class="tmm-intro__headline">And never have to choose between <em class="tmm-intro__accent">presence</em> and<br><em class="tmm-intro__accent">purpose</em></h2>
+        <!-- Continue lives inside the last slide's header, so it simply flows
+             after the text: centred under it on a phone, left-aligned under it
+             on desktop, with no positioning to keep in sync. It used to sit at
+             the section level, absolutely positioned and vertically centred,
+             which in the iOS app dropped it across Cait's face. -->
+        <a class="tmm-intro__continue" href="#tmm-join">Continue</a>
       </div>
       <div class="tmm-intro__media">
         <img src="https://tmm-circle-assets.pages.dev/images/splash-presence-purpose.png" alt="" loading="lazy">
@@ -82,12 +88,12 @@
     </svg>
   </button>
 
-  <!-- On the last slide the next chevron has nothing left to do, and a
-       greyed-out arrow reads as broken rather than finished. It fades out
-       and this takes its place, centred between the two arrows. It is a
-       plain in-page link, so the anchor handler in the stylesheet's script
-       gives it the same eased scroll (and host-chrome offset) as Join Us. -->
-  <a class="tmm-intro__continue" href="#tmm-join">Continue</a>
+  <!-- Continue now lives inside the third slide's header, above. On the last
+       slide the next chevron has nothing left to do, and a greyed-out arrow
+       reads as broken rather than finished, so it fades out and Continue
+       takes over. It is a plain in-page link, so the anchor handler in the
+       script gives it the same eased scroll (and host-chrome offset) as
+       Join Us. -->
 
   <div class="tmm-intro__progress" aria-label="Choose a slide">
     <button class="tmm-intro__segment" type="button" aria-label="Show slide 1" aria-current="true" data-intro-slide="0"><span></span></button>
