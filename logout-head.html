@@ -1,9 +1,9 @@
 <!-- TMM signed-out door — HEAD code for the /logout page only.
      Styles Circle's own Site Builder markup. Nothing to deploy.
 
-     Not scoped to a body class on purpose: Circle only puts
-     .is-signed-out on <body> when you are signed out, so an earlier
-     version vanished for admins viewing the page while logged in.
+     No body-class scope on purpose: Circle only puts .is-signed-out
+     on <body> when the visitor is signed out, so scoping to it made
+     the page look unstyled for admins viewing it while logged in.
      This lives in one page's head code, so it needs no scope.
 
      !important is needed because Circle's builder writes inline
@@ -13,17 +13,17 @@
      section's own colour — so changing it in the builder changes
      this with it.
 
+     The h1 rules are gone: the heading is now the logo image, so
+     they matched nothing.
+
      Still to do in the builder: both buttons are href="#". Point
      them at /sign_in#email and /signup. -->
 <style>
-  @font-face{font-family:'TMM Operetta';src:url('https://tmm-circle-assets.pages.dev/home/fonts/Operetta52-Medium.woff2') format('woff2');font-weight:500;font-display:swap}
   @font-face{font-family:'TMM Sweet Sans';src:url('https://tmm-circle-assets.pages.dev/home/fonts/SweetSansProMedium.woff2') format('woff2');font-weight:500;font-display:swap}
 
   :root{
     --tmm-field:var(--theme-website-color-5,#841519);
-    --tmm-cream:#F4EDDB;
-    --tmm-sand:#EAE4D6;
-    --tmm-white:#F9F9F9;
+    --tmm-ink:#FFFFFF;
   }
 
   /* One field all the way down, so no white band shows under the section.
@@ -33,7 +33,8 @@
   div.bg-secondary,
   .wb-bg-primary{background:var(--tmm-field) !important}
 
-  /* Fill the screen and centre the content. 57px is Circle's header. */
+  /* Fill the screen and centre the content. 57px is Circle's header.
+     Circle's own column padding is 112px, which fights the centring. */
   .wb-bg-secondary{min-height:calc(100dvh - 57px);display:flex;align-items:center}
   .wb-bg-secondary > .wb-max-w-7xl{width:100%}
   .wb-bg-secondary [class*="wb-py-12"]{
@@ -41,21 +42,14 @@
     padding-bottom:clamp(40px,7vw,64px) !important;
   }
 
-  /* The name */
-  [class*="wb-text-h1"],
-  [class*="wb-text-h1"] p{
-    color:var(--tmm-cream) !important;
-    font-family:'TMM Operetta',Georgia,serif !important;
-    font-size:clamp(38px,9vw,64px) !important;
-    font-weight:500 !important;
-    letter-spacing:-.035em !important;
-    line-height:1 !important;
-  }
+  /* Balanced wrapping on every paragraph, so no line is left with one
+     orphaned word. */
+  .wb-bg-secondary p{text-wrap:balance}
 
-  /* The line under it — was near-black on red, 3.7:1 and muddy */
+  /* The line under the logo */
   [class*="wb-text-h6"],
   [class*="wb-text-h6"] p{
-    color:var(--tmm-cream) !important;
+    color:var(--tmm-ink) !important;
     font-family:'TMM Sweet Sans','Work Sans',sans-serif !important;
     font-size:clamp(13px,3.6vw,16px) !important;
     font-weight:500 !important;
@@ -66,15 +60,15 @@
 
   /* The two sentences */
   [class*="wb-text-p1"]{
-    max-width:34rem;
+    max-width:46ch;
     margin-inline:auto;
-    color:var(--tmm-sand) !important;
+    color:var(--tmm-ink) !important;
     font-size:clamp(15px,4vw,17px) !important;
     line-height:1.6 !important;
   }
   [class*="wb-text-p1"] p+p{margin-top:.8em}
   [class*="wb-text-p1"] b,
-  [class*="wb-text-p1"] strong{color:var(--tmm-white) !important;font-weight:500}
+  [class*="wb-text-p1"] strong{color:var(--tmm-ink) !important;font-weight:600}
 
   /* The two ways in. Both come off Circle's one secondary token set, so
      they are told apart by order — reorder them and Sign In stops being
@@ -82,7 +76,7 @@
   a[class*="wb-pt-button-secondary"]{
     min-height:50px;
     padding:12px 30px !important;
-    border:1px solid var(--tmm-cream) !important;
+    border:1px solid var(--tmm-ink) !important;
     border-radius:999px !important;
     font-family:'TMM Sweet Sans','Work Sans',sans-serif !important;
     font-size:clamp(13px,3.4vw,15px) !important;
@@ -99,20 +93,20 @@
     color:inherit !important;
   }
   a[class*="wb-pt-button-secondary"]:first-child{
-    background:var(--tmm-cream) !important;
+    background:var(--tmm-ink) !important;
     color:var(--tmm-field) !important;
   }
   a[class*="wb-pt-button-secondary"]:last-child{
     background:transparent !important;
-    color:var(--tmm-cream) !important;
+    color:var(--tmm-ink) !important;
   }
   a[class*="wb-pt-button-secondary"]:hover{
-    background:var(--tmm-white) !important;
-    border-color:var(--tmm-white) !important;
+    background:var(--tmm-ink) !important;
+    border-color:var(--tmm-ink) !important;
     color:var(--tmm-field) !important;
   }
   a[class*="wb-pt-button-secondary"]:focus-visible{
-    outline:2px solid var(--tmm-cream);
+    outline:2px solid var(--tmm-ink);
     outline-offset:3px;
   }
 
