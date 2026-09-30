@@ -2495,6 +2495,48 @@
   transform: none;
 }
 
+/* ---- Works with either markup ----
+   The rule above assumes the button sits inside the last slide's header,
+   where flowing is right. In the older markup it is a direct child of the
+   section, and .tmm-intro is a flex column: a static button there stretches
+   full width at the foot of the section AND — because visibility: hidden
+   still occupies layout — reserves 64px of dead space under every slide,
+   whether or not it is the last one. Measured on the live page: hidden
+   button 44px + 19.5px margin, white gap below the track 64px. Exactly the
+   same number.
+
+   So the direct-child case stays out of the flow, positioned as it was
+   before the button moved. Pasting the current body gives the intended
+   placement; until then the page is merely unchanged rather than broken. */
+.tmm-intro > .tmm-intro__continue {
+  position: absolute;
+  z-index: 4;
+  margin-top: 0;
+  top: calc(
+    var(--tmm-chrome-offset, 0px) +
+    (100% - var(--tmm-chrome-offset, 0px) - var(--tmm-chrome-bottom, 0px)) / 2
+  );
+  left: 50%;
+  align-self: auto;
+  width: auto;
+  transform: translate(-50%, calc(-50% + 6px));
+}
+
+.tmm-intro.is-end > .tmm-intro__continue {
+  transform: translate(-50%, -50%);
+}
+
+/* Never stretch, wherever it lives: .tmm-intro and .tmm-intro__header are
+   both flex columns, and a stretched pill reads as a bottom bar. */
+.tmm-intro__continue {
+  align-self: center;
+  width: fit-content;
+}
+
+.tmm-intro__header .tmm-intro__continue {
+  align-self: inherit;
+}
+
 .tmm-intro__continue:hover,
 .tmm-intro__continue:focus-visible {
   background: var(--tmm-color-deep-brown, #5E0D11);
