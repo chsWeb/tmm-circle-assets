@@ -2469,3 +2469,154 @@
     transition: opacity 0.01s linear, visibility 0.01s linear;
   }
 }
+
+/* ============================================================
+   DESKTOP (>= 1024px)
+
+   Everything above is built for a 430px phone: one centred column,
+   the carousel imagery capped at 440px, and the join photograph
+   absolutely positioned across the middle at z-index 3. On a phone
+   the photo sits below the copy so it reads correctly. Stretched to
+   1425px it lands on top of it, and the collage floats tiny in a
+   field of white.
+
+   So this is not a scale-up. Both sections become two columns —
+   words on the left, picture on the right — which is what the
+   horizontal space is actually for. Columns are fixed and centred
+   rather than fluid, so the measure stays readable at any width up
+   to 4K.
+
+   Last block in the file on purpose: it overrides the mobile rules
+   above, including the ones with narrow max-widths.
+   ============================================================ */
+@media (min-width: 1024px) {
+
+  /* ---- 1 · the carousel ---- */
+
+  .tmm-intro__masthead {
+    width: 100%;
+    max-width: 1024px;
+    margin-inline: auto;
+    padding-top: clamp(48px, 7vh, 88px);
+    padding-bottom: clamp(18px, 3vh, 32px);
+  }
+
+  .tmm-intro__title {
+    width: auto;
+    font-size: clamp(40px, 3.6vw, 58px);
+  }
+
+  /* The slide stays absolutely positioned — the cross-fade depends on it —
+     but inside, it becomes the two columns. */
+  /* Fluid columns inside a capped, centred measure. Fixed track widths
+     were 460 + 520 + gap + padding = 1113px, which does not fit at the
+     1024 breakpoint itself: the collage bled past the right edge and the
+     slide's overflow:hidden clipped a frame off. */
+  .tmm-intro__slide {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    align-items: center;
+    column-gap: clamp(28px, 3.5vw, 72px);
+    width: 100%;
+    max-width: 1120px;
+    margin-inline: auto;
+    padding: 0 clamp(28px, 3.5vw, 56px) clamp(40px, 6vh, 72px);
+    text-align: left;
+  }
+
+  .tmm-intro__header {
+    align-items: flex-start;
+    justify-content: center;
+    gap: clamp(16px, 2vw, 26px);
+    text-align: left;
+  }
+
+  /* These carry phone widths (344–378px) that would strand the type in the
+     left column. */
+  .tmm-intro__subhead,
+  .tmm-intro__headline {
+    width: auto;
+    max-width: 22ch;
+  }
+  .tmm-intro__subhead { font-size: clamp(17px, 1.5vw, 21px) }
+  .tmm-intro__headline { font-size: clamp(28px, 2.5vw, 40px) }
+
+  /* Fills its column instead of being capped at 440px. The frames are
+     absolutely positioned and bleed past this box by design, so it keeps a
+     little room inside the column for them to bleed into. */
+  .tmm-intro__collage {
+    width: min(86%, 500px);
+    max-width: none;
+    margin-inline: auto;
+  }
+
+  .tmm-intro__media {
+    width: 100%;
+    max-width: none;
+    height: auto;
+    margin-inline: 0;
+    aspect-ratio: 4 / 5;
+    max-height: min(68vh, 600px);
+  }
+  .tmm-intro__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Chevrons out to the edge of the composition rather than the viewport. */
+  .tmm-intro__nav--prev { left: max(24px, calc((100vw - 1180px) / 2)) }
+  .tmm-intro__nav--next { right: max(24px, calc((100vw - 1180px) / 2)) }
+
+  /* Continue sits under the words, not over the picture. */
+  .tmm-intro__continue {
+    top: auto;
+    bottom: clamp(40px, 6vh, 72px);
+    left: max(clamp(28px, 3.5vw, 56px), calc(50% - 560px + clamp(28px, 3.5vw, 56px)));
+    transform: none;
+  }
+  .tmm-intro.is-end .tmm-intro__continue { transform: none }
+
+  /* ---- 2 · the join panel ---- */
+
+  .tmm-join {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: center;
+    column-gap: clamp(32px, 4vw, 88px);
+    max-width: 1120px;
+    margin-inline: auto;
+    padding-inline: clamp(28px, 3.5vw, 56px);
+    text-align: left;
+  }
+
+  .tmm-join__header {
+    align-items: flex-start;
+    width: auto;
+    padding-inline: 0;
+    text-align: left;
+  }
+  .tmm-join__lockup { align-items: flex-start }
+  .tmm-join__actions { align-items: flex-start }
+
+  .tmm-join__subtitle {
+    width: auto;
+    max-width: 26ch;
+    font-size: clamp(22px, 2vw, 30px);
+  }
+
+  /* Out of the absolute positioning that put it on top of the copy, and
+     into the right column. */
+  .tmm-join__media {
+    position: static;
+    z-index: 1;
+    bottom: auto;
+    left: auto;
+    width: min(100%, 420px);
+    height: auto;
+    max-width: none;
+    max-height: min(74vh, 660px);
+    margin-inline: auto;
+    transform: none;
+  }
+}
