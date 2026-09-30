@@ -1050,6 +1050,29 @@
           section.style.setProperty("--tmm-intro-header-h", `${Math.ceil(tallest)}px`);
         }
 
+        // v2 only: the imagery band. All three slides reserve the same
+        // height, so the nav row cannot move between them, and each picture
+        // is scaled inside it. The band is whatever is left once the header,
+        // the row and the row's gap above it are paid for, capped at half the
+        // section — which is what keeps the row clear of the artwork on a
+        // short phone without any magic numbers per device.
+        if (section.classList.contains("tmm-intro--v2") && tallest > 0) {
+          const row = slides[0].querySelector(".tmm-intro__nav-row");
+          const rowHeight = row ? row.offsetHeight : 0;
+          const rowGap = row
+            ? parseFloat(window.getComputedStyle(row).marginTop) || 0
+            : 0;
+          const CLEARANCE = 8;
+          const available =
+            track.clientHeight - tallest - rowHeight - rowGap - CLEARANCE;
+          const band = Math.max(
+            160,
+            Math.min(Math.round(section.clientHeight * 0.5), Math.floor(available))
+          );
+
+          section.style.setProperty("--tmm-v2-band", `${band}px`);
+        }
+
         // Where the track starts, so the chevrons can be centred on the
         // imagery rather than on the section — the two drift apart as the
         // section grows, which is what left them sitting low.

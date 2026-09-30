@@ -2849,8 +2849,10 @@
 
 /* ---- 1 · carousel header ---- */
 
+/* 56px above the box, but never more than 6.9vh of it, so the lockup does
+   not eat a short screen (390x844 still gets the full 56). */
 .tmm-intro--v2 .tmm-intro__masthead {
-  padding: clamp(18px, 5vw, 28px) var(--tmm-splash-pad) clamp(14px, 4vw, 22px);
+  padding: min(56px, 6.9vh) var(--tmm-splash-pad) clamp(14px, 4vw, 22px);
 }
 
 .tmm-intro--v2 .tmm-intro__lockup {
@@ -2924,40 +2926,75 @@
   min-height: 3.375em;
 }
 
-/* Photography ABSORBS the leftover height rather than being pushed to the
-   foot of it: the mock has it filling that space and cropping at the edges,
-   which is what flex:1 does. The collage is NOT treated this way — see below. */
+/* ONE BAND FOR ALL THREE SLIDES.
+
+   The imagery used to absorb whatever height was left, which is why the
+   three slides disagreed so badly: the collage came out 308px tall and the
+   two photographs 514px. Now every slide reserves the same band — measured
+   by the script and published as --tmm-v2-band — and each picture is scaled
+   inside it. Because the band is identical on all three, and the copy above
+   it is floored to one height, the nav row cannot move between slides.
+
+   margin-top:auto (not flex:1) drives the band to the foot: the box is a
+   definite height, so the slack collects above it instead of stretching it. */
 .tmm-intro--v2 .tmm-intro__media {
-  flex: 1 1 auto;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-end;
+  justify-content: center;
+  height: var(--tmm-v2-band, 46%);
   min-height: 0;
-  margin-top: 0;
-  margin-bottom: 0;
+  margin-block: auto 0;
+  /* Slide 3 is scaled past the band on purpose; the empty top of a cutout
+     is what overflows, so there is nothing to clip. */
+  overflow: visible;
 }
 
+/* contain, not cover. Both photographs are transparent cutouts, so fitting
+   them whole costs nothing and makes the rendered size exactly the height we
+   give them — with cover, both were pinned to the slide's width and came out
+   at the same 0.288 scale no matter what the box did. */
+.tmm-intro--v2 .tmm-intro__media img {
+  width: 100%;
+  height: calc(100% * var(--tmm-v2-media-scale, 1));
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+/* Slide 2 — Cait on her own, the figure that read as too large. She comes
+   down 18% from v1 simply by fitting inside the band (1728px tall against
+   slide 3's 1950, so the same band renders her larger); scaling her below it
+   as well opened a void between the nav row and her head. */
+.tmm-intro--v2 .tmm-intro__media--anchor-top img {
+  --tmm-v2-media-scale: 1;
+}
+
+/* Slide 3 — Cait with the children, the one that read as too small. It is
+   the only picture allowed past the band: at 1300x1950 the top sixth of the
+   source is empty above their heads, which is the part that overflows. */
+.tmm-intro--v2 .tmm-intro__media:not(.tmm-intro__media--anchor-top) img {
+  --tmm-v2-media-scale: 1.14;
+}
+
+/* The band replaces v1's aspect-ratio box and its max-height. */
 .tmm-intro--v2 .tmm-intro__media {
-  height: auto;
   max-height: none;
   aspect-ratio: auto;
 }
 
-.tmm-intro--v2 .tmm-intro__media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center var(--tmm-media-anchor, bottom);
-}
-
-/* The collage is sized exactly as it is in v1 — the section's width plus the
-   two gutters, capped at 440px, at 440/362 — and driven to the foot of the
-   slide by margin-top:auto. Letting it take flex:1 like the photography did
-   was the bug behind the enormous first slide: an auto width fed by an
-   aspect-ratio and a filled height came out 642px wide on a 390px phone. */
+/* The collage takes the same band, and its width follows from the band and
+   the 440/362 ratio — a uniform scale-up, so the composition is the one that
+   was signed off, just larger, bleeding further past both edges as the comp
+   has it. The two caps stop a tall, narrow phone from running it away: this
+   is the construct that produced a 642px-wide collage when the height came
+   from flex:1 rather than a bounded band. */
 .tmm-intro--v2 .tmm-intro__collage {
   flex: 0 0 auto;
-  width: calc(100% + var(--tmm-splash-pad) * 2);
-  max-width: 440px;
+  width: auto;
+  max-width: min(128vw, 560px);
+  height: var(--tmm-v2-band, 46%);
   margin-block: auto 0;
-  margin-inline: calc(var(--tmm-splash-pad) * -1);
+  margin-inline: auto;
   aspect-ratio: 440 / 362;
 }
 
@@ -2974,6 +3011,10 @@
      it holds 9px dots or a 44px pill. Without it the chevrons sat 17px
      higher on the first two slides than on the last. */
   min-height: 44px;
+  /* Off the copy and down towards the middle of the screen. The band above
+     is measured with this gap subtracted, so the row can never be pushed
+     into the imagery — on a short phone the pictures give way, not the row. */
+  margin-top: var(--tmm-v2-nav-gap, clamp(16px, 4.5vh, 44px));
   padding-block: clamp(12px, 3.5vw, 20px);
 }
 
@@ -2988,26 +3029,33 @@
   transform: none;
 }
 
+/* The pricing section's device, to the pixel and on the same tokens: 8px
+   circles, and the current one widens into a 22px pill rather than only
+   changing colour. Two carousels on one page should not be indicating
+   position two different ways. */
 .tmm-intro--v2 .tmm-intro__dots {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
 }
 
 .tmm-intro--v2 .tmm-intro__dot {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: var(--tmm-color-linen);
+  background: var(--tmm-dot-inactive-bg);
   appearance: none;
   cursor: pointer;
-  transition: background-color var(--tmm-motion-fast, 0.22s) var(--tmm-ease-in-out, ease);
+  transition:
+    width 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 260ms ease;
 }
 
 .tmm-intro--v2 .tmm-intro__dot[aria-current="true"] {
-  background: var(--tmm-splash-accent);
+  width: 22px;
+  background: var(--tmm-dot-active-bg);
 }
 
 .tmm-intro--v2 .tmm-intro__dot:focus-visible {
@@ -3082,6 +3130,19 @@
 
 .tmm-join--v2 .tmm-join__header {
   flex: 0 0 auto;
+}
+
+/* 10-11px was body copy shrunk to a caption; it is the only way back for
+   someone who already has an account, so it reads as one. Desktop already
+   carried 12-13.5px and is left alone. */
+.tmm-join--v2 .tmm-join__login {
+  font-size: clamp(13px, 3.5vw, 15px);
+  letter-spacing: -0.01em;
+}
+
+/* And room between it and the button — 9px left them touching. */
+.tmm-join--v2 .tmm-join__actions {
+  gap: 18px;
 }
 
 /* ---- 5 · desktop keeps the two columns ---- */
@@ -3159,7 +3220,23 @@
     max-height: min(68vh, 600px);
   }
 
+  /* The per-slide scales are a phone correction: they equalise three
+     pictures stacked under a fixed band. The desktop column has its own
+     ratio and no band, so both fill it. */
+  .tmm-intro--v2 .tmm-intro__media img {
+    height: 100%;
+  }
+
   .tmm-join--v2 .tmm-join__media {
     margin: 0 auto;
+  }
+
+  /* The mobile rule centres the sentence in its own 30ch block, which on
+     desktop indented it ~33px from the logo, JOIN US and the sign-in line
+     that all sit on the column's left edge. */
+  .tmm-join--v2 .tmm-join__subtitle {
+    max-width: 34ch;
+    margin-inline: 0;
+    text-align: left;
   }
 }
