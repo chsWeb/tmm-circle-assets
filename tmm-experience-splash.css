@@ -2591,21 +2591,17 @@
      windows, exact at all three. Anchoring to that keeps the button a
      constant 28px under the copy at any window height.
 
-     Horizontally: rebuilt from the grid's own variables, since this element
-     is a child of the section and knows nothing about the columns. */
+     Horizontally: flush with the text's own left edge, which is the left
+     column's content edge. Rebuilt from the grid's variables, since this
+     element is a child of the section and knows nothing about the columns. */
   .tmm-intro__continue {
     --tmm-slide-w: min(100%, var(--tmm-slide-max));
-    --tmm-text-col: calc(
-      (var(--tmm-slide-w) - var(--tmm-slide-pad) * 2 - var(--tmm-slide-gap)) / 2.15
-    );
     top: calc(52.1% + 133px);
     bottom: auto;
-    left: calc(
-      (100% - var(--tmm-slide-w)) / 2 + var(--tmm-slide-pad) + var(--tmm-text-col) / 2
-    );
-    transform: translateX(-50%);
+    left: calc((100% - var(--tmm-slide-w)) / 2 + var(--tmm-slide-pad));
+    transform: none;
   }
-  .tmm-intro.is-end .tmm-intro__continue { transform: translateX(-50%) }
+  .tmm-intro.is-end .tmm-intro__continue { transform: none }
 
   /* ---- 2 · the join panel ---- */
 
