@@ -1656,15 +1656,24 @@
 
 /* --- Type --- */
 
+/* Same legibility correction as .tmm-pricing__title: -0.04em ran the
+   hairlines of this high-contrast serif into each other, and a line-height
+   of 1 left the two lines' ascenders and descenders fighting.
+
+   The size comes down with it, from 8.182vw to 7.6vw. Loosening the
+   tracking alone pushed "The Millionaire Mother" past the 293px the
+   masthead has at 375px wide, breaking a two-line lockup into three.
+   Measured margins at the new pair: 18px at 375, 20px at 430, 15px at
+   320. Desktop sets its own size, so only phones are affected. */
 .tmm-intro__title {
   width: min(100%, 344px);
   margin: 0;
   color: var(--tmm-splash-accent);
   font-family: var(--tmm-font-display);
-  font-size: clamp(28px, 8.182vw, 36px);
+  font-size: clamp(26px, 7.6vw, 36px);
   font-weight: 500;
-  letter-spacing: -0.04em;
-  line-height: 1;
+  letter-spacing: -0.02em;
+  line-height: 1.06;
 }
 
 .tmm-intro__headline,
@@ -2177,17 +2186,31 @@
   text-align: left;
 }
 
+/* Operetta 52 is a high-contrast display serif: hairline horizontals, thin
+   joins, and only one weight in the bundle (Medium), so it cannot be
+   thickened. What made it hard to read was how it was set, not the face —
+   -0.04em of tracking closes the counters and the hairlines run into their
+   neighbours, and a line-height of 1 let ascenders and descenders collide
+   between the two lines.
+
+   Tracking is now near-neutral and the leading has room. The size is sized
+   against the viewport rather than clamped between two fixed values, so
+   "Choose Your Membership" sits on one line at every width — the <br> that
+   used to force the break is gone from the markup. nowrap is safe precisely
+   because the size is fluid: it shrinks with the viewport instead of
+   overflowing it. */
 .tmm-pricing__title {
   max-width: none;
   margin: 0;
   color: var(--tmm-color-brand-primary);
   font-family: var(--tmm-font-display);
-  font-size: clamp(28px, 8.18vw, 36px);
+  font-size: min(6.6vw, 44px);
   font-weight: 500;
-  letter-spacing: -0.04em;
-  line-height: 1;
+  letter-spacing: -0.01em;
+  line-height: 1.08;
   text-align: left;
   text-transform: none;
+  white-space: nowrap;
 }
 
 .tmm-pricing__lede {
@@ -2636,19 +2659,28 @@
     gap: 18px;
   }
 
-  /* One continuous sentence. The three spans are stacked blocks on a phone —
-     left, right, then the italic line — which reads as deliberate at 430px
-     and as broken line breaks across a desktop column. Inline here, so they
-     set as a paragraph and wrap on their own; the whitespace between the
-     spans in the markup supplies the word spaces. */
+  /* One continuous sentence in the carousel's own treatment, so the two
+     sections read as one page on desktop.
+
+     The carousel's slide lines are Sweet Sans Pro — uppercase, 0.2em
+     tracking, one clamp — and their red words are the SAME face at the SAME
+     size, with only the colour changing. This section was three different
+     things: the sentence in the display serif, stacked as three blocks with
+     hard breaks, and the closing phrase in a third face (Parnaso italic) two
+     sizes smaller on its own line. That reads as deliberate at 430px and as
+     three unrelated decisions across a desktop column.
+
+     So: one inline run, same clamp as the carousel, balanced wrapping. The
+     whitespace between the spans in the markup supplies the word spaces. */
   .tmm-join__subtitle {
     display: block;
     width: auto;
-    max-width: none;
-    font-family: var(--tmm-font-display);
-    font-size: clamp(26px, 2.5vw, 38px);
-    letter-spacing: -0.02em;
-    line-height: 1.12;
+    max-width: 30ch;
+    font-family: var(--tmm-font-head);
+    font-size: clamp(17px, 1.5vw, 21px);
+    letter-spacing: 0.2em;
+    line-height: 1.4;
+    text-transform: uppercase;
     text-wrap: balance;
   }
   .tmm-join__line,
@@ -2657,21 +2689,40 @@
     display: inline;
     text-align: inherit;
   }
-  /* Stays the italic accent face, now inline and scaled to the sentence
-     rather than sitting two sizes smaller on its own line. */
+  /* Inherits everything and changes only the colour — exactly how
+     .tmm-intro__accent highlights words in the carousel. */
   .tmm-join__dreams {
     display: inline;
     margin: 0;
     color: var(--tmm-splash-accent);
-    font-size: 0.95em;
-    letter-spacing: 0;
+    font-family: inherit;
+    font-size: inherit;
+    font-style: normal;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
     text-align: inherit;
+    text-transform: inherit;
   }
 
   /* Was 11px, and tight under the button. */
   .tmm-join__login {
     font-size: clamp(12px, 1vw, 13.5px);
     letter-spacing: -0.01em;
+  }
+
+  /* The label sat high with a pool of space beneath it: 8px of symmetric
+     padding around a 1.32 line-height, where the em box carries descender
+     room that all-caps never uses. Flex centring on a line-height of 1
+     removes that dead space, and the 1px top bias corrects the last of it —
+     caps sit slightly above the em box's centre. */
+  .tmm-join__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 1px 26px 0;
+    line-height: 1;
   }
 
   /* The black block sat with 4px of side padding and a 0.65 line-height, so
