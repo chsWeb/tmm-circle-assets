@@ -1,33 +1,41 @@
 <!-- ============================================================
      TMM Welcome Splash — HEAD snippet
-     Paste into the head of the Circle welcome/splash page.
+
+     Paste into the head of the Circle SITE BUILDER page that serves
+     /signup. That is now the only surface: the App Builder screen
+     was retired, because App Builder screens are members-only and
+     Join has to work for people without an account. The branded iOS
+     app opens this same Site Builder page in a webview.
+
      Files served from Cloudflare Pages (tmm-circle-assets repo).
-     Bump ?v=N on EVERY deploy to bust Circle's + browser cache.
+     Both serve max-age=0, must-revalidate, so a deploy is picked up
+     on the next load — ?v=N is belt-and-braces, not required.
      ============================================================ -->
 <link rel="preconnect" href="https://tmm-circle-assets.pages.dev" crossorigin>
-<link rel="stylesheet" href="https://tmm-circle-assets.pages.dev/tmm-experience-splash.css?v=38">
-<script defer src="https://tmm-circle-assets.pages.dev/tmm-experience-splash.js?v=38"></script>
+<link rel="stylesheet" href="https://tmm-circle-assets.pages.dev/tmm-experience-splash.css?v=39">
+<script defer src="https://tmm-circle-assets.pages.dev/tmm-experience-splash.js?v=39"></script>
 
 <!-- ------------------------------------------------------------
-     HOST CHROME — set these per surface.
+     HOST CHROME — now automatic, and normally left alone.
 
-     Circle renders our markup inside an iframe, and its header and
-     tab bar live in the parent document. Nothing inside the frame
-     can measure them, so they have to be declared here.
+     Circle's page carries viewport-fit=cover, so the stylesheet
+     reads env(safe-area-inset-top/bottom): zero in a browser, and
+     the real status-bar and home-indicator insets inside the app's
+     webview. No per-surface numbers to keep in sync.
 
-     To measure: full frame height minus the height of the band that
-     is actually visible between Circle's header and tab bar.
+     What it cannot see is Circle's own back-button header, which
+     sits below the status bar and overlays the top of the page in
+     the branded app. Nothing in CSS distinguishes that webview from
+     mobile Safari, so the allowance is opt-in. If the progress bar
+     is being clipped or blurred by that header, declare its height:
 
-       Site Builder — has a top header and a bottom tab bar
-       App Builder  — native chrome sits outside the webview, so
-                      these usually stay at 0
+       :root { --tmm-app-header: 44px; }
 
-     Sections still fill the frame, so backgrounds run edge to edge;
-     only the content is inset.
+     and, if the tab bar covers the foot of the page:
+
+       :root { --tmm-app-footer: 56px; }
+
+     To measure them, open this page in the app with ?tmmdebug=1 on
+     the URL. A panel prints the safe-area insets, the viewport, the
+     user agent and where the progress bar currently sits.
      ------------------------------------------------------------ -->
-<style>
-  :root {
-    --tmm-chrome-offset: 0px;   /* header overlapping the top */
-    --tmm-chrome-bottom: 0px;   /* tab bar overlapping the foot */
-  }
-</style>

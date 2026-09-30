@@ -13,6 +13,54 @@
     document.documentElement.classList.add("tmm-in-app");
   }
 
+  /* One-screenshot diagnostic. Nothing here can see how tall Circle's
+     back-button header is inside the branded app, and no CSS can tell that
+     webview apart from mobile Safari, so the numbers have to come from the
+     device once. Add ?tmmdebug=1 to the page URL in the app and screenshot
+     this panel.
+
+     Gated on the query string, so members never see it. */
+  if (/[?&]tmmdebug=1\b/.test(window.location.search)) {
+    const lines = () => {
+      const probe = document.createElement("div");
+      probe.style.cssText =
+        "position:fixed;top:0;left:0;width:1px;visibility:hidden;" +
+        "height:env(safe-area-inset-top)";
+      document.body.appendChild(probe);
+      const top = probe.getBoundingClientRect().height;
+      probe.style.height = "env(safe-area-inset-bottom)";
+      const bottom = probe.getBoundingClientRect().height;
+      probe.remove();
+
+      const bar = document.querySelector(".tmm-intro__progress");
+      const barTop = bar ? Math.round(bar.getBoundingClientRect().top) : "n/a";
+
+      return [
+        "safe-area top: " + top + "px",
+        "safe-area bottom: " + bottom + "px",
+        "innerHeight: " + window.innerHeight,
+        "dpr: " + window.devicePixelRatio,
+        "webviewFlag: " + typeof window.isInsideCircleMobileWebview,
+        "circleUser: " + typeof window.circleUser,
+        "progress bar top: " + barTop + "px",
+        "UA: " + navigator.userAgent,
+      ];
+    };
+
+    const panel = document.createElement("pre");
+    panel.style.cssText =
+      "position:fixed;z-index:99999;inset:auto 8px 8px 8px;margin:0;" +
+      "padding:10px 12px;border-radius:8px;background:rgba(15,15,15,.92);" +
+      "color:#F4EDDB;font:11px/1.45 ui-monospace,Menlo,monospace;" +
+      "white-space:pre-wrap;word-break:break-all;max-height:45vh;overflow:auto";
+    const paint = () => { panel.textContent = lines().join("\n"); };
+    document.addEventListener("DOMContentLoaded", () => {
+      document.body.appendChild(panel);
+      paint();
+    });
+    window.addEventListener("resize", paint);
+  }
+
   const handledSplashes = new WeakSet();
   const handledWelcomeSections = new WeakSet();
   const handledPricingSections = new WeakSet();

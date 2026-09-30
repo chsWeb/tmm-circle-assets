@@ -264,12 +264,33 @@
      :root { --tmm-app-chrome-top: 64px; --tmm-app-chrome-bottom: 84px; }
    They are separate from --tmm-chrome-offset on purpose, so the web surface
    is untouched. */
+/* Declared on the sections rather than :root because the pasted head
+   snippet's own :root block loads after this file and would win. */
+.tmm-intro,
+.tmm-join,
+.tmm-pricing,
+.tmm-experience-splash {
+  /* Circle's page carries viewport-fit=cover, so env() is live: 0 in a
+     browser, and the status-bar height inside the app's full-screen
+     webview. It is both the signal and the measure, which beats guessing
+     at a device. --tmm-app-header is added on top for Circle's own
+     back-button header; it defaults to 0 because nothing here can tell
+     the app's webview apart from mobile Safari, and a blind allowance
+     would put a gap above the progress bar on the mobile web. */
+  --tmm-chrome-offset: calc(
+    env(safe-area-inset-top, 0px) + var(--tmm-app-header, 0px)
+  );
+  --tmm-chrome-bottom: calc(
+    env(safe-area-inset-bottom, 0px) + var(--tmm-app-footer, 0px)
+  );
+}
+
 .tmm-in-app .tmm-intro,
 .tmm-in-app .tmm-join,
 .tmm-in-app .tmm-pricing,
 .tmm-in-app .tmm-experience-splash {
-  --tmm-chrome-offset: var(--tmm-app-chrome-top, 56px);
-  --tmm-chrome-bottom: var(--tmm-app-chrome-bottom, 76px);
+  --tmm-app-header: var(--tmm-app-chrome-top, 44px);
+  --tmm-app-footer: var(--tmm-app-chrome-bottom, 0px);
 }
 
 /* Circle wraps custom HTML in a .wb-p-5 padding utility. Site Builder can
