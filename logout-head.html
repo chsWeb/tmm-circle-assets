@@ -1,0 +1,162 @@
+<!-- ============================================================
+     TMM Signed-Out Door — HEAD snippet for /logout
+
+     Paste into the HEAD code of the Circle Site Builder page at
+     members.themillionairemother.com/logout. Nothing to deploy;
+     this is the whole thing.
+
+     The page is built from Circle's own Site Builder elements, so
+     this styles Circle's markup rather than replacing it. Circle
+     emits Tailwind-style utilities with theme tokens:
+
+       h1   .wb-text-h1 / .wb-font-h1 / .wb-text-h1-color
+       h6   .wb-text-h6 ...
+       text .wb-text-p1 ...
+       btns a.wb-pt-button-secondary-top ... (both buttons use the
+            secondary token set, so they are told apart by order)
+
+     Attribute selectors are used because those class names are
+     stable tokens while the rest of the class list is not.
+
+     Everything is scoped to body.is-signed-out so it cannot reach
+     Circle's header, and to the red section inside it.
+
+     WHY SO MANY !important
+     Circle's builder writes inline styles onto these elements from
+     its design panel — the body copy carries
+     color: var(--theme-website-primary-button-default-text-color)
+     and the second button carries background-color: transparent.
+     An inline style beats any selector, so the properties Circle
+     sets that way can only be overridden with !important. Every
+     one here was verified against the live page; the properties
+     Circle does not set inline are left plain.
+
+     WHAT THIS FIXES
+     • The h6 line under the title was near-black on red (3.7:1,
+       muddy). It is now cream, in the brand's uppercase treatment,
+       so it reads as a line under the name rather than a second
+       heading.
+     • Both buttons rendered from the same token set. The first is
+       now a filled cream pill, the second an outlined one.
+     • A white band sat below the red section, because the page
+       wrapper is .wb-bg-primary. The section now fills the screen.
+
+     The h1 keeps Circle's Work Sans Bold on purpose: that already
+     matches the App Store screens. Only its size and tracking are
+     reined in.
+     ============================================================ -->
+<style>
+  /* Brand face, served from Cloudflare Pages with CORS open. */
+  @font-face{font-family:'TMM Sweet Sans';src:url('https://tmm-circle-assets.pages.dev/home/fonts/SweetSansProMedium.woff2') format('woff2');font-weight:500;font-display:swap}
+
+  body.is-signed-out{
+    --tmm-red:#D11934;        /* Circle's "secondary" — the field */
+    --tmm-deep:#841519;
+    --tmm-cream:#F4EDDB;
+    --tmm-sand:#EAE4D6;
+    --tmm-white:#F9F9F9;
+  }
+
+  /* ---- the field fills the screen ----
+     The red block was 593px inside a white .wb-bg-primary wrapper, which
+     left a white band underneath. Paint the wrapper and stretch the block.
+     57px is Circle's header, positioned absolutely over the top. */
+  body.is-signed-out .wb-bg-primary{background:var(--tmm-red)}
+  body.is-signed-out .wb-bg-secondary{
+    min-height:calc(100dvh - 57px);
+    display:flex;
+    align-items:center;
+  }
+  body.is-signed-out .wb-bg-secondary > .wb-max-w-7xl{width:100%}
+
+  /* ---- the name ----
+     Keeps Circle's Work Sans Bold: that already matches the App Store
+     screens. Only the size and tracking are reined in. */
+  body.is-signed-out [class*="wb-text-h1"]{
+    font-size:clamp(34px,8vw,56px) !important;
+    line-height:1.02 !important;
+    letter-spacing:-.02em !important;
+  }
+
+  /* ---- the line under it ----
+     Was near-black on red: 3.7:1 and muddy. Cream, in the brand's
+     uppercase treatment, so it reads as a line under the name rather
+     than a second heading. */
+  body.is-signed-out [class*="wb-text-h6"],
+  body.is-signed-out [class*="wb-text-h6"] p{
+    color:var(--tmm-cream) !important;
+    font-family:'TMM Sweet Sans','Work Sans',sans-serif !important;
+    font-size:clamp(13px,3.6vw,16px) !important;
+    font-weight:500 !important;
+    letter-spacing:.2em !important;
+    line-height:1.45 !important;
+    text-transform:uppercase !important;
+  }
+
+  /* ---- the two sentences ---- */
+  body.is-signed-out [class*="wb-text-p1"]{
+    max-width:34rem;
+    margin-inline:auto;
+    color:var(--tmm-sand) !important;
+    font-size:clamp(15px,4vw,17px) !important;
+    line-height:1.6 !important;
+  }
+  body.is-signed-out [class*="wb-text-p1"] p+p{margin-top:.8em}
+  body.is-signed-out [class*="wb-text-p1"] b,
+  body.is-signed-out [class*="wb-text-p1"] strong{
+    color:var(--tmm-white) !important;
+    font-weight:500;
+  }
+
+  /* ---- the two ways in ----
+     Both buttons come off the same secondary token set, so they are told
+     apart by order: first is what a returning member wants. */
+  body.is-signed-out a[class*="wb-pt-button-secondary"]{
+    min-height:50px;
+    padding:12px 30px !important;
+    border:1px solid var(--tmm-cream) !important;
+    border-radius:999px !important;
+    font-family:'TMM Sweet Sans','Work Sans',sans-serif !important;
+    font-size:clamp(13px,3.4vw,15px) !important;
+    font-weight:500 !important;
+    letter-spacing:.18em !important;
+    text-transform:uppercase !important;
+    box-shadow:none !important;
+    transition:background-color .22s cubic-bezier(.4,0,.2,1),
+               color .22s cubic-bezier(.4,0,.2,1),
+               border-color .22s cubic-bezier(.4,0,.2,1);
+  }
+  body.is-signed-out a[class*="wb-pt-button-secondary"] p{
+    font:inherit !important;
+    letter-spacing:inherit !important;
+    text-transform:inherit !important;
+    color:inherit !important;
+  }
+
+  body.is-signed-out a[class*="wb-pt-button-secondary"]:first-child{
+    background:var(--tmm-cream) !important;
+    color:var(--tmm-red) !important;
+  }
+  body.is-signed-out a[class*="wb-pt-button-secondary"]:first-child:hover{
+    background:var(--tmm-white) !important;
+    border-color:var(--tmm-white) !important;
+  }
+  body.is-signed-out a[class*="wb-pt-button-secondary"]:last-child{
+    background:transparent !important;
+    color:var(--tmm-cream) !important;
+  }
+  body.is-signed-out a[class*="wb-pt-button-secondary"]:last-child:hover{
+    background:var(--tmm-deep) !important;
+    border-color:var(--tmm-deep) !important;
+  }
+  body.is-signed-out a[class*="wb-pt-button-secondary"]:focus-visible{
+    outline:2px solid var(--tmm-cream);
+    outline-offset:3px;
+  }
+
+  /* Thumb-width targets on a phone; Circle already puts them side by
+     side from its md breakpoint. */
+  @media (max-width:767px){
+    body.is-signed-out a[class*="wb-pt-button-secondary"]{width:100%}
+  }
+</style>
