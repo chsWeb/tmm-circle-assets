@@ -946,3 +946,12 @@ html.tmm-in-app .tmm-home {
 html.tmm-in-app .tmm-home[data-screen="pushed"] {
   padding-bottom: 40px
 }
+
+/* Below the page on that screen the app leaves its own pure-white band,
+   which nothing in the page can reach. Our usual --white is #F9F9F9, so the
+   join showed as an edge. On this screen only, match the band instead. */
+html.tmm-in-app:has(.tmm-home[data-screen="pushed"]) body,
+html.tmm-in-app #tmmAppScroll:has(.tmm-home[data-screen="pushed"]),
+html.tmm-in-app .tmm-home[data-screen="pushed"] {
+  background: #fff
+}
