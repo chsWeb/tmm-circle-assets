@@ -80,7 +80,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v28 · 2026-10-01',
+  BUILD: 'v29 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -128,20 +128,21 @@ const TMM_CONFIG = {
       contentGrid:  { label:'Connect with vetted Experts', spaceId:2468301, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/the-expert-network', placeholders:'mark' },
       featuredEvent:{ label:'Coming Up', spaceId:2491518, space_type:'event', url:'https://members.themillionairemother.com/c/motherhub-events' },
       postFeed:     { label:'From the community', spaceId:2823968, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/motherhub-conversations-d9bb26' },
-      eventsGrid:   { label:'Upcoming Live Events', spaceId:2491518, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/motherhub-events' },
+      eventsGrid:   { label:'Upcoming Events', spaceId:2491518, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/motherhub-events' },
     },
 
-    /* NEW TIER. Same as Mother Hub except its group chat and Upcoming Live
-       Events are the Expert Network's own. Detected via the "MotherHub Expert Network"
+    /* NEW TIER. Same as Mother Hub except its group chat is the Expert
+       Network's own. Detected via the "MotherHub Expert Network"
        access group (was called Matriarch Network). */
     expert_network: {
       label: 'MotherHub Expert Network',
       hero:         { label:'Announcements', url:'https://members.themillionairemother.com/c/motherhood' },
       contentGrid:  { label:'Connect with vetted Experts', spaceId:2468301, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/the-expert-network', placeholders:'mark' },
-      /* Coming Up is MotherHub Events, as for MotherHub (content map, 1 Oct). */
+      /* Coming Up and Upcoming Events are MotherHub Events, as for MotherHub
+         (1 Oct). The Expert Network events space is not open to its members. */
       featuredEvent:{ label:'Coming Up', spaceId:2491518, space_type:'event', url:'https://members.themillionairemother.com/c/motherhub-events' },
       postFeed:     { label:'From the Expert Network', spaceId:2632318, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/member-spotlight' },
-      eventsGrid:   { label:'Upcoming Live Events', spaceId:2839754, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/motherhub-expert-network-events' },
+      eventsGrid:   { label:'Upcoming Events', spaceId:2491518, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/motherhub-events' },
     },
     foundry: {
       label: 'Foundry Member',
