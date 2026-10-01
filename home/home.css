@@ -1003,8 +1003,12 @@ html.tmm-in-app .tmm-home[data-screen="pushed"] {
   display: block
 }
 
+/* Linen, not the card's sand, so the text reads as its own area below
+   the thumbnail. Not white: this screen's page is pure white. */
 .tmm-sh-text {
-  padding: 16px 18px 18px
+  flex: 1;
+  padding: 16px 18px 18px;
+  background: var(--linen)
 }
 
 .tmm-sh-title {
