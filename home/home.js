@@ -80,7 +80,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v27 · 2026-10-01',
+  BUILD: 'v28 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -126,19 +126,20 @@ const TMM_CONFIG = {
       label: 'The Mother Hub',
       hero:         { label:'Announcements', url:'https://members.themillionairemother.com/c/motherhood' },
       contentGrid:  { label:'Connect with vetted Experts', spaceId:2468301, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/the-expert-network', placeholders:'mark' },
-      featuredEvent:{ label:'Coming Up', spaceId:2491518, space_type:'event', url:'https://members.themillionairemother.com/c/monthly-village-circle-with-cait' },
+      featuredEvent:{ label:'Coming Up', spaceId:2491518, space_type:'event', url:'https://members.themillionairemother.com/c/motherhub-events' },
       postFeed:     { label:'From the community', spaceId:2823968, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/motherhub-conversations-d9bb26' },
-      eventsGrid:   { label:'Upcoming Live Events', spaceId:2491518, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/monthly-village-circle-with-cait' },
+      eventsGrid:   { label:'Upcoming Live Events', spaceId:2491518, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/motherhub-events' },
     },
 
-    /* NEW TIER. Same as Mother Hub except its events and group chat are the
-       Expert Network's own. Detected via the "MotherHub Expert Network"
+    /* NEW TIER. Same as Mother Hub except its group chat and Upcoming Live
+       Events are the Expert Network's own. Detected via the "MotherHub Expert Network"
        access group (was called Matriarch Network). */
     expert_network: {
       label: 'MotherHub Expert Network',
       hero:         { label:'Announcements', url:'https://members.themillionairemother.com/c/motherhood' },
       contentGrid:  { label:'Connect with vetted Experts', spaceId:2468301, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/the-expert-network', placeholders:'mark' },
-      featuredEvent:{ label:'Coming Up', spaceId:2839754, space_type:'event', url:'https://members.themillionairemother.com/c/motherhub-expert-network-events' },
+      /* Coming Up is MotherHub Events, as for MotherHub (content map, 1 Oct). */
+      featuredEvent:{ label:'Coming Up', spaceId:2491518, space_type:'event', url:'https://members.themillionairemother.com/c/motherhub-events' },
       postFeed:     { label:'From the Expert Network', spaceId:2632318, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/member-spotlight' },
       eventsGrid:   { label:'Upcoming Live Events', spaceId:2839754, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/motherhub-expert-network-events' },
     },
