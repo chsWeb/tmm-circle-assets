@@ -1233,11 +1233,9 @@
 }
 
 .tmm-pricing-card__button {
-  display: inline-flex;
-  min-height: 48px;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   width: 100%;
+  padding: 16px 24px;
   border: 1px solid var(--tmm-primary-button-bg);
   border-radius: 999px;
   background: var(--tmm-primary-button-bg);
@@ -1246,6 +1244,9 @@
   font-size: 1rem;
   font-weight: 800;
   letter-spacing: 0;
+  line-height: 1;
+  text-align: center;
+  text-box: trim-both cap alphabetic;
   text-decoration: none;
   cursor: pointer;
   transition:
@@ -1429,7 +1430,6 @@
 
 .tmm-pricing--v2 .tmm-pricing-card__button {
   align-self: end;
-  min-height: 46px;
   margin-top: 4px;
   font-size: 0.92rem;
 }
@@ -1548,7 +1548,6 @@
   }
 
   .tmm-pricing-card__button {
-    min-height: 42px;
     font-size: 0.94rem;
   }
 
@@ -2038,11 +2037,24 @@
   padding-top: 7px;
 }
 
+/* BUTTON BOX — shared treatment for every button on this page.
+
+   These were all inline-flex with a centre on both axes and a min-height,
+   which was a way of making a line box with descender room it never used
+   look vertically centred. text-box: trim-both cap alphabetic trims the box
+   to the cap height and the baseline instead, so 16px of padding is 16px of
+   real space above and below the caps, and the min-heights come off because
+   they would now only add slack at the foot with no flex to centre it.
+
+   display: inline-block, not inline: an inline box ignores vertical padding
+   for layout. text-align: center replaces the justify-content, since the
+   pricing button is a full-width box whose label still has to sit centred.
+
+   A browser without text-box (pre-133 Chrome, pre-18.2 Safari) ignores that
+   one line and draws a slightly taller button. */
 .tmm-join__button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 20px;
+  display: inline-block;
+  padding: 16px 24px;
   border-radius: 999px;
   background: var(--tmm-splash-accent);
   color: var(--tmm-color-fresh-white);
@@ -2050,7 +2062,9 @@
   font-size: clamp(14px, 3.864vw, 17px);
   font-weight: 500;
   letter-spacing: 0.2em;
-  line-height: 1.32;
+  line-height: 1;
+  text-align: center;
+  text-box: trim-both cap alphabetic;
   text-decoration: none;
   text-indent: 0.2em;
   text-transform: uppercase;
@@ -2402,13 +2416,13 @@
   content: none;
 }
 
+/* The splash treatment, and the one that actually renders these CTAs — it
+   comes after the older rule above, which is why that one's box had no
+   effect. Same button treatment as the rest of the page. */
 .tmm-pricing-card__button {
-  display: flex;
+  display: block;
   width: 100%;
-  min-height: 34px;
-  align-items: center;
-  justify-content: center;
-  padding: 5px 20px;
+  padding: 16px 24px;
   border: 0;
   border-radius: 9999px;
   background: var(--tmm-color-brand-primary);
@@ -2417,8 +2431,9 @@
   font-size: clamp(15px, 3.86vw, 17px);
   font-weight: 500;
   letter-spacing: 0;
-  line-height: 1.32;
+  line-height: 1;
   text-align: center;
+  text-box: trim-both cap alphabetic;
   text-decoration: none;
   text-transform: uppercase;
 }
@@ -2502,11 +2517,8 @@
   position: static;
   z-index: 4;
   margin-top: clamp(18px, 5vw, 26px);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  padding: 0 26px;
+  display: inline-block;
+  padding: 16px 24px;
   border-radius: 999px;
   background: var(--tmm-splash-accent);
   box-shadow: 0 2px 6px rgba(15, 15, 15, 0.14), 0 14px 30px -18px rgba(15, 15, 15, 0.5);
@@ -2514,6 +2526,9 @@
   font-family: var(--tmm-font-head);
   font-size: 0.94rem;
   letter-spacing: 0.08em;
+  line-height: 1;
+  text-align: center;
+  text-box: trim-both cap alphabetic;
   text-decoration: none;
   text-transform: uppercase;
   white-space: nowrap;
@@ -2798,20 +2813,6 @@
   .tmm-join__login {
     font-size: clamp(12px, 1vw, 13.5px);
     letter-spacing: -0.01em;
-  }
-
-  /* The label sat high with a pool of space beneath it: 8px of symmetric
-     padding around a 1.32 line-height, where the em box carries descender
-     room that all-caps never uses. Flex centring on a line-height of 1
-     removes that dead space, and the 1px top bias corrects the last of it —
-     caps sit slightly above the em box's centre. */
-  .tmm-join__button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 46px;
-    padding: 1px 26px 0;
-    line-height: 1;
   }
 
   /* Out of the absolute positioning that put it on top of the copy, and
