@@ -80,7 +80,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v30 · 2026-10-01',
+  BUILD: 'v31 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -92,7 +92,10 @@ const TMM_CONFIG = {
      That was not enough on its own: the app opens any link on the
      community's own domain in place, target or not (still stuck on v18, Sept 30).
      So the url goes through /go/share on tmm-circle-assets, which the app
-     treats as an outside link; see /_redirects. */
+     treats as an outside link; see /_redirects.
+     appUrl is what the app opens instead, through window.navigateToUrl: the
+     slide-up in-app browser Circle's own Button block uses, so Back closes
+     it and the home screen is still there. The web keeps `url`. */
   /* Admins and moderators can open every space by role, so Circle lists them
      as members of almost none — the gate would leave their own home screen
      nearly empty. They are bypassed instead, straight from the isAdmin /
@@ -105,6 +108,7 @@ const TMM_CONFIG = {
     body:   'Share MotherHub, earn a chance to win a 30 min 1:1 with Cait!',
     cta:    'Learn More',
     url:    'https://tmm-circle-assets.pages.dev/go/share',
+    appUrl: 'https://members.themillionairemother.com/share',
     newTab: true,
   },
 
@@ -658,7 +662,8 @@ function renderEvents(events,cfg){
 function renderShare(cfg){
   const el = document.getElementById('tmmShare');
   if (!el) return;
-  const ext = cfg.newTab ? ' target="_blank" rel="noopener"' : '';
+  const ext = (cfg.newTab ? ' target="_blank" rel="noopener"' : '') +
+              (cfg.appUrl ? ` data-tmm-app-url="${esc(cfg.appUrl)}"` : '');
   el.innerHTML = `
     <div class="tmm-share">
       <div class="tmm-share-title">${esc(cfg.title)}</div>
@@ -884,6 +889,18 @@ function tmmStart(){
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tmmStart);
 else tmmStart();
+
+/* Links that should open the way Circle's native Button block does: a
+   sheet slides up over the screen with the page in it, and Back closes it.
+   The app exposes that as window.navigateToUrl (Custom HTML API reference).
+   Any link carrying data-tmm-app-url goes there in the app; on the web, or
+   if the app ever drops the function, the ordinary href still works. */
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[data-tmm-app-url]');
+  if (!a || !TMM_IN_APP || typeof window.navigateToUrl !== 'function') return;
+  e.preventDefault();
+  window.navigateToUrl(a.getAttribute('data-tmm-app-url'));
+}, true);
 
 /* Layout readout (TMM_CONFIG.DEBUG_LAYOUT). `view` is window.innerHeight,
    the height the app gave the webview; `page` is the document's full height.
