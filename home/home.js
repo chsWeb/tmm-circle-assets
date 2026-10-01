@@ -73,7 +73,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v20 · 2026-09-30',
+  BUILD: 'v21 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -177,6 +177,14 @@ const TMM_CONFIG = {
 const FEATURED = {
   TOPIC_ID: 538336,   // Circle "topics" id for the `featured` tag
   MAX: 5,             // max cards in the hero
+  /* Tiers whose hero shows every featured post rather than the newest five.
+     MotherHub's two spaces held 12 featured posts on 1 Oct 2026; capped at
+     five, all five were Home & Motherhood and Business & Money never showed.
+     20 is a ceiling, not a target. Expert Network sees the same two spaces. */
+  MAX_BY_TIER: {
+    mother_hub:     20,
+    expert_network: 20,
+  },
   SPACES: {
     // Free: Welcome! only. Free members can also open Start Here and Free
     // Resources, but the owner features content for them from Welcome!;
@@ -387,7 +395,7 @@ async function fetchFeatured(tierKey, canSee){
     .filter(p => (p.topics || []).includes(FEATURED.TOPIC_ID))   // carries `featured`
     .filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; })
     .sort((a,b) => new Date(b.published_at||0) - new Date(a.published_at||0))
-    .slice(0, FEATURED.MAX);
+    .slice(0, FEATURED.MAX_BY_TIER[tierKey] || FEATURED.MAX);
 }
 
 /* ---------- helpers ---------- */
