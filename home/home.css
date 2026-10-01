@@ -908,3 +908,31 @@
     animation-duration: 2.4s
   }
 }
+
+/* ============================================================
+   IN-APP SCROLLING  (wrapper built by home.js when the page runs
+   inside the Circle app; the web page is untouched)
+   The document itself is held at exactly one screen and never
+   scrolls; #tmmAppScroll does. See tmmWrapForApp() for why.
+   ============================================================ */
+html.tmm-in-app,
+html.tmm-in-app body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden
+}
+
+#tmmAppScroll {
+  position: fixed;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--white)
+}
+
+/* The app's tab bar floats over the bottom of the screen; keep the last
+   card clear of it. */
+html.tmm-in-app .tmm-home {
+  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px))
+}

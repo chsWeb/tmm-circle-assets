@@ -80,7 +80,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v24 · 2026-10-01',
+  BUILD: 'v25 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -834,11 +834,33 @@ window.__TMM_FEATURED = FEATURED;
    re-init if Circle swaps in a fresh block on navigation (e.g. tapping Home).
    This is why content loaded via the test dropdown but not on nav before. */
 let tmmBootedEl = null;
+
+/* In the app, the page scrolls inside a box exactly the screen's height.
+   The app sizes its webview from the page's height, but measures once (or
+   late) and does not follow changes: sections fill in a second after load,
+   so members saw the page cropped mid-hero, or able to scroll a little and
+   then spring back, or far taller than the content. A page that is always
+   exactly one screen tall reads the same whenever the app measures it.
+   Web visitors keep ordinary page scrolling. */
+const TMM_IN_APP = !!window.isInsideCircleMobileWebview;
+function tmmScroller(){ return document.getElementById('tmmAppScroll'); }
+function tmmWrapForApp(home){
+  if (!TMM_IN_APP || home.parentElement?.id === 'tmmAppScroll') return;
+  document.documentElement.classList.add('tmm-in-app');
+  const box = document.createElement('div');
+  box.id = 'tmmAppScroll';
+  home.parentNode.insertBefore(box, home);
+  const banner = document.getElementById('tmmTestBanner');
+  if (banner) box.appendChild(banner);
+  box.appendChild(home);
+}
+
 function tmmTryBoot(){
   const home = document.getElementById('tmmHome');
   if (!home) return;
   if (home === tmmBootedEl) return;              // this block already initialised
   tmmBootedEl = home;                            // set before init() so DOM edits don't re-trigger
+  tmmWrapForApp(home);
   if(!TMM_CONFIG.SHOW_TEST_BANNER){ const b=document.getElementById('tmmTestBanner'); if(b) b.style.display='none'; }
   init();
 }
@@ -866,10 +888,10 @@ if (TMM_CONFIG.DEBUG_LAYOUT &&
     if (!box || !box.isConnected) {
       if (!document.body) return;
       box = document.createElement('div');
-      box.style.cssText = 'position:fixed;left:6px;bottom:6px;z-index:2147483647;max-width:70vw;padding:6px 8px;border-radius:6px;background:rgba(15,15,15,.82);color:#EAE4D6;font:10px/1.35 ui-monospace,Menlo,monospace;pointer-events:none;white-space:pre';
+      box.style.cssText = 'position:fixed;left:6px;bottom:110px;z-index:2147483647;max-width:70vw;padding:6px 8px;border-radius:6px;background:rgba(15,15,15,.82);color:#EAE4D6;font:10px/1.35 ui-monospace,Menlo,monospace;pointer-events:none;white-space:pre';
       document.body.appendChild(box);
     }
-    box.textContent = `${TMM_CONFIG.BUILD}\nview ${window.innerHeight} · page ${pageH()} · scrolled ${Math.round(window.scrollY)}\n` + log.slice(0, 8).join('\n');
+    box.textContent = `${TMM_CONFIG.BUILD}\nview ${window.innerHeight} · page ${pageH()} · inner ${tmmScroller()?.scrollHeight ?? '-'} · scrolled ${Math.round(tmmScroller()?.scrollTop ?? window.scrollY)}\n` + log.slice(0, 8).join('\n');
   }
   function sample(why){
     const now = `${window.innerHeight}/${pageH()}`;
@@ -881,7 +903,7 @@ if (TMM_CONFIG.DEBUG_LAYOUT &&
   }
   window.addEventListener('resize', () => sample('resize'));
   window.addEventListener('load', () => sample('load'));
-  window.addEventListener('scroll', () => draw(), { passive:true });
+  window.addEventListener('scroll', () => draw(), { passive:true, capture:true });
   setInterval(() => sample('tick'), 500);
   sample('start');
 })();
@@ -897,7 +919,7 @@ if (TMM_CONFIG.DEBUG_LAYOUT &&
   const PULL = 64;                    // px of (damped) pull needed to refresh
   const RESIST = 0.5;                 // indicator moves at half finger speed
   let startY = null, pulled = 0, el = null, busy = false;
-  const atTop = () => (window.scrollY || document.scrollingElement?.scrollTop || 0) <= 0;
+  const atTop = () => (tmmScroller()?.scrollTop || window.scrollY || document.scrollingElement?.scrollTop || 0) <= 0;
   function indicator(){
     if (el && el.isConnected) return el;
     const home = document.getElementById('tmmHome');
