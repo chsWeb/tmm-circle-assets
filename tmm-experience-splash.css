@@ -3265,23 +3265,14 @@
     margin-bottom: 0;
   }
 
-  /* The cluster — chevron, dots, chevron, or chevron and Continue on the
-     last slide — centred in the left column rather than packed against its
-     left edge. The row still spans the column, so this is the column's
-     centre, not the viewport's. */
+  /* Packed against the column's left edge, on the copy's axis. Centring the
+     cluster in the column was tried and looked worse: it floated the
+     navigation out into the middle of the left column, away from the text
+     it belongs to. */
   .tmm-intro--v2 .tmm-intro__nav-row {
-    justify-content: center;
+    justify-content: flex-start;
     gap: clamp(16px, 2vw, 28px);
     padding-block: clamp(16px, 2.5vh, 26px) 0;
-  }
-
-  /* The last slide's forward chevron is faded out but still holds its 44px,
-     which under a centred row pulled the visible pair 36px left of the
-     column's centre — half the chevron plus half the gap. On a phone the row
-     is space-between and that reserved width is what keeps Continue centred,
-     so this is desktop only. */
-  .tmm-intro--v2 .tmm-intro__slide:last-child .tmm-intro__nav--next {
-    display: none;
   }
 
   /* The mobile rules size the imagery off the flex column: width:auto plus an
