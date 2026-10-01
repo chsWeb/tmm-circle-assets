@@ -984,7 +984,7 @@ html.tmm-in-app .tmm-home[data-screen="pushed"] {
 .tmm-sh-card {
   display: flex;
   flex-direction: column;
-  background: var(--sand);
+  background: #fff;
   border-radius: var(--radius-lg);
   overflow: hidden;
   color: var(--ink);
@@ -1003,12 +1003,10 @@ html.tmm-in-app .tmm-home[data-screen="pushed"] {
   display: block
 }
 
-/* Linen, not the card's sand, so the text reads as its own area below
-   the thumbnail. Not white: this screen's page is pure white. */
 .tmm-sh-text {
   flex: 1;
   padding: 16px 18px 18px;
-  background: var(--linen)
+  background: #fff
 }
 
 .tmm-sh-title {
@@ -1039,4 +1037,14 @@ html.tmm-in-app .tmm-home[data-screen="pushed"] {
   width: 100%;
   height: 100%;
   border: 0
+}
+
+/* Start Here page: the palette's light gray (#F9F9F9, --white) behind white
+   cards. This overrides the pure white every pushed screen gets above, so
+   the app's own white band below the page may show as a faint edge here. */
+html.tmm-in-app:has(.tmm-home[data-page="start-here"]) body,
+html.tmm-in-app #tmmAppScroll:has(.tmm-home[data-page="start-here"]),
+html.tmm-in-app .tmm-home[data-screen="pushed"][data-page="start-here"],
+.tmm-home[data-page="start-here"] {
+  background: #F9F9F9
 }
