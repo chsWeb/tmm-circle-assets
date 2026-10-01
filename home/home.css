@@ -214,6 +214,22 @@
   padding: 22px var(--pad) 0
 }
 
+/* "Welcome back, Jane" — added by home.js above section 1. */
+.tmm-greeting {
+  margin: 0;
+  padding: 20px var(--pad) 0;
+  font-family: var(--font-head);
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.15;
+  letter-spacing: -.01em;
+  color: var(--ink)
+}
+
+.tmm-greeting + .tmm-section {
+  padding-top: 14px
+}
+
 .tmm-sec-head {
   display: flex;
   align-items: baseline;
