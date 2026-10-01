@@ -73,7 +73,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v21 · 2026-10-01',
+  BUILD: 'v22 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -358,6 +358,12 @@ async function fetchSection(cfg){
     if (!tagged.length) console.warn(`fetchSection: no posts tagged "${cfg.tag}" in this space`);
     records = tagged;   // strict: show ONLY tagged posts (empty if none tagged)
   }
+
+  // Card shelves headline every card with the post's title, so a post
+  // without one became an "Untitled" card. The Expert Network Directory
+  // opens with exactly that: an untitled intro post (preferred-providers),
+  // not an expert. The feed shows the author instead, so it keeps them.
+  if (cfg.titledOnly) records = records.filter(r => String(r.name||'').trim());
 
   const isEventCfg = spaces.some(s => s.space_type === 'event');
   return records
@@ -773,11 +779,11 @@ async function init(overrideTierKey){
 
   // Each section fetches + renders on its own. A slow/empty section can no
   // longer block the others (previously one hung fetch froze the whole page).
-  const render = (cfg, fn, boxId) => {
+  const render = (cfg, fn, boxId, opts) => {
     const ok = !!cfg && canSeeCfg(cfg);
     if (!ok) { denySection(boxId); return; }
     showSection(boxId, true);
-    fetchSection(cfg)
+    fetchSection(opts ? { ...cfg, ...opts } : cfg)
       .then(d => { try { fn(d, cfg); } catch(e){ console.error('render error:', e); } })
       .catch(e => console.error('section error:', e));
   };
@@ -794,8 +800,9 @@ async function init(overrideTierKey){
   showSection('tmmShare', !!shareCfg);
   if (shareCfg) { try { renderShare(shareCfg); } catch(e){ console.error('share render error:', e); } }
 
-  render(tier.contentGrid,   renderContentGrid, 'tmmGrid');
-  render(tier.featuredEvent, (d,c)=> (c.kind==='posts' ? renderFeatPosts(d,c) : renderFeatured(d,c)), 'tmmFeat');
+  render(tier.contentGrid,   renderContentGrid, 'tmmGrid', { titledOnly:true });
+  render(tier.featuredEvent, (d,c)=> (c.kind==='posts' ? renderFeatPosts(d,c) : renderFeatured(d,c)), 'tmmFeat',
+         tier.featuredEvent?.kind === 'posts' ? { titledOnly:true } : null);
   render(tier.postFeed,      renderFeed,        'tmmFeed');
   render(tier.eventsGrid,    renderEvents,      'tmmEvents');
 }
