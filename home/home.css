@@ -1024,3 +1024,19 @@ html.tmm-in-app .tmm-home[data-screen="pushed"] {
   font-size: 14px;
   color: var(--muted)
 }
+
+/* Welcome post at the top of Start Here: its video plays on the screen. */
+.tmm-sh-video {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--black)
+}
+
+.tmm-sh-video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0
+}

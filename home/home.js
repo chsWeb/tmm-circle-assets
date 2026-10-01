@@ -80,7 +80,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v35 · 2026-10-01',
+  BUILD: 'v36 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -114,6 +114,9 @@ const TMM_CONFIG = {
      signed out of Circle (Start Here is a private space). */
   START_HERE: {
     spaceId:  2505755,                  // Start Here (start-here-3ba756)
+    /* Shown above the cards: the newest post in the Welcome! space, with
+       its video playing on the screen. null hides it. */
+    welcomeSpaceId: 2551323,            // Welcome! (welome-library)
     title:    'Start here',
     open:     'sheet',
     sheetBase:'https://tmm-circle-assets.pages.dev/go/c/',
@@ -719,6 +722,39 @@ function startHereLink(p, cfg){
   return { href:url, app:cfg.sheetBase + path };
 }
 
+/* The video in a post body, if it is one we can play here. Only Vimeo and
+   YouTube players: the src comes from post HTML. */
+function postVideoSrc(html){
+  const f = new DOMParser().parseFromString(html || '', 'text/html').querySelector('iframe[src]');
+  if (!f) return '';
+  try {
+    const u = new URL(f.getAttribute('src'));
+    return /^(player\.vimeo\.com|www\.youtube(-nocookie)?\.com)$/.test(u.hostname) && u.protocol === 'https:' ? u.href : '';
+  } catch(e){ return ''; }
+}
+function firstParagraph(html){
+  const p = new DOMParser().parseFromString(html || '', 'text/html').querySelector('p');
+  return (p ? p.textContent : strip(html)).trim();
+}
+function renderStartHereWelcome(post){
+  const el = document.getElementById('tmmShWelcome');
+  if (!el) return;
+  if (!post) { el.innerHTML = ''; return; }
+  const video = postVideoSrc(post.body?.body);
+  const img   = coverImage(post);
+  const media = video
+    ? `<div class="tmm-sh-video"><iframe src="${esc(video)}" title="${esc(post.name || 'Welcome video')}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe></div>`
+    : (img ? `<img class="tmm-sh-img" src="${esc(img)}" alt="">` : '');
+  el.innerHTML = `
+    <div class="tmm-sh-card tmm-sh-card--welcome">
+      ${media}
+      <div class="tmm-sh-text">
+        <div class="tmm-sh-title">${esc(post.name || 'Welcome!')}</div>
+        <div class="tmm-sh-desc">${esc(firstParagraph(post.body?.body))}</div>
+      </div>
+    </div>`;
+}
+
 async function initStartHere(){
   const root = document.getElementById('tmmHome');
   const cfg  = TMM_CONFIG.START_HERE;
@@ -726,17 +762,28 @@ async function initStartHere(){
   if (!document.getElementById('tmmStartHere')) {
     root.insertAdjacentHTML('beforeend', `
       <h1 class="tmm-greeting" id="tmmGreeting"></h1>
+      <section class="tmm-section" id="tmmShWelcome"></section>
       <section class="tmm-section">
         <div class="tmm-sec-head"><h2 class="tmm-sec-title">${esc(cfg.title)}</h2></div>
         <div class="tmm-sh-list" id="tmmStartHere"></div>
       </section>`);
   }
   const { firstName } = getCurrentMember();
-  set('tmmGreeting', firstName ? `Welcome, ${firstName}!` : 'Welcome!');
+  set('tmmGreeting', firstName
+    ? `Welcome to The Millionaire Mother app, ${firstName}!`
+    : 'Welcome to The Millionaire Mother app!');
 
   const list = document.getElementById('tmmStartHere');
   list.innerHTML = '<div class="tmm-skel" style="height:300px"></div><div class="tmm-skel" style="height:300px"></div>';
-  const posts = await fetchOneSpacePosts(cfg.spaceId);
+  if (cfg.welcomeSpaceId && !document.querySelector('#tmmShWelcome .tmm-sh-card')) {
+    document.getElementById('tmmShWelcome').innerHTML = '<div class="tmm-skel" style="height:320px"></div>';
+  }
+  const [posts, welcome] = await Promise.all([
+    fetchOneSpacePosts(cfg.spaceId),
+    cfg.welcomeSpaceId ? fetchOneSpacePosts(cfg.welcomeSpaceId) : Promise.resolve([]),
+  ]);
+  /* Pull to refresh reruns this; leave a playing video alone. */
+  if (!document.querySelector('#tmmShWelcome iframe')) renderStartHereWelcome(welcome[0]);
   if (!posts.length) {
     list.innerHTML = `<p class="tmm-empty">This didn't load. <button class="tmm-btn tmm-btn--sm" type="button" onclick="tmmSetTier()">Try again</button></p>`;
     return;
