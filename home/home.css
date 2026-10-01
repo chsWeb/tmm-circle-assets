@@ -936,3 +936,13 @@ html.tmm-in-app body {
 html.tmm-in-app .tmm-home {
   padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px))
 }
+
+/* The app cannot show the same screen in two of its settings, so the home
+   page is pasted twice: the Home tab, and "Home (Hidden for Settings)",
+   which members land on after signing in. That second one is pushed over
+   the tabs, so it has a back arrow and no tab bar, and the gap above would
+   be empty space. Its body.html carries data-screen="pushed" on #tmmHome
+   to say so; the Home tab's does not. */
+html.tmm-in-app .tmm-home[data-screen="pushed"] {
+  padding-bottom: 40px
+}
