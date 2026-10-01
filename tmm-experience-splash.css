@@ -2983,13 +2983,14 @@
    viewport. The box that holds it overflows the band by half a band, and
    that overflow is free — the top 642px of this 1300x1950 cutout (32.9%) is
    empty above their heads, so what rises past the band is transparent. The
-   subject's own top lands at 434 against a nav row ending at 371, so
-   Continue keeps 63px of clearance and never sits over the photograph.
+   subject's own top lands at 434 on a 375x812 phone and 451 at 390x844,
+   against a Continue button ending at 360 and 367 — 75px and 84px of
+   clearance, so it never sits over the photograph.
 
    On a short phone (375x667) the band is smaller and contain falls back to
-   being height-limited: the picture is 303 wide instead of 375, still with
-   7px of clearance. Narrower rather than overlapping is the right way for
-   this to give way. */
+   being height-limited: the picture renders 301 wide rather than 375, still
+   with 21px of clearance. Narrower rather than overlapping is the right way
+   for this to give way. */
 .tmm-intro--v2 .tmm-intro__media:not(.tmm-intro__media--anchor-top) img {
   --tmm-v2-media-scale: 1.5;
 }
