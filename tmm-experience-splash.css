@@ -3006,7 +3006,31 @@
    with 21px of clearance. Narrower rather than overlapping is the right way
    for this to give way. */
 .tmm-intro--v2 .tmm-intro__media:not(.tmm-intro__media--anchor-top) img {
-  --tmm-v2-media-scale: 1.5;
+  /* FULL WIDTH ALWAYS, GROWING DOWNWARD.
+
+     The width is asked for directly rather than falling out of a height: a
+     scale of the band reaches the edges only while the band is tall enough,
+     and inside Circle's app it is not — contain became height-limited and
+     the picture narrowed, which is the gap down either side.
+
+     Full width makes the figure 1.0065x the viewport's width tall (the
+     subject occupies the bottom 67.1% of this 1300x1950 cut-out, measured
+     off its alpha channel), which is more than the room below the nav row
+     on a short screen. The negative bottom margin is what keeps that from
+     becoming a problem: it pushes the picture DOWN by exactly the excess, so
+     her head stops at the room's ceiling and the overflow leaves at the foot
+     of the screen instead of climbing behind Continue. Percentage margins
+     resolve against the container's width, which is what lets this be stated
+     in CSS at all.
+
+     Where the room is there — a 440x956 phone in a browser — the excess is
+     zero, the margin collapses to nothing and the picture is flush at the
+     bottom exactly as before. Without the script the band falls back to 100%
+     and the shift is 0.65% of the width, which is nothing. */
+  width: 100%;
+  height: auto;
+  max-height: none;
+  margin-bottom: calc(-1 * max(0px, 100.65% - var(--tmm-v2-band, 100%)));
 }
 
 /* The band replaces v1's aspect-ratio box and its max-height. */

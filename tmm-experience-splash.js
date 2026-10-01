@@ -1071,6 +1071,7 @@
           );
 
           section.style.setProperty("--tmm-v2-band", `${band}px`);
+
         }
 
         // v2 on desktop: the masthead is placed into the left column with the
