@@ -380,10 +380,17 @@
   width: 270px
 }
 
+/* 2:1, the shape of Circle's own desktop cards. The thumbnails are 840x300
+   with the title and the MM mark centred; the mark ends 173px from the right
+   edge. A 2:1 slot crops 120px off each side, so the mark keeps ~53px of room
+   and the widest title (The Matriarch Audio Experience, x 180-655) clears the
+   left by as much. The old 180px height (1.5:1) cropped 195px a side and cut
+   both. A 1200x600 thumbnail shows whole. */
 .tmm-card-img,
 .tmm-card-imgph {
   width: 100%;
-  height: 180px;
+  height: auto;
+  aspect-ratio: 2 / 1;
   border-radius: var(--radius);
   object-fit: cover;
   margin-bottom: 12px

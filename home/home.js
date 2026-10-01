@@ -401,8 +401,9 @@ function fmtShort(iso){ return iso ? new Date(iso).toLocaleDateString('en-US',{m
    Thumbnail first: the owner makes Mobile Thumbnails for these cards, so when
    a post has both, show the thumbnail. Circle keeps whatever shape is
    uploaded — thumbnails are NOT forced to 2:1 — so this only reduces cropping
-   when the thumbnail is exported at 2:1 (1200x600). In our ~1.5:1 slots a 2:1
-   image loses ~25% at the sides; a 2.8:1 one (840x300, the cover shape) ~46%.
+   when the thumbnail is exported at 2:1 (1200x600). The card slots are 2:1
+   (see .tmm-card-img), so a 2:1 image shows whole and a 2.8:1 one (840x300,
+   the cover shape) loses 120px a side, which still keeps its MM mark.
    Checked Sept 2026: 5 of the 6 Free Resources thumbnails are 840x300. */
 function coverImage(x){ return (x && (x.cardview_thumbnail_url || x.cover_image_url)) || ''; }
 
