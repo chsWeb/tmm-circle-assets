@@ -80,7 +80,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v37 · 2026-10-01',
+  BUILD: 'v38 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -107,18 +107,18 @@ const TMM_CONFIG = {
      that new members land on. Same head as the home screen; this script
      sees data-page="start-here" and builds this instead of the home page.
      Everyone who is signed in sees the same thing, whatever their tier.
-     open: 'sheet' sends each post through /go/c/… on this domain, so the
-     app treats it as an outside link and slides it up in its in-app
-     browser, the way the share card opens. 'native' opens the post as the
-     app's own screen instead. Use 'native' if the sheet turns out to be
-     signed out of Circle (Start Here is a private space). */
+     open: 'native' hands the post's own address to navigateToUrl, which
+     opens it as the app's post screen, pushed over Start Here with a back
+     arrow. 'sheet' sent it through /go/c/… on this domain instead; tested
+     on 1 Oct 2026 the app gave that to Safari, which bounced back into the
+     app at Home. Kept only in case Circle changes how it treats links. */
   START_HERE: {
     spaceId:  2505755,                  // Start Here (start-here-3ba756)
     /* Shown above the cards: the newest post in the Welcome! space, with
        its video playing on the screen. null hides it. */
     welcomeSpaceId: 2551323,            // Welcome! (welome-library)
     title:    'Start here',
-    open:     'sheet',
+    open:     'native',
     sheetBase:'https://tmm-circle-assets.pages.dev/go/c/',
   },
 
