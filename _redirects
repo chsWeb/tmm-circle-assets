@@ -7,3 +7,9 @@
 # outside link, so it opens over the home screen instead of replacing it.
 # /share is public, so it loads without the member's Circle session.
 /go/share  https://members.themillionairemother.com/share  302
+
+# Start Here cards (TMM_CONFIG.START_HERE in home/home.js). Same trick as
+# /go/share: a link that starts on this domain is an outside link to the
+# app, so window.navigateToUrl opens it in the slide-up in-app browser
+# instead of a native screen. Only ever redirects to the community's /c/.
+/go/c/*  https://members.themillionairemother.com/c/:splat  302

@@ -80,7 +80,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v33 · 2026-10-01',
+  BUILD: 'v34 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -102,6 +102,22 @@ const TMM_CONFIG = {
      isModerator flags Circle puts on window.circleUser. This list is only a
      manual fallback for someone those flags miss. Ids only, no names. */
   ADMIN_BYPASS_IDS: [],
+
+  /* Start Here screen: a second Custom HTML screen (start-here-body.html)
+     that new members land on. Same head as the home screen; this script
+     sees data-page="start-here" and builds this instead of the home page.
+     Everyone who is signed in sees the same thing, whatever their tier.
+     open: 'sheet' sends each post through /go/c/… on this domain, so the
+     app treats it as an outside link and slides it up in its in-app
+     browser, the way the share card opens. 'native' opens the post as the
+     app's own screen instead. Use 'native' if the sheet turns out to be
+     signed out of Circle (Start Here is a private space). */
+  START_HERE: {
+    spaceId:  2505755,                  // Start Here (start-here-3ba756)
+    title:    'Start here',
+    open:     'sheet',
+    sheetBase:'https://tmm-circle-assets.pages.dev/go/c/',
+  },
 
   SHARE: {
     title:  'Share MotherHub!',
@@ -694,8 +710,54 @@ function renderFeatPosts(posts,cfg){
   wirePlaceholderFallbacks(el);
 }
 
+/* ---------- Start Here screen ---------- */
+function startHereLink(p, cfg){
+  const url = p.url || '#';
+  if (cfg.open !== 'sheet') return { href:url, app:'' };
+  const path = url.replace(/^https:\/\/members\.themillionairemother\.com\/c\//, '');
+  if (path === url) return { href:url, app:'' };   // not a /c/ post url
+  return { href:url, app:cfg.sheetBase + path };
+}
+
+async function initStartHere(){
+  const root = document.getElementById('tmmHome');
+  const cfg  = TMM_CONFIG.START_HERE;
+  if (!root || !cfg) return;
+  if (!document.getElementById('tmmStartHere')) {
+    root.insertAdjacentHTML('beforeend', `
+      <h1 class="tmm-greeting" id="tmmGreeting"></h1>
+      <section class="tmm-section">
+        <div class="tmm-sec-head"><h2 class="tmm-sec-title">${esc(cfg.title)}</h2></div>
+        <div class="tmm-sh-list" id="tmmStartHere"></div>
+      </section>`);
+  }
+  const { firstName } = getCurrentMember();
+  set('tmmGreeting', firstName ? `Welcome, ${firstName}!` : 'Welcome!');
+
+  const list = document.getElementById('tmmStartHere');
+  list.innerHTML = '<div class="tmm-skel" style="height:300px"></div><div class="tmm-skel" style="height:300px"></div>';
+  const posts = await fetchOneSpacePosts(cfg.spaceId);
+  if (!posts.length) {
+    list.innerHTML = `<p class="tmm-empty">This didn't load. <button class="tmm-btn tmm-btn--sm" type="button" onclick="tmmSetTier()">Try again</button></p>`;
+    return;
+  }
+  list.innerHTML = posts.map(p => {
+    const link = startHereLink(p, cfg);
+    const img  = coverImage(p);         // 16:9 card thumbnail, then the cover
+    return `
+    <a class="tmm-sh-card" href="${esc(link.href)}" target="_blank" rel="noopener"${link.app ? ` data-tmm-app-url="${esc(link.app)}"` : ''}>
+      ${img ? `<img class="tmm-sh-img" src="${esc(img)}" alt="" loading="lazy">` : ''}
+      <div class="tmm-sh-text">
+        <div class="tmm-sh-title">${esc(p.name || 'Untitled')}</div>
+        <div class="tmm-sh-desc">${esc(strip(p.body?.body || '').slice(0, 110))}…</div>
+      </div>
+    </a>`;
+  }).join('');
+}
+
 /* ---------- init ---------- */
 async function init(overrideTierKey){
+  if (document.getElementById('tmmHome')?.dataset.page === 'start-here') return initStartHere();
   const member    = await getCurrentMember();
   const firstName = member?.firstName || '';
   /* One request answers both questions. TEST_MODE skips it: that surface has

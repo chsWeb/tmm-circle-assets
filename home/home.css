@@ -971,3 +971,52 @@ html.tmm-in-app #tmmAppScroll:has(.tmm-home[data-screen="pushed"]),
 html.tmm-in-app .tmm-home[data-screen="pushed"] {
   background: #fff
 }
+
+/* ============================================================
+   START HERE screen (start-here-body.html) — one card per post
+   ============================================================ */
+.tmm-sh-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap)
+}
+
+.tmm-sh-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--sand);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  color: var(--ink);
+  text-decoration: none
+}
+
+.tmm-sh-card:focus-visible {
+  outline: 2px solid var(--electric-red);
+  outline-offset: 2px
+}
+
+.tmm-sh-img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block
+}
+
+.tmm-sh-text {
+  padding: 16px 18px 18px
+}
+
+.tmm-sh-title {
+  font-family: var(--font-head);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.2;
+  color: var(--electric-red);
+  margin-bottom: 6px
+}
+
+.tmm-sh-desc {
+  font-size: 14px;
+  color: var(--muted)
+}
