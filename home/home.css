@@ -400,6 +400,12 @@
   background: linear-gradient(135deg, var(--placeholder), var(--linen))
 }
 
+/* placeholders:'mark' — the brand mark on sand, for sections whose posts
+   are not resources or announcements (the Expert Network Directory). */
+.tmm-ph-mark {
+  background: var(--sand) url(assets/brand-mark.svg) center / auto 40% no-repeat
+}
+
 .tmm-card-title {
   font-weight: 700;
   font-size: 16px;
@@ -862,4 +868,43 @@
   color: var(--muted);
   opacity: .75;
   word-break: break-word
+}
+
+/* ============================================================
+   PULL TO REFRESH  (indicator built by home.js)
+   ============================================================ */
+.tmm-ptr {
+  height: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: height .25s ease
+}
+
+.tmm-ptr-icon {
+  transform: rotate(var(--tmm-ptr-turn, 0deg));
+  transition: color .15s ease
+}
+
+.tmm-ptr.is-ready .tmm-ptr-icon,
+.tmm-ptr.is-loading .tmm-ptr-icon {
+  color: var(--electric-red)
+}
+
+.tmm-ptr.is-loading .tmm-ptr-icon {
+  animation: tmm-ptr-spin .8s linear infinite
+}
+
+@keyframes tmm-ptr-spin {
+  to {
+    transform: rotate(360deg)
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tmm-ptr.is-loading .tmm-ptr-icon {
+    animation-duration: 2.4s
+  }
 }

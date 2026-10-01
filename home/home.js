@@ -73,7 +73,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v22 · 2026-10-01',
+  BUILD: 'v23 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -118,7 +118,7 @@ const TMM_CONFIG = {
     mother_hub: {
       label: 'The Mother Hub',
       hero:         { label:'Announcements', url:'https://members.themillionairemother.com/c/motherhood' },
-      contentGrid:  { label:'Connect with vetted Experts', spaceId:2468301, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/the-expert-network', placeholders:'resource' },
+      contentGrid:  { label:'Connect with vetted Experts', spaceId:2468301, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/the-expert-network', placeholders:'mark' },
       featuredEvent:{ label:'Coming Up', spaceId:2491518, space_type:'event', url:'https://members.themillionairemother.com/c/monthly-village-circle-with-cait' },
       postFeed:     { label:'From the community', spaceId:2823968, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/motherhub-conversations-d9bb26' },
       eventsGrid:   { label:'Upcoming Live Events', spaceId:2491518, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/monthly-village-circle-with-cait' },
@@ -130,7 +130,7 @@ const TMM_CONFIG = {
     expert_network: {
       label: 'MotherHub Expert Network',
       hero:         { label:'Announcements', url:'https://members.themillionairemother.com/c/motherhood' },
-      contentGrid:  { label:'Connect with vetted Experts', spaceId:2468301, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/the-expert-network', placeholders:'resource' },
+      contentGrid:  { label:'Connect with vetted Experts', spaceId:2468301, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/the-expert-network', placeholders:'mark' },
       featuredEvent:{ label:'Coming Up', spaceId:2839754, space_type:'event', url:'https://members.themillionairemother.com/c/motherhub-expert-network-events' },
       postFeed:     { label:'From the Expert Network', spaceId:2632318, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/member-spotlight' },
       eventsGrid:   { label:'Upcoming Live Events', spaceId:2839754, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/motherhub-expert-network-events' },
@@ -456,6 +456,10 @@ function href(id,u){ const el=document.getElementById(id); if(el) el.href=u||'#'
    section picks its set with `placeholders:'resource'` in TMM_CONFIG.TIERS;
    anything unset falls back to `announce`.
 
+   `placeholders:'mark'` is for sections that are neither: a plain sand
+   block with the brand mark, no word. The Expert Network Directory used
+   `resource`, so an expert's post without a thumbnail read "RESOURCES".
+
    Adjacent cards must never share a graphic. Rather than rolling a die per
    card (which repeats), we roll ONCE for a starting point and then step
    through the set in order. That guarantees neighbours differ while the run
@@ -468,12 +472,10 @@ function href(id,u){ const el=document.getElementById(id); if(el) el.href=u||'#'
    pale cards in a row. red -> white -> linen -> sand alternates the backdrop
    at every step, including across the wrap.
 
-   The art is 810x540 — a true 3:2, exactly 3x the 270x180 card slot — so it
-   fills the frame with no crop and no letterbox. `contain` and the per-variant
-   backgrounds in home.css stay as insurance: if a future export drifts off
-   ratio it letterboxes in its own backdrop colour rather than cropping the
-   wordmark or showing a bar. Both sets land on the same four backdrops, so
-   they share those rules. */
+   The art is 810x540 (3:2) and the card slot is 2:1, so `contain` and the
+   per-variant backgrounds in home.css letterbox it at the sides in its own
+   backdrop colour rather than cropping the artwork. Both sets land on the
+   same four backdrops, so they share those rules. */
 const PLACEHOLDER_SETS = {
   announce: [
     { file:'announce-red.webp',   variant:'red'   },
@@ -496,6 +498,7 @@ function placeholderSet(name){ return PLACEHOLDER_SETS[name] || PLACEHOLDER_SETS
 function placeholderStart(setName){ return Math.floor(Math.random()*placeholderSet(setName).length); }
 
 function placeholderImg(index,start,imgClass,setName){
+  if (setName === 'mark') return `<div class="${imgClass}ph tmm-ph-mark"></div>`;
   const set = placeholderSet(setName);
   const ph = set[(start+index)%set.length];
   return `<img class="${imgClass} tmm-ph tmm-ph--${ph.variant}" src="${PLACEHOLDER_BASE}${ph.file}" alt="" loading="lazy" data-ph-fallback="${imgClass}">`;
@@ -839,5 +842,64 @@ function tmmStart(){
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tmmStart);
 else tmmStart();
+
+/* Pull down to refresh. The app keeps the home screen's webview alive
+   between visits, so new posts did not show until the app was quit and
+   reopened. Pulling down from the top and letting go past the threshold
+   reruns init(), which refetches every section.
+   Listeners are passive, so they never block the page's own scrolling; on
+   iOS the pull rides on the native rubber-band. Only starts when the page is
+   already scrolled to the top, so an ordinary scroll up never triggers it. */
+(function(){
+  const PULL = 64;                    // px of (damped) pull needed to refresh
+  const RESIST = 0.5;                 // indicator moves at half finger speed
+  let startY = null, pulled = 0, el = null, busy = false;
+  const atTop = () => (window.scrollY || document.scrollingElement?.scrollTop || 0) <= 0;
+  function indicator(){
+    if (el && el.isConnected) return el;
+    const home = document.getElementById('tmmHome');
+    if (!home) return null;
+    el = document.createElement('div');
+    el.className = 'tmm-ptr';
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = '<svg class="tmm-ptr-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>';
+    home.prepend(el);
+    return el;
+  }
+  function settle(h){
+    if (!el) return;
+    el.style.transition = '';
+    el.style.height = h + 'px';
+  }
+  document.addEventListener('touchstart', e => {
+    startY = (!busy && tmmBootedEl && e.touches.length === 1 && atTop()) ? e.touches[0].clientY : null;
+    pulled = 0;
+  }, { passive:true });
+  document.addEventListener('touchmove', e => {
+    if (startY === null) return;
+    pulled = Math.max(0, (e.touches[0].clientY - startY) * RESIST);
+    const box = indicator();
+    if (!box) return;
+    box.style.transition = 'none';
+    box.style.height = Math.min(pulled, PULL * 1.25) + 'px';
+    box.style.setProperty('--tmm-ptr-turn', Math.min(pulled / PULL, 1) * 270 + 'deg');
+    box.classList.toggle('is-ready', pulled >= PULL);
+  }, { passive:true });
+  document.addEventListener('touchend', () => {
+    if (startY === null) return;
+    startY = null;
+    if (!el) return;
+    if (pulled < PULL) { settle(0); el.classList.remove('is-ready'); return; }
+    busy = true;
+    el.classList.add('is-loading');
+    settle(48);
+    const minSpin = new Promise(r => setTimeout(r, 600));   // no blink-and-gone flash
+    Promise.all([Promise.resolve(init()).catch(()=>{}), minSpin]).finally(() => {
+      busy = false;
+      settle(0);
+      el.classList.remove('is-ready', 'is-loading');
+    });
+  }, { passive:true });
+})();
 
 })();
