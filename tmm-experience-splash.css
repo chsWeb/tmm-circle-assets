@@ -1273,8 +1273,10 @@
 
 .tmm-pricing--v2 .tmm-pricing-card {
   grid-template-rows: auto auto auto 1fr auto;
-  gap: 16px;
-  padding: 22px;
+  /* 14/20 rather than 16/22: the free card gained an Upgrade Anytime block,
+     and this is where the height for it comes from without shrinking type. */
+  gap: 14px;
+  padding: 20px;
   border: 1px solid color-mix(in srgb, var(--tmm-color-light-sage) 52%, transparent);
   border-radius: 12px;
   background: var(--tmm-color-fresh-white);
@@ -2245,9 +2247,12 @@
      with the first card and sit slightly left of centre. */
   --tmm-card-width: min(336px, calc(100% - 40px));
   --tmm-pricing-pad: clamp(20px, 7.27vw, 32px);
-  /* Trimmed from the comp's 88/88: at 375 that made the section 830 tall
-     against an 812 viewport, so the dots sat just under the fold. */
-  padding: clamp(40px, 13vw, 88px) var(--tmm-pricing-pad) clamp(28px, 9vw, 88px);
+  /* Trimmed twice now. The comp's 88/88 made the section 830 tall against
+     an 812 viewport; these lower bounds buy another 30px on a phone, which
+     is what gets a whole card — and the dots under it — inside the shorter
+     viewport Circle's app actually gives us. Desktop is unaffected: both
+     clamps are still at their 88px ceiling well before 1024. */
+  padding: clamp(24px, 8vw, 88px) var(--tmm-pricing-pad) clamp(20px, 6vw, 88px);
   background: var(--tmm-color-fresh-white);
 }
 
@@ -2255,7 +2260,7 @@
   display: flex;
   max-width: 1048px;
   flex-direction: column;
-  gap: clamp(24px, 7.27vw, 32px);
+  gap: clamp(14px, 4.2vw, 32px);
   padding: 0;
 }
 
@@ -2267,28 +2272,25 @@
   text-align: left;
 }
 
-/* Operetta 52 is a high-contrast display serif: hairline horizontals, thin
-   joins, and only one weight in the bundle (Medium), so it cannot be
-   thickened. What made it hard to read was how it was set, not the face —
-   -0.04em of tracking closes the counters and the hairlines run into their
-   neighbours, and a line-height of 1 let ascenders and descenders collide
-   between the two lines.
+/* Work Sans in black, not the display serif in red. Every correction below
+   was an attempt to make a high-contrast serif with hairline joins and a
+   single Medium weight hold up at this size; the face was the problem. Work
+   Sans has even stems and reads at a glance, so the tracking goes neutral
+   and the weight goes up to 600.
 
-   Tracking is now near-neutral and the leading has room. The size is sized
-   against the viewport rather than clamped between two fixed values, so
-   "Choose Your Membership" sits on one line at every width — the <br> that
-   used to force the break is gone from the markup. nowrap is safe precisely
-   because the size is fluid: it shrinks with the viewport instead of
-   overflowing it. */
+   The size stays viewport-sized rather than clamped, and nowrap stays with
+   it, so "Choose Your Membership" is one line at every width without a <br>
+   in the markup. 5.9vw rather than 6.6: Work Sans sets this string wider
+   than the serif did, and the cap is 40px. */
 .tmm-pricing__title {
   max-width: none;
   margin: 0;
-  color: var(--tmm-color-brand-primary);
-  font-family: var(--tmm-font-display);
-  font-size: min(6.6vw, 44px);
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  line-height: 1.08;
+  color: var(--tmm-color-black);
+  font-family: var(--tmm-font-body);
+  font-size: min(5.9vw, 40px);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.12;
   text-align: left;
   text-transform: none;
   white-space: nowrap;
@@ -2296,7 +2298,7 @@
 
 .tmm-pricing__lede {
   max-width: none;
-  margin: 16px 0 20px;
+  margin: clamp(10px, 3.2vw, 16px) 0 clamp(12px, 4vw, 20px);
   color: var(--tmm-color-charcoal);
   font-family: var(--tmm-font-body);
   font-size: clamp(16px, 4.09vw, 18px);
@@ -2323,14 +2325,18 @@
   scroll-padding-inline: var(--tmm-pricing-pad);
 }
 
+/* The paddings and gaps below are fluid rather than fixed so a phone gets a
+   tighter card without touching the desktop one: every clamp is at its
+   ceiling well before 768, and at 375 they give back ~40px — which is what
+   fits a whole card, Upgrade Anytime block and all, inside the screen. */
 .tmm-pricing-card {
   display: flex;
   flex: 0 0 var(--tmm-card-width);
   max-width: 336px;
   flex-direction: column;
   align-items: stretch;
-  gap: 16px;
-  padding: 32px 24px;
+  gap: clamp(12px, 3.5vw, 16px);
+  padding: clamp(22px, 6vw, 32px) clamp(18px, 5.5vw, 24px);
   border: 1px solid transparent;
   border-radius: 12px;
   background: var(--tmm-color-linen);
@@ -2371,8 +2377,8 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 16px;
-  padding-bottom: 8px;
+  gap: clamp(12px, 3.5vw, 16px);
+  padding-bottom: clamp(4px, 2vw, 8px);
 }
 
 .tmm-pricing-card__price-row {
@@ -2454,8 +2460,11 @@
   text-align: center;
 }
 
+/* The maroon the buttons are painted in, not the brighter electric red —
+   which was the only place on the page still using it for a link, and read
+   as a different brand beside the Explore button right above it. */
 .tmm-pricing-card__login a {
-  color: var(--tmm-color-electric-red);
+  color: var(--tmm-color-brand-primary);
   font-weight: 600;
   text-decoration: underline;
 }
@@ -2471,7 +2480,7 @@
 .tmm-pricing-card__details {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: clamp(12px, 3.5vw, 16px);
 }
 
 .tmm-pricing-card__detail-title {
