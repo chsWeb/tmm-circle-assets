@@ -1799,11 +1799,15 @@
 }
 
 /* v2 only, so a rollback to the v1 body still renders the collage it
-   shipped with. Pixels rather than the percentages around them because
-   this frame is being placed against the box's corner, which does not
-   move when the collage scales. */
+   shipped with.
+
+   Centred rather than placed against the corner: (100% - 68.18%) / 2, where
+   68.18% is this frame's own width. The collage is centred in the slide, so
+   centring the frame inside the collage centres it on the screen as well, at
+   every width and on desktop too. Rotation is about the centre, so the 8deg
+   does not move it. */
 .tmm-intro--v2 .tmm-intro__frame--a {
-  left: -16px;
+  left: 15.91%;
   top: 8px;
 }
 
@@ -3181,8 +3185,13 @@
     padding-inline: var(--tmm-slide-pad, clamp(28px, 3.5vw, 56px));
   }
 
+  /* "Welcome to" centred over the logo, and the pair centred over the copy
+     below rather than hung off the column's left edge. The width is the left
+     grid column's: the content width less the gap, split by the 1 : 1.15
+     ratio declared on the slide a few rules down. */
   .tmm-intro--v2 .tmm-intro__lockup {
-    align-items: flex-start;
+    align-items: center;
+    width: calc((100% - var(--tmm-slide-gap, 72px)) / 2.15);
   }
 
   /* Height only. Setting a width here against the 64px height would scale
