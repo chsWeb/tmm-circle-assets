@@ -3136,19 +3136,42 @@
   text-transform: inherit;
 }
 
-/* Out of v1's absolute placement — which is what let it sit over the
-   copy — and into the flow, driven to the foot by margin-top:auto. */
+/* BACK BEHIND THE COPY, AND NEVER CROPPED.
+
+   v2 had put this in the flow below the text, which is why growing it
+   clipped the hand: the raised arm had nowhere to go but up into the
+   section's own overflow. It is absolute again, as v1 had it, and this time
+   it sits BEHIND the copy — z-index 0 against the header's 2, so the arm
+   passes behind the sign-in line rather than over it. (A later rule gives
+   this element z-index 3, which is what used to put it in front.)
+
+   Nothing can crop, by construction: the box carries the cut-out's true
+   900/1350 ratio and the image is contained inside it, so there is neither
+   a crop nor a letterbox, and the height is the smaller of 150cqw — full
+   section width at that ratio — and the section's own height. On a tall
+   phone the first wins and the photograph is full width; on a short section
+   the second does and it steps down rather than losing the hand. */
 .tmm-join--v2 .tmm-join__media {
-  position: static;
-  z-index: 1;
+  position: absolute;
+  z-index: 0;
   inset: auto;
-  width: min(100%, 420px);
-  height: auto;
+  bottom: var(--tmm-chrome-bottom, 0px);
+  left: 50%;
+  width: auto;
+  height: min(150cqw, 100%);
   max-width: none;
   max-height: none;
-  margin: auto auto 0;
-  transform: none;
-  aspect-ratio: 300.96 / 485.75;
+  margin: 0;
+  overflow: visible;
+  transform: translateX(-50%);
+  aspect-ratio: 900 / 1350;
+}
+
+.tmm-join--v2 .tmm-join__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
 }
 
 .tmm-join--v2 .tmm-join__header {
@@ -3198,13 +3221,14 @@
     padding-inline: var(--tmm-slide-pad, clamp(28px, 3.5vw, 56px));
   }
 
-  /* "Welcome to" centred over the logo, and the pair centred over the copy
-     below rather than hung off the column's left edge. The width is the left
-     grid column's: the content width less the gap, split by the 1 : 1.15
-     ratio declared on the slide a few rules down. */
+  /* "Welcome to" centred over the logo, and the pair sitting on the copy's
+     left edge. fit-content makes the lockup exactly as wide as its widest
+     child — the logo — so centring inside it centres the box over the
+     wordmark while the wordmark itself starts where the sentence does. A
+     full-column width centred the logo in the column instead. */
   .tmm-intro--v2 .tmm-intro__lockup {
     align-items: center;
-    width: calc((100% - var(--tmm-slide-gap, 72px)) / 2.15);
+    width: fit-content;
   }
 
   /* Height only. Setting a width here against the 64px height would scale
@@ -3241,10 +3265,23 @@
     margin-bottom: 0;
   }
 
+  /* The cluster — chevron, dots, chevron, or chevron and Continue on the
+     last slide — centred in the left column rather than packed against its
+     left edge. The row still spans the column, so this is the column's
+     centre, not the viewport's. */
   .tmm-intro--v2 .tmm-intro__nav-row {
-    justify-content: flex-start;
+    justify-content: center;
     gap: clamp(16px, 2vw, 28px);
     padding-block: clamp(16px, 2.5vh, 26px) 0;
+  }
+
+  /* The last slide's forward chevron is faded out but still holds its 44px,
+     which under a centred row pulled the visible pair 36px left of the
+     column's centre — half the chevron plus half the gap. On a phone the row
+     is space-between and that reserved width is what keeps Continue centred,
+     so this is desktop only. */
+  .tmm-intro--v2 .tmm-intro__slide:last-child .tmm-intro__nav--next {
+    display: none;
   }
 
   /* The mobile rules size the imagery off the flex column: width:auto plus an
@@ -3273,8 +3310,22 @@
     height: 100%;
   }
 
+  /* Desktop puts it back in the right-hand column. Spelled out because the
+     mobile rule above is now more specific than v1's desktop one, which
+     used to do this resetting. */
   .tmm-join--v2 .tmm-join__media {
+    position: static;
+    z-index: 1;
+    inset: auto;
+    width: min(100%, 420px);
+    height: auto;
     margin: 0 auto;
+    transform: none;
+    aspect-ratio: 300.96 / 485.75;
+  }
+
+  .tmm-join--v2 .tmm-join__media img {
+    object-fit: cover;
   }
 
   /* The mobile rule centres the sentence in its own 30ch block, which on
