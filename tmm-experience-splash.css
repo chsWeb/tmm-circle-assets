@@ -2976,11 +2976,22 @@
   --tmm-v2-media-scale: 1;
 }
 
-/* Slide 3 — Cait with the children, the one that read as too small. It is
-   the only picture allowed past the band: at 1300x1950 the top sixth of the
-   source is empty above their heads, which is the part that overflows. */
+/* Slide 3 — Cait with the children, full width on a phone.
+
+   1.5 of the band, which is what it takes for contain to be limited by the
+   width rather than the height: the picture renders 375 wide on a 375
+   viewport. The box that holds it overflows the band by half a band, and
+   that overflow is free — the top 642px of this 1300x1950 cutout (32.9%) is
+   empty above their heads, so what rises past the band is transparent. The
+   subject's own top lands at 434 against a nav row ending at 371, so
+   Continue keeps 63px of clearance and never sits over the photograph.
+
+   On a short phone (375x667) the band is smaller and contain falls back to
+   being height-limited: the picture is 303 wide instead of 375, still with
+   7px of clearance. Narrower rather than overlapping is the right way for
+   this to give way. */
 .tmm-intro--v2 .tmm-intro__media:not(.tmm-intro__media--anchor-top) img {
-  --tmm-v2-media-scale: 1.14;
+  --tmm-v2-media-scale: 1.5;
 }
 
 /* The band replaces v1's aspect-ratio box and its max-height. */
