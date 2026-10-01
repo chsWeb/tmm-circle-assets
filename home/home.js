@@ -80,7 +80,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v31 · 2026-10-01',
+  BUILD: 'v32 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -914,14 +914,23 @@ if (TMM_CONFIG.DEBUG_LAYOUT &&
   const log = [];
   let box = null, last = '';
   const pageH = () => Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0);
+  /* Which copy of the home screen this is. There are two (the Home tab's
+     screen and the one in the top nav), with the same pasted markup, so
+     the readout shows the address the app loaded each one from, plus a
+     data-screen label if one is added to #tmmHome in that screen's body. */
+  function where(){
+    const label = document.getElementById('tmmHome')?.dataset.screen;
+    const addr = location.host + location.pathname + location.search + location.hash;
+    return `${label ? 'screen ' + label + '\n' : ''}at ${addr || '(no address)'}`;
+  }
   function draw(){
     if (!box || !box.isConnected) {
       if (!document.body) return;
       box = document.createElement('div');
-      box.style.cssText = 'position:fixed;left:6px;bottom:110px;z-index:2147483647;max-width:70vw;padding:6px 8px;border-radius:6px;background:rgba(15,15,15,.82);color:#EAE4D6;font:10px/1.35 ui-monospace,Menlo,monospace;pointer-events:none;white-space:pre';
+      box.style.cssText = 'position:fixed;left:6px;bottom:110px;z-index:2147483647;max-width:70vw;padding:6px 8px;border-radius:6px;background:rgba(15,15,15,.82);color:#EAE4D6;font:10px/1.35 ui-monospace,Menlo,monospace;pointer-events:none;white-space:pre-wrap;word-break:break-all';
       document.body.appendChild(box);
     }
-    box.textContent = `${TMM_CONFIG.BUILD}\nview ${window.innerHeight} · page ${pageH()} · inner ${tmmScroller()?.scrollHeight ?? '-'} · scrolled ${Math.round(tmmScroller()?.scrollTop ?? window.scrollY)}\n` + log.slice(0, 8).join('\n');
+    box.textContent = `${TMM_CONFIG.BUILD}\n${where()}\nview ${window.innerHeight} · page ${pageH()} · inner ${tmmScroller()?.scrollHeight ?? '-'} · scrolled ${Math.round(tmmScroller()?.scrollTop ?? window.scrollY)}\n` + log.slice(0, 8).join('\n');
   }
   function sample(why){
     const now = `${window.innerHeight}/${pageH()}`;
