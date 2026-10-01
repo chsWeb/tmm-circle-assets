@@ -80,7 +80,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v32 · 2026-10-01',
+  BUILD: 'v33 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -890,16 +890,26 @@ function tmmStart(){
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tmmStart);
 else tmmStart();
 
-/* Links that should open the way Circle's native Button block does: a
-   sheet slides up over the screen with the page in it, and Back closes it.
-   The app exposes that as window.navigateToUrl (Custom HTML API reference).
-   Any link carrying data-tmm-app-url goes there in the app; on the web, or
-   if the app ever drops the function, the ordinary href still works. */
+/* Every link on the home screen goes through the app's own navigation,
+   window.navigateToUrl (Custom HTML API reference), when it exists.
+   A plain link to a space or post loaded Circle's WEBSITE inside the app:
+   a second header, the website's Spaces/Home/Members tabs, and the
+   website's bottom bar, whose Home never came back here. Through
+   navigateToUrl, Circle content opens as the app's native screen, and
+   other pages (the Site Builder /share page) open in the slide-up sheet
+   Circle's Button block uses, where Back closes it.
+   A link may carry data-tmm-app-url to open a different address in the
+   app than on the web (the share card: /go/share on the web, /share in
+   the app). On the web, or if the app ever drops the function, links
+   behave as ordinary links. */
 document.addEventListener('click', e => {
-  const a = e.target.closest && e.target.closest('a[data-tmm-app-url]');
-  if (!a || !TMM_IN_APP || typeof window.navigateToUrl !== 'function') return;
+  if (!TMM_IN_APP || typeof window.navigateToUrl !== 'function') return;
+  const a = e.target.closest && e.target.closest('#tmmHome a[href], a[data-tmm-app-url]');
+  if (!a) return;
+  const url = a.getAttribute('data-tmm-app-url') || a.href;
+  if (!/^https?:/i.test(url) || a.getAttribute('href') === '#') return;
   e.preventDefault();
-  window.navigateToUrl(a.getAttribute('data-tmm-app-url'));
+  window.navigateToUrl(url);
 }, true);
 
 /* Layout readout (TMM_CONFIG.DEBUG_LAYOUT). `view` is window.innerHeight,
