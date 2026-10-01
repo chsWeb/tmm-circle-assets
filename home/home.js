@@ -73,7 +73,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v19 · 2026-09-30',
+  BUILD: 'v20 · 2026-09-30',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -81,7 +81,11 @@ const TMM_CONFIG = {
      newTab is ON: /share is a Site Builder page, and opening it in place
      inside the app replaces the screen the tab bar was showing, which left
      members unable to get back — tapping Home did nothing. A new window
-     keeps the home screen where it was. */
+     keeps the home screen where it was.
+     That was not enough on its own: the app opens any link on the
+     community's own domain in place, target or not (still stuck on v18, Sept 30).
+     So the url goes through /go/share on tmm-circle-assets, which the app
+     treats as an outside link; see /_redirects. */
   /* Admins and moderators can open every space by role, so Circle lists them
      as members of almost none — the gate would leave their own home screen
      nearly empty. They are bypassed instead, straight from the isAdmin /
@@ -93,7 +97,7 @@ const TMM_CONFIG = {
     title:  'Share MotherHub!',
     body:   'Share MotherHub, earn a chance to win a 30 min 1:1 with Cait!',
     cta:    'Learn More',
-    url:    'https://members.themillionairemother.com/share',
+    url:    'https://tmm-circle-assets.pages.dev/go/share',
     newTab: true,
   },
 

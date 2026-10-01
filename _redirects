@@ -1,0 +1,9 @@
+# Cloudflare Pages redirects — must sit at the repo root, like _headers.
+
+# Share card button (TMM_CONFIG.SHARE.url in home/home.js). The Circle app
+# opens members.themillionairemother.com links in place, even with
+# target="_blank", and /share is a Site Builder page with no way back to
+# Home. Starting the link on this domain makes the app treat it as an
+# outside link, so it opens over the home screen instead of replacing it.
+# /share is public, so it loads without the member's Circle session.
+/go/share  https://members.themillionairemother.com/share  302
