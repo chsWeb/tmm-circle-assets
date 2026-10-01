@@ -23,6 +23,13 @@ const TMM_CONFIG = {
      (and remove the banner from body.html) before real members are let in. */
   SHOW_TEST_BANNER: true,
 
+  /* TEMPORARY (Oct 2026). The app sizes the home screen's webview itself and
+     sometimes gets it wrong: cropped mid-hero, or far taller than the page.
+     There is no console in the app, so this pins a small readout to the
+     bottom-left corner: the webview's height, the page's height, and every
+     time either changed. Turn off once the cause is known. */
+  DEBUG_LAYOUT: true,
+
   /* Tier = the member's Circle ACCESS GROUPS, matched by group ID. Not by
      name: groups get renamed (on 10 Sept 2026 "The Mother Hub" became
      "MotherHub" and "Matriarch Network" became "MotherHub Expert Network"),
@@ -73,7 +80,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v23 · 2026-10-01',
+  BUILD: 'v24 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -842,6 +849,42 @@ function tmmStart(){
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tmmStart);
 else tmmStart();
+
+/* Layout readout (TMM_CONFIG.DEBUG_LAYOUT). `view` is window.innerHeight,
+   the height the app gave the webview; `page` is the document's full height.
+   If the app sized the webview from the page, they match. The log keeps the
+   last few changes, newest first, as seconds-since-load: view/page. */
+/* Test accounts only: real members already use this app. Checked on the
+   device; the address is never sent anywhere. */
+if (TMM_CONFIG.DEBUG_LAYOUT &&
+    /@team386556\.testinator\.com$/i.test(window.circleUser?.email || '')) (function(){
+  const t0 = performance.now();
+  const log = [];
+  let box = null, last = '';
+  const pageH = () => Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0);
+  function draw(){
+    if (!box || !box.isConnected) {
+      if (!document.body) return;
+      box = document.createElement('div');
+      box.style.cssText = 'position:fixed;left:6px;bottom:6px;z-index:2147483647;max-width:70vw;padding:6px 8px;border-radius:6px;background:rgba(15,15,15,.82);color:#EAE4D6;font:10px/1.35 ui-monospace,Menlo,monospace;pointer-events:none;white-space:pre';
+      document.body.appendChild(box);
+    }
+    box.textContent = `${TMM_CONFIG.BUILD}\nview ${window.innerHeight} · page ${pageH()} · scrolled ${Math.round(window.scrollY)}\n` + log.slice(0, 8).join('\n');
+  }
+  function sample(why){
+    const now = `${window.innerHeight}/${pageH()}`;
+    if (now !== last) {
+      last = now;
+      log.unshift(`${((performance.now() - t0) / 1000).toFixed(1)}s ${now} ${why}`);
+    }
+    draw();
+  }
+  window.addEventListener('resize', () => sample('resize'));
+  window.addEventListener('load', () => sample('load'));
+  window.addEventListener('scroll', () => draw(), { passive:true });
+  setInterval(() => sample('tick'), 500);
+  sample('start');
+})();
 
 /* Pull down to refresh. The app keeps the home screen's webview alive
    between visits, so new posts did not show until the app was quit and
