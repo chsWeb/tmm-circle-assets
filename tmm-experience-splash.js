@@ -1338,10 +1338,90 @@
     if (top > 0) {
       root.style.setProperty("--tmm-scroll-offset", `${top + 8}px`);
     }
+
+    // Those offsets move the copy down, which changes what the photograph
+    // has room for.
+    sizeJoinMedia();
   };
 
   let adaptFrame = null;
   let adaptTrailing = null;
+  /* ------------------------------------------------------------------
+     JOIN PANEL — the photograph's height, measured rather than assumed.
+
+     The picture is bottom-anchored behind the copy and sized from the
+     section's width (150cqw). That holds up in a browser and fails inside
+     Circle's branded app, where the header bar eats real layout height and
+     the safe-area inset pushes the copy down: the same width gives a
+     photograph far too tall for what is left, and the raised arm crosses the
+     sentence.
+
+     So: measure the room between the bottom of the copy and the bottom of
+     the picture, and divide by 0.896 — the top 10.4% of this cut-out is
+     empty above the hand, measured off the asset's alpha channel, so that
+     share of the box is invisible and can sit behind the copy. The result is
+     the height at which the hand lands just under the sign-in line, whatever
+     the host does to the section.
+
+     No circularity: the copy is in the flow and the picture is absolute and
+     bottom-anchored, so neither measurement moves when the height changes.
+     ------------------------------------------------------------------ */
+  const JOIN_MEDIA_HEADROOM = 0.104;
+  const JOIN_MEDIA_GAP = 10;
+
+  const sizeJoinMedia = (scope) => {
+    const root = scope && scope.querySelectorAll ? scope : document;
+    const panels = [...root.querySelectorAll(".tmm-join--v2")];
+
+    if (root !== document && root.matches && root.matches(".tmm-join--v2")) {
+      panels.push(root);
+    }
+
+    panels.forEach((panel) => {
+      const media = panel.querySelector(".tmm-join__media");
+      const header = panel.querySelector(".tmm-join__header");
+
+      if (!media || !header) {
+        return;
+      }
+
+      // Desktop lays this out in a column with its own height; the band is a
+      // phone correction and must not reach it.
+      if (window.matchMedia("(min-width: 1024px)").matches) {
+        panel.style.removeProperty("--tmm-v2-join-media-h");
+        return;
+      }
+
+      const panelRect = panel.getBoundingClientRect();
+      const mediaRect = media.getBoundingClientRect();
+      const copyBottom = header.getBoundingClientRect().bottom - panelRect.top;
+      const mediaBottom = mediaRect.bottom - panelRect.top;
+      const room = mediaBottom - copyBottom - JOIN_MEDIA_GAP;
+
+      if (room <= 0) {
+        return;
+      }
+
+      const widthDriven = panel.clientWidth * 1.5;
+      const fits = room / (1 - JOIN_MEDIA_HEADROOM);
+      const height = Math.max(200, Math.min(widthDriven, fits));
+
+      panel.style.setProperty("--tmm-v2-join-media-h", `${Math.round(height)}px`);
+    });
+  };
+
+  let joinFrame = null;
+  const scheduleJoinMedia = () => {
+    if (joinFrame) {
+      window.cancelAnimationFrame(joinFrame);
+    }
+
+    joinFrame = window.requestAnimationFrame(() => sizeJoinMedia());
+  };
+
+  window.addEventListener("resize", scheduleJoinMedia);
+  document.fonts?.ready?.then(() => sizeJoinMedia());
+
   const scheduleAdapt = () => {
     if (adaptFrame) {
       window.cancelAnimationFrame(adaptFrame);
@@ -1372,6 +1452,7 @@
         setupWelcomeSections();
         setupPricingSections();
         setupPhotoDecks();
+        sizeJoinMedia();
       },
       { once: true }
     );
@@ -1382,6 +1463,7 @@
     setupWelcomeSections();
     setupPricingSections();
     setupPhotoDecks();
+    sizeJoinMedia();
   }
 
   new MutationObserver((mutations) => {
@@ -1394,6 +1476,7 @@
           setupWelcomeSections(node);
           setupPricingSections(node);
           setupPhotoDecks(node);
+          sizeJoinMedia(node);
         }
       });
     });

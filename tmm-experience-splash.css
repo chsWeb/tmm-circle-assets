@@ -1979,10 +1979,15 @@
   text-transform: uppercase;
 }
 
+/* Same lockup as the carousel's: 64px tall with the width following the
+   same 285x82 viewBox (222px). It had been sized by width at up to 349px,
+   which rendered it ~100px tall — half again as big as the carousel's, and
+   on a phone that difference is most of the room the photograph needs. */
 .tmm-join__logo {
   display: block;
-  width: min(100%, 349px);
-  height: auto;
+  width: auto;
+  height: 64px;
+  max-width: 100%;
   color: var(--tmm-color-black);
 }
 
@@ -3158,7 +3163,14 @@
   bottom: var(--tmm-chrome-bottom, 0px);
   left: 50%;
   width: auto;
-  height: min(150cqw, 100%);
+  /* 150cqw is the full-width size. --tmm-v2-join-media-h is the script's
+     measurement of what actually fits under the copy, which is what makes
+     this work inside Circle's app: there the section is ~140px shorter than
+     the browser reports for the same device AND the copy is pushed down by
+     the safe-area inset, so a width-driven photograph ran straight up
+     through the text. Whichever is smaller wins; with no script, the
+     width-driven size is the fallback, which is today's behaviour. */
+  height: min(150cqw, var(--tmm-v2-join-media-h, 150cqw), 100%);
   max-width: none;
   max-height: none;
   margin: 0;
@@ -3299,6 +3311,11 @@
      ratio and no band, so both fill it. */
   .tmm-intro--v2 .tmm-intro__media img {
     height: 100%;
+  }
+
+  /* 72px here, matching the carousel's desktop lockup. */
+  .tmm-join__logo {
+    height: 72px;
   }
 
   /* Desktop puts it back in the right-hand column. Spelled out because the
