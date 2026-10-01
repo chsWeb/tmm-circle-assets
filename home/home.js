@@ -739,7 +739,7 @@ async function init(overrideTierKey){
   /* Greeting line above section 1, built here so none of the three pasted
      bodies needs editing. The name is the first word of the member's Circle
      display name, from window.circleUser — which only the app provides. On
-     the web, and for anyone without a name, it reads "Welcome back". */
+     the web, and for anyone without a name, it reads "Welcome back!". */
   if (root && !document.getElementById('tmmGreeting')) {
     const g = document.createElement('h1');
     g.id = 'tmmGreeting';
@@ -747,7 +747,7 @@ async function init(overrideTierKey){
     const first = root.querySelector('.tmm-section');
     root.insertBefore(g, first || root.firstChild);
   }
-  set('tmmGreeting', firstName ? `Welcome back, ${firstName}` : 'Welcome back');
+  set('tmmGreeting', firstName ? `Welcome back, ${firstName}!` : 'Welcome back!');
 
   /* A previous attempt may have left the gate fallback on screen; init can
      run again from the Try again button or the test banner. Put section 1
