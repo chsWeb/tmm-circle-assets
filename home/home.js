@@ -80,7 +80,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v39 · 2026-10-01',
+  BUILD: 'v40 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -182,8 +182,8 @@ const TMM_CONFIG = {
        card are hidden per the content map. */
     inner_circle: {
       label: 'Inner Circle',
-      hero:         { label:'Inside the vault', url:'https://members.themillionairemother.com/c/mme-program-library' },
-      contentGrid:  { label:'Top Guest Experts', spaceId:802279, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/guest-experts', placeholders:'resource' },
+      hero:         { label:'Inside the Vault', url:'https://members.themillionairemother.com/c/mme-program-library', placeholders:'resource' },
+      contentGrid:  { label:'Coaching Q&A', spaceId:802279, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/guest-experts', placeholders:'resource' },
       featuredEvent:{ label:'Masterclass Library', spaceId:802277, space_type:'basic', kind:'posts', count:6, url:'https://members.themillionairemother.com/c/masterclass-library', placeholders:'resource' },
       postFeed:     null,
       eventsGrid:   null,
@@ -213,6 +213,10 @@ const FEATURED = {
      MotherHub's two spaces held 12 featured posts on 1 Oct 2026; capped at
      five, all five were Home & Motherhood and Business & Money never showed.
      20 is a ceiling, not a target. Expert Network sees the same two spaces. */
+  /* Tiers whose hero shows every post in its spaces, tagged or not.
+     Inner Circle: MME Program Library holds one post, the list of its 21
+     programs, and nothing there is tagged `featured` (1 Oct 2026). */
+  ALL_POSTS: ['inner_circle'],
   MAX_BY_TIER: {
     mother_hub:     20,
     expert_network: 20,
@@ -246,9 +250,9 @@ const FEATURED = {
       2672218, // Peer Accountability Hub
       2672173, // Ai & Ops Channel
     ],
-    /* "Inside the vault" = programs tagged `featured` in the MME Program
-       Library. Guest Experts and Masterclass Library have their own
-       sections now, so they are not scanned for the hero. */
+    /* "Inside the Vault" = every post in the MME Program Library (see
+       ALL_POSTS). Guest Experts and Masterclass Library have their own
+       sections, so they are not scanned for the hero. */
     inner_circle: [
       2361522, // MME Program Library
     ],
@@ -430,7 +434,7 @@ async function fetchFeatured(tierKey, canSee){
   const lists = await Promise.all(spaceIds.map(fetchOneSpacePosts));
   const seen = new Set();
   return lists.flat()
-    .filter(p => (p.topics || []).includes(FEATURED.TOPIC_ID))   // carries `featured`
+    .filter(p => FEATURED.ALL_POSTS.includes(tierKey) || (p.topics || []).includes(FEATURED.TOPIC_ID))   // carries `featured`
     .filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; })
     .sort((a,b) => new Date(b.published_at||0) - new Date(a.published_at||0))
     .slice(0, FEATURED.MAX_BY_TIER[tierKey] || FEATURED.MAX);
@@ -557,12 +561,14 @@ function renderHero(posts,cfg){
   // Nothing tagged: drop the whole section rather than show "No posts yet".
   if (!posts.length){ denySection('tmmHero'); return; }
   showSection('tmmHero', true);
-  const cards = posts.map(p=>{
+  const phStart = placeholderStart(cfg.placeholders);
+  const cards = posts.map((p,i)=>{
     const img = coverImage(p);
+    const noImg = cfg.placeholders ? placeholderImg(i, phStart, 'tmm-hero-img', cfg.placeholders) : `<div class="tmm-hero-imgph"></div>`;
     return `
     <a class="tmm-hero-card" href="${esc(p.url||'#')}" target="_blank" rel="noopener">
       <span class="tmm-cat">${esc(p.space_name||cfg.label||'Post')}</span>
-      ${img ? `<img class="tmm-hero-img" src="${esc(img)}" alt="" loading="lazy">` : `<div class="tmm-hero-imgph"></div>`}
+      ${img ? `<img class="tmm-hero-img" src="${esc(img)}" alt="" loading="lazy">` : noImg}
       <h2 class="tmm-hero-title">${esc(p.name||'Untitled')}</h2>
       <div class="tmm-hero-desc">${esc(strip(p.body?.body||'').slice(0,90))}</div>
     </a>`;
@@ -571,6 +577,7 @@ function renderHero(posts,cfg){
     ? `<div class="tmm-dots" id="tmmHeroDots">${posts.map((_,j)=>`<button class="tmm-dot${j===0?' is-active':''}" data-i="${j}" aria-label="Slide ${j+1}"></button>`).join('')}</div>`
     : '';
   box.innerHTML = `<div class="tmm-hero-scroll" id="tmmHeroScroll">${cards}</div>${dots}`;
+  wirePlaceholderFallbacks(box);
   setupHeroCarousel();
 }
 
