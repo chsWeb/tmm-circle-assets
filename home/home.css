@@ -226,8 +226,18 @@
   color: var(--ink)
 }
 
-.tmm-greeting + .tmm-section {
+.tmm-greeting + .tmm-section,
+.tmm-greeting-sub + .tmm-section {
   padding-top: 14px
+}
+
+/* Line under the home screen's "Hello, Jane." */
+.tmm-greeting-sub {
+  margin: 0;
+  padding: 6px var(--pad) 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--muted)
 }
 
 .tmm-sec-head {

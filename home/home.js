@@ -80,7 +80,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v38 · 2026-10-01',
+  BUILD: 'v39 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -853,15 +853,20 @@ async function init(overrideTierKey){
   /* Greeting line above section 1, built here so none of the three pasted
      bodies needs editing. The name is the first word of the member's Circle
      display name, from window.circleUser — which only the app provides. On
-     the web, and for anyone without a name, it reads "Welcome back!". */
+     the web, and for anyone without a name, it reads "Hello." */
   if (root && !document.getElementById('tmmGreeting')) {
     const g = document.createElement('h1');
     g.id = 'tmmGreeting';
     g.className = 'tmm-greeting';
+    const sub = document.createElement('p');
+    sub.id = 'tmmGreetingSub';
+    sub.className = 'tmm-greeting-sub';
     const first = root.querySelector('.tmm-section');
     root.insertBefore(g, first || root.firstChild);
+    root.insertBefore(sub, first || null);
   }
-  set('tmmGreeting', firstName ? `Welcome back, ${firstName}!` : 'Welcome back!');
+  set('tmmGreeting', firstName ? `Hello, ${firstName}.` : 'Hello.');
+  set('tmmGreetingSub', "Here's everything new that's happened in The Millionaire Mother app.");
 
   /* A previous attempt may have left the gate fallback on screen; init can
      run again from the Try again button or the test banner. Put section 1
