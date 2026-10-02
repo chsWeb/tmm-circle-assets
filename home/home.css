@@ -909,15 +909,11 @@
   transition: height .25s ease
 }
 
+/* Brand red from the first pixel of the pull, not gray turning red. */
 .tmm-ptr-icon {
   transform: rotate(var(--tmm-ptr-turn, 0deg));
-  transition: color .15s ease;
+  color: var(--electric-red);
   overflow: visible
-}
-
-.tmm-ptr.is-ready .tmm-ptr-icon,
-.tmm-ptr.is-loading .tmm-ptr-icon {
-  color: var(--electric-red)
 }
 
 /* Both layers turn about the mark's centre (0,0 in its viewBox). */
