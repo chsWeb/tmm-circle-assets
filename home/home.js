@@ -87,7 +87,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v43 · 2026-10-01',
+  BUILD: 'v44 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -1202,8 +1202,15 @@ const TMM_PTR_MARK =
     busy = true;
     el.classList.add('is-loading');
     settle(48);
-    const minSpin = new Promise(r => setTimeout(r, 600));   // no blink-and-gone flash
-    Promise.all([tmmRefresh().catch(()=>{}), minSpin]).finally(() => {
+    /* Hold the mark for whole animation cycles (CYCLE matches the 1.6s
+       tmm-ptr-* keyframes in home.css): at least one, and if loading runs
+       longer, until the cycle in progress ends. Each cycle ends back on the
+       logo pose, so it never vanishes mid-tick. */
+    const CYCLE = 1600, t0 = performance.now();
+    tmmRefresh().catch(()=>{}).then(() => {
+      const spent = performance.now() - t0;
+      return new Promise(r => setTimeout(r, Math.max(1, Math.ceil(spent / CYCLE)) * CYCLE - spent));
+    }).finally(() => {
       busy = false;
       settle(0);
       el.classList.remove('is-ready', 'is-loading');
