@@ -37,6 +37,13 @@ const TMM_CONFIG = {
      time either changed. Turn off once the cause is known. */
   DEBUG_LAYOUT: false,
 
+  /* TEMPORARY (2 Oct 2026). START_HERE.screenId needs the welcome screen's
+     App Builder id, and the builder never shows it. This prints everything
+     the app hands the page that could carry it (address, referrer, window
+     name, history state, Circle's injected objects) at the top of the
+     Start Here screen, for testinator test accounts only. Off once found. */
+  SHOW_SCREEN_INFO: true,
+
   /* Tier = the member's Circle ACCESS GROUPS, matched by group ID. Not by
      name: groups get renamed (on 10 Sept 2026 "The Mother Hub" became
      "MotherHub" and "Matriarch Network" became "MotherHub Expert Network"),
@@ -87,7 +94,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v55 · 2026-10-02',
+  BUILD: 'v56 · 2026-10-02',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -1352,6 +1359,43 @@ document.addEventListener('click', e => {
   e.preventDefault();
   window.navigateToUrl(url);
 }, true);
+
+/* Screen info (TMM_CONFIG.SHOW_SCREEN_INFO): see the flag for why. Runs on
+   the Start Here screen only. Plain text in the page, selectable, so it can
+   be long-pressed and copied. */
+if (TMM_CONFIG.SHOW_SCREEN_INFO &&
+    /@team386556\.testinator\.com$/i.test(window.circleUser?.email || '')) (function(){
+  function show(){
+    const home = document.getElementById('tmmHome');
+    if (!home || home.dataset.page !== 'start-here' || document.getElementById('tmmScreenInfo')) return;
+    const safe = v => { try { return JSON.stringify(v); } catch(e) { return String(v); } };
+    const keys = Object.keys(window).filter(k => /circle|screen|webview|orphan|navigat|app|route/i.test(k));
+    const fnSrc = f => typeof f === 'function' ? String(f).replace(/\s+/g, ' ').slice(0, 300) : '';
+    const lines = [
+      `build ${TMM_CONFIG.BUILD}`,
+      `href ${location.href}`,
+      `referrer ${document.referrer || '(none)'}`,
+      `window.name ${window.name || '(none)'}`,
+      `history.state ${safe(history.state)}`,
+      `window keys ${keys.join(', ') || '(none)'}`,
+      `webview keys ${window.webview ? Object.keys(window.webview).join(', ') : '(none)'}`,
+      `circleUser keys ${window.circleUser ? Object.keys(window.circleUser).join(', ') : '(none)'}`,
+      `navigateToOrphanedScreen ${fnSrc(window.navigateToOrphanedScreen) || '(none)'}`,
+    ];
+    for (const k of keys) {
+      const v = window[k];
+      if (k === 'circleUser' || typeof v === 'function') continue;
+      lines.push(`${k} = ${safe(v).slice(0, 400)}`);
+    }
+    const box = document.createElement('pre');
+    box.id = 'tmmScreenInfo';
+    box.style.cssText = 'margin:12px 16px 0;padding:10px;border-radius:8px;background:#0F0F0F;color:#EAE4D6;font:11px/1.45 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all;-webkit-user-select:text;user-select:text';
+    box.textContent = lines.join('\n');
+    home.prepend(box);
+  }
+  show();
+  new MutationObserver(show).observe(document.documentElement, { childList:true, subtree:true });
+})();
 
 /* Layout readout (TMM_CONFIG.DEBUG_LAYOUT). `view` is window.innerHeight,
    the height the app gave the webview; `page` is the document's full height.
