@@ -231,13 +231,17 @@
   padding-top: 14px
 }
 
-/* Line under the home screen's "Hello, Jane." */
+/* Line under the home screen's "Hello, Jane.": Sweet Sans Pro, the
+   heading's own face, in mixed case (QA, 2 Oct). */
 .tmm-greeting-sub {
   margin: 0;
   padding: 6px var(--pad) 0;
-  font-size: 15px;
-  line-height: 1.45;
-  color: var(--muted)
+  font-family: var(--font-head);
+  font-weight: 500;
+  font-size: 17px;
+  line-height: 1.4;
+  letter-spacing: .02em;
+  color: var(--charcoal)
 }
 
 .tmm-sec-head {
