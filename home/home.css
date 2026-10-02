@@ -911,7 +911,8 @@
 
 .tmm-ptr-icon {
   transform: rotate(var(--tmm-ptr-turn, 0deg));
-  transition: color .15s ease
+  transition: color .15s ease;
+  overflow: visible
 }
 
 .tmm-ptr.is-ready .tmm-ptr-icon,
@@ -919,20 +920,54 @@
   color: var(--electric-red)
 }
 
-.tmm-ptr.is-loading .tmm-ptr-icon {
-  animation: tmm-ptr-spin .8s linear infinite
+/* Both layers turn about the mark's centre (0,0 in its viewBox). */
+.tmm-ptr-spokes,
+.tmm-ptr-wavy {
+  transform-box: view-box;
+  transform-origin: 0 0
 }
 
-@keyframes tmm-ptr-spin {
-  to {
-    transform: rotate(360deg)
-  }
+/* Loading: the layers take turns. Spokes tick 30 degrees onto the wavy
+   arms, then the wavy star ticks 30 to sit between them again, the logo
+   pose. Two rounds per cycle so each layer ends on 60, which looks the
+   same as 0 (six-fold), and the loop has no visible seam. */
+.tmm-ptr.is-loading .tmm-ptr-spokes {
+  animation: tmm-ptr-spokes 1.6s infinite
 }
 
+.tmm-ptr.is-loading .tmm-ptr-wavy {
+  animation: tmm-ptr-wavy 1.6s infinite
+}
+
+@keyframes tmm-ptr-spokes {
+  0%     { transform: rotate(0deg);  animation-timing-function: cubic-bezier(.55, 0, .25, 1) }
+  17.5%  { transform: rotate(30deg) }
+  50%    { transform: rotate(30deg); animation-timing-function: cubic-bezier(.55, 0, .25, 1) }
+  67.5%  { transform: rotate(60deg) }
+  100%   { transform: rotate(60deg) }
+}
+
+@keyframes tmm-ptr-wavy {
+  0%, 25% { transform: rotate(0deg);  animation-timing-function: cubic-bezier(.55, 0, .25, 1) }
+  42.5%  { transform: rotate(30deg) }
+  75%    { transform: rotate(30deg); animation-timing-function: cubic-bezier(.55, 0, .25, 1) }
+  92.5%  { transform: rotate(60deg) }
+  100%   { transform: rotate(60deg) }
+}
+
+/* No turning for people who ask for less motion: the mark breathes. */
 @media (prefers-reduced-motion: reduce) {
-  .tmm-ptr.is-loading .tmm-ptr-icon {
-    animation-duration: 2.4s
+  .tmm-ptr.is-loading .tmm-ptr-spokes,
+  .tmm-ptr.is-loading .tmm-ptr-wavy {
+    animation: none
   }
+  .tmm-ptr.is-loading .tmm-ptr-icon {
+    animation: tmm-ptr-breathe 1.6s ease-in-out infinite
+  }
+}
+
+@keyframes tmm-ptr-breathe {
+  50% { opacity: .45 }
 }
 
 /* ============================================================
