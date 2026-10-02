@@ -87,7 +87,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v47 · 2026-10-01',
+  BUILD: 'v48 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -179,7 +179,9 @@ const TMM_CONFIG = {
     foundry: {
       label: 'Foundry Member',
       hero:         { label:'Announcements', url:'https://members.themillionairemother.com/c/announcements-c79c49' },
-      contentGrid:  { label:'Coaching Q&A', spaceId:2349045, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/coaching-q-a', placeholders:'resource' },
+      /* Retitled per QA (1 Oct 2026); same posts. Until the owner adds
+         images to them, they show the Business Channel thumbnail. */
+      contentGrid:  { label:'Inside the Vault', spaceId:2349045, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/coaching-q-a', placeholders:'business' },
       /* kind:'posts' puts a shelf of posts in section 3 instead of the event
          banner. topicId keeps only posts tagged `featured` — "tagged
          programs in the MME Program Library". 538336 is that tag's id. */
@@ -528,6 +530,11 @@ const PLACEHOLDER_SETS = {
     { file:'announce-white.webp', variant:'white' },
     { file:'announce-linen.webp', variant:'linen' },
     { file:'announce-sand.webp',  variant:'sand'  },
+  ],
+  /* One image, cropped to fill like a real thumbnail (840x300, title
+     centred, so a 2:1 card keeps all of it). */
+  business: [
+    { file:'business-channel.webp', variant:'cover' },
   ],
   resource: [
     { file:'resource-red.webp',   variant:'red'   },

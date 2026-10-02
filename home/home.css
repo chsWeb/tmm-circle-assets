@@ -857,6 +857,12 @@
   background: #fff
 }
 
+/* A full-bleed thumbnail standing in for a post's own (business set). */
+.tmm-ph--cover {
+  object-fit: cover;
+  background: #5E0D11
+}
+
 /* ---- access gate fallback ----
    Shown when Circle could not tell us which spaces this member is in. The
    page shows nothing rather than risk showing content they cannot open, so
