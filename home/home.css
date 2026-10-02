@@ -1050,6 +1050,12 @@ html.tmm-in-app .tmm-home[data-screen="pushed"] {
   display: block
 }
 
+/* Free Resources cards on the Start Here screen (START_HERE.fallback): their
+   thumbnails are 840x300, which 16:9 crops through the title. */
+.tmm-sh-img--wide {
+  aspect-ratio: 2 / 1
+}
+
 .tmm-sh-text {
   flex: 1;
   padding: 16px 18px 18px;

@@ -87,7 +87,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v54 · 2026-10-02',
+  BUILD: 'v55 · 2026-10-02',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -146,6 +146,17 @@ const TMM_CONFIG = {
     /* Free members cannot open the Start Here space; their home already
        leads with the Welcome video and the Starter Library (QA, 2 Oct). */
     homeShelfSkipTiers: ['free'],
+    /* The Start Here SCREEN, for members who cannot open the Start Here
+       space (Free, and anyone whose access cannot be confirmed): under the
+       welcome video they get these posts instead. The Worker fetches any
+       space, so without this check Free members saw Start Here content they
+       have no access to (QA, 2 Oct). Free Resources' thumbnails are 840x300,
+       so its cards use the 2:1 frame. */
+    fallback: {
+      spaceId: 2551366,                 // Free Resources (free-resources)
+      title:   'Free resources',
+      wide:    true,
+    },
   },
 
   SHARE: {
@@ -1035,8 +1046,17 @@ async function initStartHere(){
   if (cfg.welcomeSpaceId && !document.querySelector('#tmmShWelcome .tmm-sh-card')) {
     document.getElementById('tmmShWelcome').innerHTML = '<div class="tmm-skel" style="height:320px"></div>';
   }
+  /* Which list this member gets: Start Here only if they can open it.
+     Staff are bypassed as on the home screen. Unknown access (no identity on
+     the web, a failed lookup) counts as no: never guess an allow. */
+  const { isStaff } = getCurrentMember();
+  const ctx = (isStaff || TMM_CONFIG.TEST_MODE) ? null : await getMemberContext(publicUid);
+  const canOpen = isStaff || !!ctx?.spaces?.has(cfg.spaceId);
+  const src = (canOpen || !cfg.fallback) ? { spaceId: cfg.spaceId, title: cfg.title } : cfg.fallback;
+  const head = list.closest('.tmm-section')?.querySelector('.tmm-sec-title');
+  if (head) head.textContent = src.title;
   const [posts, welcome] = await Promise.all([
-    fetchOneSpacePosts(cfg.spaceId),
+    fetchOneSpacePosts(src.spaceId),
     cfg.welcomeSpaceId ? fetchOneSpacePosts(cfg.welcomeSpaceId) : Promise.resolve([]),
   ]);
   /* Pull to refresh reruns this; leave a playing video alone. */
@@ -1051,7 +1071,7 @@ async function initStartHere(){
     const img  = coverImage(p);         // 16:9 card thumbnail, then the cover
     return `
     <a class="tmm-sh-card" href="${esc(link.href)}" target="_blank" rel="noopener"${link.app ? ` data-tmm-app-url="${esc(link.app)}"` : ''}${link.panel ? ` data-tmm-panel="${esc(String(p.id))}"` : ''}>
-      ${img ? `<img class="tmm-sh-img" src="${esc(img)}" alt="" loading="lazy">` : ''}
+      ${img ? `<img class="tmm-sh-img${src.wide ? ' tmm-sh-img--wide' : ''}" src="${esc(img)}" alt="" loading="lazy">` : ''}
       <div class="tmm-sh-text">
         <div class="tmm-sh-title">${esc(p.name || 'Untitled')}</div>
         <div class="tmm-sh-desc">${esc(strip(p.body?.body || '').slice(0, 110))}…</div>
