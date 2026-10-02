@@ -87,7 +87,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v48 · 2026-10-01',
+  BUILD: 'v49 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -181,11 +181,12 @@ const TMM_CONFIG = {
       hero:         { label:'Announcements', url:'https://members.themillionairemother.com/c/announcements-c79c49' },
       /* Retitled per QA (1 Oct 2026); same posts. Until the owner adds
          images to them, they show the Business Channel thumbnail. */
-      contentGrid:  { label:'Inside the Vault', spaceId:2349045, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/coaching-q-a', placeholders:'business' },
+      contentGrid:  { label:'Business Channel', spaceId:2349045, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/coaching-q-a', placeholders:'business' },
       /* kind:'posts' puts a shelf of posts in section 3 instead of the event
-         banner. topicId keeps only posts tagged `featured` — "tagged
-         programs in the MME Program Library". 538336 is that tag's id. */
-      featuredEvent:{ label:'Inside the vault', spaceId:2361522, space_type:'basic', kind:'posts', topicId:538336, count:6, url:'https://members.themillionairemother.com/c/mme-program-library', placeholders:'resource' },
+         banner. Every post in the MME Program Library (QA, 1 Oct 2026); it
+         used to keep only posts tagged `featured`, and none were, so the
+         section never showed. */
+      featuredEvent:{ label:'Inside the Vault', spaceId:2361522, space_type:'basic', kind:'posts', count:6, url:'https://members.themillionairemother.com/c/mme-program-library', placeholders:'resource' },
       postFeed:     { label:'Foundry Celebrations!', spaceId:2349052, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/celebrations-f9f0b0' },
       eventsGrid:   null,
       share:        null,   // Share MotherHub is not for Foundry (QA, 1 Oct 2026)
