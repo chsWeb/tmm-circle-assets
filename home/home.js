@@ -87,7 +87,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v45 · 2026-10-01',
+  BUILD: 'v46 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -114,18 +114,20 @@ const TMM_CONFIG = {
      that new members land on. Same head as the home screen; this script
      sees data-page="start-here" and builds this instead of the home page.
      Everyone who is signed in sees the same thing, whatever their tier.
-     open: 'native' hands the post's own address to navigateToUrl, which
-     opens it as the app's post screen, pushed over Start Here with a back
-     arrow. 'sheet' sent it through /go/c/… on this domain instead; tested
-     on 1 Oct 2026 the app gave that to Safari, which bounced back into the
-     app at Home. Kept only in case Circle changes how it treats links. */
+     open: 'panel' slides the post up in a panel drawn by this page, over
+     Start Here, with its full text; close it and Start Here is still
+     there. Tested 1 Oct 2026, neither of Circle's own routes works here:
+     Start Here is a PRIVATE space and most members are not in it, so
+     'native' (the app's post screen) sat on a skeleton forever, and
+     'sheet' (/go/c/… on this domain) went to Safari and back to Home.
+     The panel needs no access: the Worker already fetched the post. */
   START_HERE: {
     spaceId:  2505755,                  // Start Here (start-here-3ba756)
     /* Shown above the cards: the newest post in the Welcome! space, with
        its video playing on the screen. null hides it. */
     welcomeSpaceId: 2551323,            // Welcome! (welome-library)
     title:    'Start here',
-    open:     'native',
+    open:     'panel',
     sheetBase:'https://tmm-circle-assets.pages.dev/go/c/',
   },
 
@@ -730,11 +732,153 @@ function renderFeatPosts(posts,cfg){
 /* ---------- Start Here screen ---------- */
 function startHereLink(p, cfg){
   const url = p.url || '#';
+  if (cfg.open === 'panel') return { href:url, app:'', panel:true };
   if (cfg.open !== 'sheet') return { href:url, app:'' };
   const path = url.replace(/^https:\/\/members\.themillionairemother\.com\/c\//, '');
   if (path === url) return { href:url, app:'' };   // not a /c/ post url
   return { href:url, app:cfg.sheetBase + path };
 }
+
+/* ---- Post panel: a sheet this page draws, sliding up over the screen ----
+   Post HTML comes from Circle; only plain text formatting, links, images
+   and Vimeo/YouTube players are kept, every attribute but href/src/alt is
+   dropped, and Circle's button links become our .tmm-btn. */
+const PANEL_KEEP = new Set(['P','STRONG','B','EM','I','U','H1','H2','H3','H4','HR','UL','OL','LI','BR','A','BLOCKQUOTE','IMG']);
+const PANEL_DROP = new Set(['SCRIPT','STYLE','OBJECT','EMBED','FORM','INPUT','BUTTON','TEXTAREA','SELECT','TEMPLATE','SVG','MATH','LINK','META','NOSCRIPT']);
+function cleanPostHtml(html){
+  const doc = new DOMParser().parseFromString(`<div>${html || ''}</div>`, 'text/html');
+  const box = doc.body.firstChild;
+  (function walk(node){
+    for (const el of [...node.children]) {
+      const tag = el.tagName;
+      if (tag === 'IFRAME') {
+        const src = postVideoSrc(el.outerHTML);
+        if (src) {
+          const v = doc.createElement('div');
+          v.className = 'tmm-sh-video';
+          v.innerHTML = `<iframe src="${esc(src)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe>`;
+          el.replaceWith(v);
+        } else el.remove();
+        continue;
+      }
+      if (PANEL_DROP.has(tag)) { el.remove(); continue; }
+      walk(el);
+      if (tag === 'DIV' && /(^|\s)cta-/.test(el.className)) {
+        const p = doc.createElement('p');
+        p.className = 'tmm-panel-cta';
+        p.append(...el.childNodes);
+        el.replaceWith(p);
+        continue;
+      }
+      if (!PANEL_KEEP.has(tag)) { el.replaceWith(...el.childNodes); continue; }
+      const href = el.getAttribute('href') || '', src = el.getAttribute('src') || '', alt = el.getAttribute('alt') || '';
+      const isCta = el.classList.contains('tiptap-cta');
+      for (const a of [...el.attributes]) el.removeAttribute(a.name);
+      if (tag === 'A') {
+        if (/^(https?:|mailto:)/i.test(href)) el.setAttribute('href', href);
+        el.setAttribute('target', '_blank');
+        el.setAttribute('rel', 'noopener');
+        if (isCta) el.className = 'tmm-btn';
+      }
+      if (tag === 'IMG') {
+        if (/^https:/i.test(src)) { el.setAttribute('src', src); el.setAttribute('alt', alt); el.setAttribute('loading', 'lazy'); }
+        else el.remove();
+      }
+    }
+  })(box);
+  return box.innerHTML;
+}
+
+const tmmPanelPosts = new Map();       // post id -> post, filled by initStartHere
+let tmmPanelLastFocus = null;
+
+function tmmPanelEl(){
+  let el = document.getElementById('tmmPanel');
+  if (el && el.isConnected) return el;
+  const home = document.getElementById('tmmHome');
+  if (!home) return null;
+  home.insertAdjacentHTML('beforeend', `
+    <div class="tmm-panel" id="tmmPanel" aria-hidden="true">
+      <div class="tmm-panel-backdrop" data-tmm-panel-close></div>
+      <div class="tmm-panel-sheet" role="dialog" aria-modal="true" aria-labelledby="tmmPanelTitle">
+        <div class="tmm-panel-bar">
+          <span class="tmm-panel-grab" aria-hidden="true"></span>
+          <button class="tmm-panel-close" type="button" aria-label="Close" data-tmm-panel-close>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <div class="tmm-panel-scroll" id="tmmPanelScroll"></div>
+      </div>
+    </div>`);
+  el = document.getElementById('tmmPanel');
+  tmmPanelDrag(el);
+  return el;
+}
+
+function tmmPanelOpen(post){
+  const el = tmmPanelEl();
+  if (!el || !post) return;
+  const img = coverImage(post);
+  document.getElementById('tmmPanelScroll').innerHTML = `
+    ${img ? `<img class="tmm-panel-img" src="${esc(img)}" alt="">` : ''}
+    <div class="tmm-panel-body">
+      <h2 class="tmm-panel-title" id="tmmPanelTitle">${esc(post.name || '')}</h2>
+      <div class="tmm-panel-content">${cleanPostHtml(post.body?.body)}</div>
+    </div>`;
+  document.getElementById('tmmPanelScroll').scrollTop = 0;
+  tmmPanelLastFocus = document.activeElement;
+  document.documentElement.classList.add('tmm-panel-open');
+  el.setAttribute('aria-hidden', 'false');
+  void el.offsetWidth;                 // start the slide from below
+  el.classList.add('is-open');
+  setTimeout(() => el.querySelector('.tmm-panel-close')?.focus({ preventScroll:true }), 320);
+}
+
+function tmmPanelClose(){
+  const el = document.getElementById('tmmPanel');
+  if (!el || !el.classList.contains('is-open')) return;
+  el.classList.remove('is-open');
+  el.setAttribute('aria-hidden', 'true');
+  document.documentElement.classList.remove('tmm-panel-open');
+  const sheet = el.querySelector('.tmm-panel-sheet');
+  sheet.style.transform = '';
+  setTimeout(() => {                   // stop a playing video once it is off screen
+    if (!el.classList.contains('is-open')) document.getElementById('tmmPanelScroll').innerHTML = '';
+  }, 350);
+  if (tmmPanelLastFocus && tmmPanelLastFocus.focus) tmmPanelLastFocus.focus({ preventScroll:true });
+}
+
+/* Drag the bar down to close, like the app's own sheets. */
+function tmmPanelDrag(el){
+  const sheet = el.querySelector('.tmm-panel-sheet');
+  const bar   = el.querySelector('.tmm-panel-bar');
+  let y0 = null, dy = 0;
+  bar.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; dy = 0; sheet.style.transition = 'none'; }, { passive:true });
+  bar.addEventListener('touchmove', e => {
+    if (y0 === null) return;
+    dy = Math.max(0, e.touches[0].clientY - y0);
+    sheet.style.transform = `translateY(${dy}px)`;
+  }, { passive:true });
+  bar.addEventListener('touchend', () => {
+    if (y0 === null) return;
+    y0 = null;
+    sheet.style.transition = '';
+    if (dy > 90) tmmPanelClose(); else sheet.style.transform = '';
+  }, { passive:true });
+}
+
+document.addEventListener('click', e => {
+  if (!tmmLive()) return;
+  if (e.target.closest && e.target.closest('[data-tmm-panel-close]')) { e.preventDefault(); tmmPanelClose(); return; }
+  const card = e.target.closest && e.target.closest('a[data-tmm-panel]');
+  if (!card) return;
+  const post = tmmPanelPosts.get(card.getAttribute('data-tmm-panel'));
+  if (!post) return;                   // unknown: let the link open normally
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  tmmPanelOpen(post);
+}, true);
+document.addEventListener('keydown', e => { if (tmmLive() && e.key === 'Escape') tmmPanelClose(); });
 
 /* The video in a post body, if it is one we can play here. Only Vimeo and
    YouTube players: the src comes from post HTML. */
@@ -802,11 +946,12 @@ async function initStartHere(){
     list.innerHTML = `<p class="tmm-empty">This didn't load. <button class="tmm-btn tmm-btn--sm" type="button" onclick="tmmSetTier()">Try again</button></p>`;
     return;
   }
+  posts.forEach(p => tmmPanelPosts.set(String(p.id), p));
   list.innerHTML = posts.map(p => {
     const link = startHereLink(p, cfg);
     const img  = coverImage(p);         // 16:9 card thumbnail, then the cover
     return `
-    <a class="tmm-sh-card" href="${esc(link.href)}" target="_blank" rel="noopener"${link.app ? ` data-tmm-app-url="${esc(link.app)}"` : ''}>
+    <a class="tmm-sh-card" href="${esc(link.href)}" target="_blank" rel="noopener"${link.app ? ` data-tmm-app-url="${esc(link.app)}"` : ''}${link.panel ? ` data-tmm-panel="${esc(String(p.id))}"` : ''}>
       ${img ? `<img class="tmm-sh-img" src="${esc(img)}" alt="" loading="lazy">` : ''}
       <div class="tmm-sh-text">
         <div class="tmm-sh-title">${esc(p.name || 'Untitled')}</div>
@@ -1080,7 +1225,7 @@ else tmmStart();
 document.addEventListener('click', e => {
   if (!tmmLive() || !TMM_IN_APP || typeof window.navigateToUrl !== 'function') return;
   const a = e.target.closest && e.target.closest('#tmmHome a[href], a[data-tmm-app-url]');
-  if (!a) return;
+  if (!a || a.hasAttribute('data-tmm-panel')) return;   // opens the post panel instead
   const url = a.getAttribute('data-tmm-app-url') || a.href;
   if (!/^https?:/i.test(url) || a.getAttribute('href') === '#') return;
   e.preventDefault();
@@ -1179,7 +1324,7 @@ const TMM_PTR_MARK =
     el.style.height = h + 'px';
   }
   document.addEventListener('touchstart', e => {
-    startY = (tmmLive() && !busy && tmmBootedEl && e.touches.length === 1 && atTop()) ? e.touches[0].clientY : null;
+    startY = (tmmLive() && !busy && !document.documentElement.classList.contains('tmm-panel-open') && tmmBootedEl && e.touches.length === 1 && atTop()) ? e.touches[0].clientY : null;
     pulled = 0;
   }, { passive:true });
   document.addEventListener('touchmove', e => {

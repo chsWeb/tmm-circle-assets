@@ -1089,3 +1089,184 @@ html.tmm-in-app .tmm-home[data-screen="pushed"][data-page="start-here"],
 .tmm-home[data-page="start-here"] {
   background: #F9F9F9
 }
+
+/* ============================================================
+   POST PANEL — slides up over Start Here with a post's full text
+   (tmmPanelOpen in home.js). Fixed to the screen, above everything.
+   ============================================================ */
+.tmm-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  visibility: hidden;
+  pointer-events: none
+}
+
+.tmm-panel.is-open {
+  visibility: visible;
+  pointer-events: auto
+}
+
+.tmm-panel-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 15, 15, .45);
+  opacity: 0;
+  transition: opacity .3s ease
+}
+
+.tmm-panel.is-open .tmm-panel-backdrop {
+  opacity: 1
+}
+
+.tmm-panel-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  height: calc(100% - 44px);
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, .18);
+  transform: translateY(100%);
+  transition: transform .32s cubic-bezier(.2, .8, .2, 1)
+}
+
+.tmm-panel.is-open .tmm-panel-sheet {
+  transform: translateY(0)
+}
+
+.tmm-panel-bar {
+  position: relative;
+  flex: 0 0 auto;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none
+}
+
+.tmm-panel-grab {
+  width: 40px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--border)
+}
+
+.tmm-panel-close {
+  position: absolute;
+  right: 10px;
+  top: 6px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer
+}
+
+.tmm-panel-close:focus-visible {
+  outline: 2px solid var(--electric-red);
+  outline-offset: 2px
+}
+
+.tmm-panel-scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px))
+}
+
+.tmm-panel-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover
+}
+
+.tmm-panel-body {
+  padding: 18px var(--pad) 0
+}
+
+.tmm-panel-title {
+  font-family: var(--font-head);
+  font-weight: 500;
+  font-size: 26px;
+  line-height: 1.2;
+  color: var(--electric-red);
+  margin-bottom: 14px
+}
+
+.tmm-panel-content {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink)
+}
+
+.tmm-panel-content > * + * {
+  margin-top: 12px
+}
+
+.tmm-panel-content h1,
+.tmm-panel-content h2,
+.tmm-panel-content h3,
+.tmm-panel-content h4 {
+  font-family: var(--font-head);
+  font-weight: 500;
+  font-size: 19px;
+  line-height: 1.25;
+  margin-top: 22px
+}
+
+.tmm-panel-content hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 22px 0
+}
+
+.tmm-panel-content ul,
+.tmm-panel-content ol {
+  padding-left: 22px
+}
+
+.tmm-panel-content li + li {
+  margin-top: 6px
+}
+
+.tmm-panel-content a:not(.tmm-btn) {
+  color: var(--electric-red);
+  text-decoration: underline
+}
+
+.tmm-panel-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius)
+}
+
+.tmm-panel-cta {
+  text-align: center;
+  margin-top: 22px !important
+}
+
+/* Nothing behind the panel scrolls while it is open. */
+html.tmm-panel-open #tmmAppScroll,
+html.tmm-panel-open body {
+  overflow: hidden
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tmm-panel-sheet,
+  .tmm-panel-backdrop {
+    transition: none
+  }
+}
