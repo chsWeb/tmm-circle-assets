@@ -28,7 +28,7 @@ const TMM_CONFIG = {
      There is no console in the app, so this pins a small readout to the
      bottom-left corner: the webview's height, the page's height, and every
      time either changed. Turn off once the cause is known. */
-  DEBUG_LAYOUT: true,
+  DEBUG_LAYOUT: false,
 
   /* Tier = the member's Circle ACCESS GROUPS, matched by group ID. Not by
      name: groups get renamed (on 10 Sept 2026 "The Mother Hub" became
@@ -80,7 +80,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v40 · 2026-10-01',
+  BUILD: 'v41 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
