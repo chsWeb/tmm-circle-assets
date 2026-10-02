@@ -87,7 +87,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v49 · 2026-10-01',
+  BUILD: 'v50 · 2026-10-02',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -129,6 +129,15 @@ const TMM_CONFIG = {
     title:    'Start here',
     open:     'panel',
     sheetBase:'https://tmm-circle-assets.pages.dev/go/c/',
+    /* Sending new members here from the home screen. Circle's own new-member
+       welcome never fires for people who join with the app's "Join now":
+       that signup runs on the website, which completes the profile, so the
+       app counts them as existing (tested 1 Oct 2026). So the home screen
+       opens Start Here itself, once per member on this device, for anyone
+       who joined within NEW_DAYS. screenId is the Start Here App Builder
+       screen; null keeps this off. */
+    screenId: null,
+    newDays:  14,
   },
 
   SHARE: {
@@ -340,6 +349,7 @@ async function getMemberContext(publicUid){
     if (!Array.isArray(data?.spaces)){ gateFailure = 'bad-answer'; return null; }
     return {
       memberId: data.member_id ?? null,
+      joinedAt: data.joined_at || null,          // 'YYYY-MM-DD', or null
       groups:   new Set((data.access_groups || []).map(Number)),
       spaces:   new Set(data.spaces.map(Number)),
     };
@@ -739,6 +749,32 @@ function renderFeatPosts(posts,cfg){
 }
 
 /* ---------- Start Here screen ---------- */
+/* Remembered per member on this device, so Start Here opens by itself once.
+   Storage can be unavailable; then nothing is remembered and, rather than
+   send someone to Start Here on every visit, nothing is opened either. */
+function tmmStartHereSeenKey(publicUid){ return `tmm-start-here-seen:${publicUid}`; }
+function tmmStartHereSeen(publicUid){
+  try { return localStorage.getItem(tmmStartHereSeenKey(publicUid)) === '1'; }
+  catch(e){ return null; }
+}
+function tmmMarkStartHereSeen(publicUid){
+  try { localStorage.setItem(tmmStartHereSeenKey(publicUid), '1'); return true; }
+  catch(e){ return false; }
+}
+/* From the home screen: open Start Here for a member who joined recently and
+   has not had it yet. True if it navigated. */
+function tmmMaybeOpenStartHere(member, ctx){
+  const cfg = TMM_CONFIG.START_HERE;
+  if (!cfg || !cfg.screenId || !TMM_IN_APP || member.isStaff || !member.publicUid) return false;
+  if (typeof window.navigateToOrphanedScreen !== 'function' || !ctx?.joinedAt) return false;
+  const days = (Date.now() - Date.parse(ctx.joinedAt + 'T00:00:00Z')) / 86400000;
+  if (!(days >= 0 && days <= cfg.newDays)) return false;
+  if (tmmStartHereSeen(member.publicUid) !== false) return false;   // seen, or cannot tell
+  if (!tmmMarkStartHereSeen(member.publicUid)) return false;
+  window.navigateToOrphanedScreen(cfg.screenId);
+  return true;
+}
+
 function startHereLink(p, cfg){
   const url = p.url || '#';
   if (cfg.open === 'panel') return { href:url, app:'', panel:true };
@@ -935,7 +971,8 @@ async function initStartHere(){
         <div class="tmm-sh-list" id="tmmStartHere"></div>
       </section>`);
   }
-  const { firstName } = getCurrentMember();
+  const { firstName, publicUid } = getCurrentMember();
+  if (publicUid) tmmMarkStartHereSeen(publicUid);
   set('tmmGreeting', firstName
     ? `Welcome to The Millionaire Mother app, ${firstName}!`
     : 'Welcome to The Millionaire Mother app!');
@@ -982,6 +1019,7 @@ async function init(overrideTierKey){
     ? (TMM_CONFIG.TIER_GROUPS.find(t => t.groups.some(id => ctx.groups.has(id)))?.tier || 'free')
     : 'free';
   const tierKey   = overrideTierKey || (TMM_CONFIG.TEST_MODE ? 'free' : detectedTier);
+  if (!overrideTierKey) tmmMaybeOpenStartHere(member, ctx);   // the home page still loads behind it
   const tier      = TMM_CONFIG.TIERS[tierKey] || TMM_CONFIG.TIERS.free;
   console.info('[tmm-home] viewer:', member.publicUid || '(no identity)',
     '| in app:', member.inApp, '| staff:', member.isStaff,
