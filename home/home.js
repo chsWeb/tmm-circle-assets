@@ -87,7 +87,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v46 · 2026-10-01',
+  BUILD: 'v47 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -186,6 +186,7 @@ const TMM_CONFIG = {
       featuredEvent:{ label:'Inside the vault', spaceId:2361522, space_type:'basic', kind:'posts', topicId:538336, count:6, url:'https://members.themillionairemother.com/c/mme-program-library', placeholders:'resource' },
       postFeed:     { label:'Foundry Celebrations!', spaceId:2349052, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/celebrations-f9f0b0' },
       eventsGrid:   null,
+      share:        null,   // Share MotherHub is not for Foundry (QA, 1 Oct 2026)
     },
     /* Deliberately minimal: the vault only. Sections 4 and 5 and the share
        card are hidden per the content map. */
