@@ -87,7 +87,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v51 · 2026-10-02',
+  BUILD: 'v52 · 2026-10-02',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -143,6 +143,9 @@ const TMM_CONFIG = {
        its cards opening in the post panel. It goes away on its own after. */
     homeShelf: true,
     homeShelfTitle: 'Start here',
+    /* Free members cannot open the Start Here space; their home already
+       leads with the Welcome video and the Starter Library (QA, 2 Oct). */
+    homeShelfSkipTiers: ['free'],
   },
 
   SHARE: {
@@ -777,11 +780,12 @@ function tmmIsNewMember(member, ctx){
 /* The Start Here shelf on the home screen, for new members only: the Start
    Here space's posts as cards, opening in the post panel. Removed for
    everyone else, so a member who passes newDays loses it on the next load. */
-async function renderStartHereShelf(member, ctx){
+async function renderStartHereShelf(member, ctx, tierKey){
   const cfg  = TMM_CONFIG.START_HERE;
   const root = document.getElementById('tmmHome');
   let box = document.getElementById('tmmNewShelf');
-  if (!root || !cfg?.homeShelf || !tmmIsNewMember(member, ctx)) { if (box) box.remove(); return; }
+  if (!root || !cfg?.homeShelf || (cfg.homeShelfSkipTiers || []).includes(tierKey) ||
+      !tmmIsNewMember(member, ctx)) { if (box) box.remove(); return; }
   if (!box) {
     box = document.createElement('section');
     box.className = 'tmm-section';
@@ -1122,7 +1126,7 @@ async function init(overrideTierKey){
   }
   set('tmmGreeting', firstName ? `Hello, ${firstName}.` : 'Hello.');
   set('tmmGreetingSub', "Here's everything new that's happened in The Millionaire Mother app.");
-  renderStartHereShelf(member, ctx).catch(e => console.error('start here shelf error:', e));
+  renderStartHereShelf(member, ctx, tierKey).catch(e => console.error('start here shelf error:', e));
 
   /* A previous attempt may have left the gate fallback on screen; init can
      run again from the Try again button or the test banner. Put section 1
