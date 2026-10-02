@@ -8,6 +8,13 @@
 'use strict';
 /* TMM_HOME_v4 */
 
+/* Only the newest copy of this script that has loaded acts. When a newer
+   build loads over this one (see tmmUpdateIfNewer), every listener below
+   checks tmmLive() and this copy goes quiet. */
+const TMM_ME = {};
+window.__tmmActive = TMM_ME;
+const tmmLive = () => window.__tmmActive === TMM_ME;
+
 const TMM_CONFIG = {
   WORKER_URL:   'https://tmm-circle-proxy.product-10c.workers.dev',
   COMMUNITY_ID: '97488',
@@ -80,7 +87,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v41 · 2026-10-01',
+  BUILD: 'v42 · 2026-10-01',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -995,6 +1002,7 @@ function tmmWrapForApp(home){
 }
 
 function tmmTryBoot(){
+  if (!tmmLive()) return;
   const home = document.getElementById('tmmHome');
   if (!home) return;
   if (home === tmmBootedEl) return;              // this block already initialised
@@ -1003,7 +1011,53 @@ function tmmTryBoot(){
   if(!TMM_CONFIG.SHOW_TEST_BANNER){ const b=document.getElementById('tmmTestBanner'); if(b) b.style.display='none'; }
   init();
 }
-function tmmStart(){
+/* Self-update. The app keeps this page alive between visits and pasting a
+   new head into Circle does not reach a page that is already open, so a
+   member could sit on an old build until they quit the app. On start and on
+   every pull to refresh, version.json says which build is current; if it is
+   newer than this one, its CSS and JS are loaded into the page and take
+   over (this copy stops: tmmLive). The head snippet's ?v= then only
+   matters for a cold start, and need not be re-pasted for each release.
+   No window.location.reload(): in the app the page's address is circle.so,
+   so a reload could load Circle's website in place of the home screen. */
+const TMM_BASE    = 'https://tmm-circle-assets.pages.dev/home/';
+const TMM_VERSION = parseInt(String(TMM_CONFIG.BUILD).replace(/^v/, ''), 10);
+async function tmmLatestVersion(){
+  try{
+    const res = await withTimeout(fetch(`${TMM_BASE}version.json?t=${Date.now()}`, { cache:'no-store' }), 1500, null);
+    if (!res || !res.ok) return null;
+    const v = parseInt((await res.json()).v, 10);
+    return Number.isFinite(v) ? v : null;
+  }catch(e){ return null; }
+}
+/* Resolves true when a newer build has loaded and taken over. */
+async function tmmUpdateIfNewer(){
+  const v = await tmmLatestVersion();
+  if (!v || !(v > TMM_VERSION)) return false;
+  const tried = (window.__tmmTried = window.__tmmTried || {});
+  if (tried[v]) return false;              // tried once already: never loop
+  tried[v] = true;
+  const css = document.createElement('link');
+  css.rel = 'stylesheet';
+  css.href = `${TMM_BASE}home.css?v=${v}`;
+  css.onload = () => document.querySelectorAll('link[href*="/home/home.css"]')
+    .forEach(l => { if (l !== css) l.remove(); });
+  document.head.appendChild(css);
+  const ok = await new Promise(res => {
+    const js = document.createElement('script');
+    js.src = `${TMM_BASE}home.js?v=${v}`;
+    js.onload = () => res(true);
+    js.onerror = () => res(false);
+    document.head.appendChild(js);
+  });
+  return ok && !tmmLive();
+}
+function tmmRefresh(){
+  return tmmUpdateIfNewer().then(took => took ? null : init());
+}
+
+async function tmmStart(){
+  if (await tmmUpdateIfNewer()) return;    // a newer build is running instead
   tmmTryBoot();
   // Keep watching: covers Circle injecting the block late AND re-injecting it on navigation.
   new MutationObserver(tmmTryBoot).observe(document.documentElement, {childList:true, subtree:true});
@@ -1024,7 +1078,7 @@ else tmmStart();
    the app). On the web, or if the app ever drops the function, links
    behave as ordinary links. */
 document.addEventListener('click', e => {
-  if (!TMM_IN_APP || typeof window.navigateToUrl !== 'function') return;
+  if (!tmmLive() || !TMM_IN_APP || typeof window.navigateToUrl !== 'function') return;
   const a = e.target.closest && e.target.closest('#tmmHome a[href], a[data-tmm-app-url]');
   if (!a) return;
   const url = a.getAttribute('data-tmm-app-url') || a.href;
@@ -1064,6 +1118,7 @@ if (TMM_CONFIG.DEBUG_LAYOUT &&
     box.textContent = `${TMM_CONFIG.BUILD}\n${where()}\nview ${window.innerHeight} · page ${pageH()} · inner ${tmmScroller()?.scrollHeight ?? '-'} · scrolled ${Math.round(tmmScroller()?.scrollTop ?? window.scrollY)}\n` + log.slice(0, 8).join('\n');
   }
   function sample(why){
+    if (!tmmLive()) { if (box) box.remove(); return; }
     const now = `${window.innerHeight}/${pageH()}`;
     if (now !== last) {
       last = now;
@@ -1081,7 +1136,8 @@ if (TMM_CONFIG.DEBUG_LAYOUT &&
 /* Pull down to refresh. The app keeps the home screen's webview alive
    between visits, so new posts did not show until the app was quit and
    reopened. Pulling down from the top and letting go past the threshold
-   reruns init(), which refetches every section.
+   reruns init(), which refetches every section, after first loading a
+   newer build if version.json names one (tmmRefresh).
    Listeners are passive, so they never block the page's own scrolling; on
    iOS the pull rides on the native rubber-band. Only starts when the page is
    already scrolled to the top, so an ordinary scroll up never triggers it. */
@@ -1094,6 +1150,8 @@ if (TMM_CONFIG.DEBUG_LAYOUT &&
     if (el && el.isConnected) return el;
     const home = document.getElementById('tmmHome');
     if (!home) return null;
+    el = home.querySelector('.tmm-ptr');     // left by an older build
+    if (el) return el;
     el = document.createElement('div');
     el.className = 'tmm-ptr';
     el.setAttribute('aria-hidden', 'true');
@@ -1107,7 +1165,7 @@ if (TMM_CONFIG.DEBUG_LAYOUT &&
     el.style.height = h + 'px';
   }
   document.addEventListener('touchstart', e => {
-    startY = (!busy && tmmBootedEl && e.touches.length === 1 && atTop()) ? e.touches[0].clientY : null;
+    startY = (tmmLive() && !busy && tmmBootedEl && e.touches.length === 1 && atTop()) ? e.touches[0].clientY : null;
     pulled = 0;
   }, { passive:true });
   document.addEventListener('touchmove', e => {
@@ -1129,7 +1187,7 @@ if (TMM_CONFIG.DEBUG_LAYOUT &&
     el.classList.add('is-loading');
     settle(48);
     const minSpin = new Promise(r => setTimeout(r, 600));   // no blink-and-gone flash
-    Promise.all([Promise.resolve(init()).catch(()=>{}), minSpin]).finally(() => {
+    Promise.all([tmmRefresh().catch(()=>{}), minSpin]).finally(() => {
       busy = false;
       settle(0);
       el.classList.remove('is-ready', 'is-loading');

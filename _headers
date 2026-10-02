@@ -17,3 +17,9 @@
 /home/home.js
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=60
+
+# Which build is current (home.js checks it on start and on pull to
+# refresh). Never cached, so a release is seen on the next pull.
+/home/version.json
+  Access-Control-Allow-Origin: *
+  Cache-Control: no-store

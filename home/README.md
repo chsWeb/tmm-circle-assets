@@ -68,8 +68,16 @@ Builder page). Paste `body.html` into the Custom HTML block on each.
 # edit home.css / home.js
 git add . && git commit -m "…" && git push
 ```
-Pages redeploys in ~30s. If Circle still serves the old file, bump the version
-in `head.html` (`?v=1` → `?v=2`) and re-save the head snippet.
+Pages redeploys in ~30s. To release a new build, bump it in **two** places:
+
+1. `BUILD` in `home.js` (`'v42 · …'` → `'v43 · …'`)
+2. `version.json` (`{ "v": 42 }` → `{ "v": 43 }`)
+
+Pages that are already open pick it up on the next pull to refresh, and new
+ones on start: `home.js` reads `version.json` and loads the newer build into
+the page. **The head snippet in Circle does not need re-pasting** for a
+release. Its `?v=` only sets which build a cold start loads first, so
+update `head.html` and re-paste it now and then, not every time.
 
 ---
 
