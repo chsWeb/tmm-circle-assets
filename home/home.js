@@ -87,7 +87,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v50 · 2026-10-02',
+  BUILD: 'v51 · 2026-10-02',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -138,6 +138,11 @@ const TMM_CONFIG = {
        screen; null keeps this off. */
     screenId: null,
     newDays:  14,
+    /* Without the screen id, the home screen carries Start Here instead: a
+       "Start here" shelf at the top for members who joined within newDays,
+       its cards opening in the post panel. It goes away on its own after. */
+    homeShelf: true,
+    homeShelfTitle: 'Start here',
   },
 
   SHARE: {
@@ -761,6 +766,50 @@ function tmmMarkStartHereSeen(publicUid){
   try { localStorage.setItem(tmmStartHereSeenKey(publicUid), '1'); return true; }
   catch(e){ return false; }
 }
+/* Joined within START_HERE.newDays, by the Worker's joined_at. Staff never. */
+function tmmIsNewMember(member, ctx){
+  const cfg = TMM_CONFIG.START_HERE;
+  if (!cfg || member.isStaff || !ctx?.joinedAt) return false;
+  const days = (Date.now() - Date.parse(ctx.joinedAt + 'T00:00:00Z')) / 86400000;
+  return days >= 0 && days <= cfg.newDays;
+}
+
+/* The Start Here shelf on the home screen, for new members only: the Start
+   Here space's posts as cards, opening in the post panel. Removed for
+   everyone else, so a member who passes newDays loses it on the next load. */
+async function renderStartHereShelf(member, ctx){
+  const cfg  = TMM_CONFIG.START_HERE;
+  const root = document.getElementById('tmmHome');
+  let box = document.getElementById('tmmNewShelf');
+  if (!root || !cfg?.homeShelf || !tmmIsNewMember(member, ctx)) { if (box) box.remove(); return; }
+  if (!box) {
+    box = document.createElement('section');
+    box.className = 'tmm-section';
+    box.id = 'tmmNewShelf';
+    box.innerHTML = `
+      <div class="tmm-sec-head"><h2 class="tmm-sec-title">${esc(cfg.homeShelfTitle)}</h2></div>
+      <div class="tmm-scroll" id="tmmNewShelfList">
+        <div class="tmm-skel" style="width:270px;height:230px;flex:0 0 auto"></div>
+        <div class="tmm-skel" style="width:270px;height:230px;flex:0 0 auto"></div>
+      </div>`;
+    root.insertBefore(box, root.querySelector('.tmm-section'));
+  }
+  const posts = await fetchOneSpacePosts(cfg.spaceId);
+  const list = document.getElementById('tmmNewShelfList');
+  if (!list) return;
+  if (!posts.length) { box.remove(); return; }
+  posts.forEach(p => tmmPanelPosts.set(String(p.id), p));
+  list.innerHTML = posts.map(p => {
+    const img = coverImage(p);
+    return `
+    <a class="tmm-card" href="${esc(p.url || '#')}" target="_blank" rel="noopener" data-tmm-panel="${esc(String(p.id))}">
+      ${img ? `<img class="tmm-card-img" src="${esc(img)}" alt="" loading="lazy">` : `<div class="tmm-card-imgph"></div>`}
+      <div class="tmm-card-title">${esc(p.name || 'Untitled')}</div>
+      <div class="tmm-card-desc">${esc(strip(p.body?.body || '').slice(0, 80))}</div>
+    </a>`;
+  }).join('');
+}
+
 /* From the home screen: open Start Here for a member who joined recently and
    has not had it yet. True if it navigated. */
 function tmmMaybeOpenStartHere(member, ctx){
@@ -1073,6 +1122,7 @@ async function init(overrideTierKey){
   }
   set('tmmGreeting', firstName ? `Hello, ${firstName}.` : 'Hello.');
   set('tmmGreetingSub', "Here's everything new that's happened in The Millionaire Mother app.");
+  renderStartHereShelf(member, ctx).catch(e => console.error('start here shelf error:', e));
 
   /* A previous attempt may have left the gate fallback on screen; init can
      run again from the Try again button or the test banner. Put section 1
