@@ -42,7 +42,7 @@ const TMM_CONFIG = {
      the app hands the page that could carry it (address, referrer, window
      name, history state, Circle's injected objects) at the top of the
      Start Here screen, for testinator test accounts only. Off once found. */
-  SHOW_SCREEN_INFO: true,
+  SHOW_SCREEN_INFO: false,
 
   /* Tier = the member's Circle ACCESS GROUPS, matched by group ID. Not by
      name: groups get renamed (on 10 Sept 2026 "The Mother Hub" became
@@ -94,7 +94,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v56 · 2026-10-02',
+  BUILD: 'v57 · 2026-10-05',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -141,9 +141,13 @@ const TMM_CONFIG = {
        that signup runs on the website, which completes the profile, so the
        app counts them as existing (tested 1 Oct 2026). So the home screen
        opens Start Here itself, once per member on this device, for anyone
-       who joined within NEW_DAYS. screenId is the Start Here App Builder
-       screen; null keeps this off. */
-    screenId: null,
+       who joined within NEW_DAYS. The same goes for accounts a Zapier
+       automation creates from the third-party checkout (MotherHub, Expert
+       Network): the app never sees them as new either. joined_at works for
+       every route. screenId is the App Builder id of "Welcome to The
+       Millionaire Mother App" (read from the builder's network traffic,
+       5 Oct 2026; the builder does not show it). null turns this off. */
+    screenId: '1c45e73d-384b-4dd4-b23f-61d1861f0750',
     newDays:  14,
     /* Without the screen id, the home screen carries Start Here instead: a
        "Start here" shelf at the top for members who joined within newDays,
