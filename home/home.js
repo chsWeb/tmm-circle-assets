@@ -94,7 +94,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v58 · 2026-10-06',
+  BUILD: 'v59 · 2026-10-06',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -146,8 +146,11 @@ const TMM_CONFIG = {
        Network): the app never sees them as new either. joined_at works for
        every route. screenId is the App Builder id of "Welcome to The
        Millionaire Mother App" (read from the builder's network traffic,
-       5 Oct 2026; the builder does not show it). null turns this off. */
-    screenId: '1c45e73d-384b-4dd4-b23f-61d1861f0750',
+       5 Oct 2026; the builder does not show it). null turns this off.
+       OFF since 6 Oct 2026: with that id the app showed a blank screen,
+       "Could not load content.", to a brand-new Free member, then went back
+       to home. The id or the screen's availability in the app is wrong. */
+    screenId: null,   // was '1c45e73d-384b-4dd4-b23f-61d1861f0750'
     newDays:  14,
     /* Without the screen id, the home screen carries Start Here instead: a
        "Start here" shelf at the top for members who joined within newDays,
