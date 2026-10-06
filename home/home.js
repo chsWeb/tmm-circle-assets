@@ -331,9 +331,11 @@ function withTimeout(promise, ms, fallback){
    (see /member_context). We never send the email anywhere: publicUid is
    already public, an email address in a query string is not.
 
-   Nothing equivalent is documented for Site Builder pages on the web, so on
-   that surface there is no viewer to identify and the page falls back to
-   public spaces only. */
+   Circle documents this for the app only, but it is also present on Site
+   Builder pages for a signed-in member: on 6 Oct 2026 a Free and a MotherHub
+   test account each got their own tier's content on /member-portal in a
+   browser, and this is the only way the page identifies anyone. With nobody
+   signed in it is absent, and the Worker answers with public spaces only. */
 function getCurrentMember(){
   const u = window.circleUser;
   if (!u) return { publicUid:null, firstName:'', isStaff:false, inApp:!!window.isInsideCircleMobileWebview };
@@ -1142,8 +1144,8 @@ async function init(overrideTierKey){
   if (root) root.setAttribute('data-brand', TMM_CONFIG.BRAND_BY_TIER[tierKey] || 'mm');
   /* Greeting line above section 1, built here so none of the three pasted
      bodies needs editing. The name is the first word of the member's Circle
-     display name, from window.circleUser — which only the app provides. On
-     the web, and for anyone without a name, it reads "Hello." */
+     display name, from window.circleUser (the app, and signed-in members on
+     the website). With no name, or nobody signed in, it reads "Hello." */
   if (root && !document.getElementById('tmmGreeting')) {
     const g = document.createElement('h1');
     g.id = 'tmmGreeting';
