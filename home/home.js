@@ -94,7 +94,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v57 · 2026-10-05',
+  BUILD: 'v58 · 2026-10-06',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -848,6 +848,7 @@ function tmmMaybeOpenStartHere(member, ctx){
   if (!(days >= 0 && days <= cfg.newDays)) return false;
   if (tmmStartHereSeen(member.publicUid) !== false) return false;   // seen, or cannot tell
   if (!tmmMarkStartHereSeen(member.publicUid)) return false;
+  console.info('[tmm-home] opening welcome screen', cfg.screenId);
   window.navigateToOrphanedScreen(cfg.screenId);
   return true;
 }
@@ -1105,7 +1106,6 @@ async function init(overrideTierKey){
     ? (TMM_CONFIG.TIER_GROUPS.find(t => t.groups.some(id => ctx.groups.has(id)))?.tier || 'free')
     : 'free';
   const tierKey   = overrideTierKey || (TMM_CONFIG.TEST_MODE ? 'free' : detectedTier);
-  if (!overrideTierKey) tmmMaybeOpenStartHere(member, ctx);   // the home page still loads behind it
   const tier      = TMM_CONFIG.TIERS[tierKey] || TMM_CONFIG.TIERS.free;
   console.info('[tmm-home] viewer:', member.publicUid || '(no identity)',
     '| in app:', member.inApp, '| staff:', member.isStaff,
@@ -1214,21 +1214,22 @@ async function init(overrideTierKey){
 
   // Each section fetches + renders on its own. A slow/empty section can no
   // longer block the others (previously one hung fetch froze the whole page).
+  const loads = [];
   const render = (cfg, fn, boxId, opts) => {
     const ok = !!cfg && canSeeCfg(cfg);
     if (!ok) { denySection(boxId); return; }
     showSection(boxId, true);
-    fetchSection(opts ? { ...cfg, ...opts } : cfg)
+    loads.push(fetchSection(opts ? { ...cfg, ...opts } : cfg)
       .then(d => { try { fn(d, cfg); } catch(e){ console.error('render error:', e); } })
-      .catch(e => console.error('section error:', e));
+      .catch(e => console.error('section error:', e)));
   };
 
   // Hero = posts tagged `featured` community-wide, filtered to the groups
   // this tier can access. Everything else stays per-space.
   showSection('tmmHero', true);   // skeleton while loading; renderHero decides
-  fetchFeatured(tierKey, canSee)
+  loads.push(fetchFeatured(tierKey, canSee)
     .then(posts => { try { renderHero(posts, tier.hero); } catch(e){ console.error('hero render error:', e); denySection('tmmHero'); } })
-    .catch(e => { console.error('featured error:', e); denySection('tmmHero'); });
+    .catch(e => { console.error('featured error:', e); denySection('tmmHero'); }));
 
   // Share card: tier value wins when present, otherwise the shared default.
   // null for a tier hides it.
@@ -1240,6 +1241,14 @@ async function init(overrideTierKey){
          tier.featuredEvent?.kind === 'posts' ? { titledOnly:true } : null);
   render(tier.postFeed,      renderFeed,        'tmmFeed');
   render(tier.eventsGrid,    renderEvents,      'tmmEvents');
+
+  /* Open the welcome screen only once the sections have rendered. v57 opened
+     it straight after the member lookup, and the app stops this page's
+     scripts while another screen is in front, so a new member came back to
+     skeletons that never filled (6 Oct 2026). */
+  if (!overrideTierKey) {
+    Promise.allSettled(loads).then(() => tmmMaybeOpenStartHere(member, ctx));
+  }
 }
 
 /* expose test-tier switcher to window (IIFE hides it otherwise) */
@@ -1334,6 +1343,22 @@ async function tmmUpdateIfNewer(){
 function tmmRefresh(){
   return tmmUpdateIfNewer().then(took => took ? null : init());
 }
+/* Back on the home screen with sections still on their skeletons: the app
+   paused the page mid-load (another screen opened over it). Load again. */
+let tmmReturnBusy = false;
+function tmmReloadIfStuck(){
+  if (document.visibilityState === 'hidden' || tmmReturnBusy || !tmmLive()) return;
+  const home = document.getElementById('tmmHome');
+  if (!home || !home.querySelector('.tmm-skel')) return;
+  tmmReturnBusy = true;
+  setTimeout(() => {
+    const still = document.getElementById('tmmHome')?.querySelector('.tmm-skel');
+    (still ? tmmRefresh() : Promise.resolve()).finally(() => { tmmReturnBusy = false; });
+  }, 1500);
+}
+document.addEventListener('visibilitychange', tmmReloadIfStuck);
+window.addEventListener('pageshow', tmmReloadIfStuck);
+window.addEventListener('focus', tmmReloadIfStuck);
 
 async function tmmStart(){
   if (await tmmUpdateIfNewer()) return;    // a newer build is running instead
