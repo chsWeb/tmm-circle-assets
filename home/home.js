@@ -94,7 +94,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v59 · 2026-10-06',
+  BUILD: 'v60 · 2026-10-29',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -392,6 +392,14 @@ async function getMemberContext(publicUid){
 }
 
 /* ---------- API ---------- */
+/* The Worker keeps post and event lists for a few hours. A load the member
+   asked for (pull to refresh, Try again) adds fresh=1 so it skips that copy
+   and gets the latest. Set for a short window because init() builds its
+   requests across several awaits. */
+let tmmFreshUntil = 0;
+function tmmAskFresh(){ tmmFreshUntil = Date.now() + 15000; }
+function freshParam(){ return Date.now() < tmmFreshUntil ? '&fresh=1' : ''; }
+
 async function fetchSection(cfg){
   if (!cfg) return [];
   const n = cfg.count || 4;
@@ -405,7 +413,7 @@ async function fetchSection(cfg){
     const isEvent = sp.space_type === 'event';
     const ep  = isEvent ? '/events' : '/posts';
     const cid = isEvent ? '' : `&community_id=${TMM_CONFIG.COMMUNITY_ID}`;   // posts require community_id
-    const url = `${TMM_CONFIG.WORKER_URL}${ep}?space_id=${sp.id}${cid}&per_page=${perSpace}&page=1`;
+    const url = `${TMM_CONFIG.WORKER_URL}${ep}?space_id=${sp.id}${cid}&per_page=${perSpace}&page=1${freshParam()}`;
     try{
       const res = await withTimeout(fetch(url), 6000, null);
       if (!res){ console.error(`fetchSection ${ep} space ${sp.id}: timeout/failed`); return []; }
@@ -475,7 +483,7 @@ async function fetchSection(cfg){
    regardless of age. No /spaces call, no group map needed. */
 async function fetchOneSpacePosts(spaceId){
   try{
-    const url = `${TMM_CONFIG.WORKER_URL}/posts?community_id=${TMM_CONFIG.COMMUNITY_ID}&space_id=${spaceId}&per_page=100&page=1`;
+    const url = `${TMM_CONFIG.WORKER_URL}/posts?community_id=${TMM_CONFIG.COMMUNITY_ID}&space_id=${spaceId}&per_page=100&page=1${freshParam()}`;
     const res = await withTimeout(fetch(url), 6000, null);
     if (!res || !res.ok) return [];
     const data = await res.json();
@@ -1255,7 +1263,7 @@ async function init(overrideTierKey){
 }
 
 /* expose test-tier switcher to window (IIFE hides it otherwise) */
-window.tmmSetTier = (k)=>init(k);
+window.tmmSetTier = (k)=>{ tmmAskFresh(); return init(k); };
 
 /* Published for /docs/home-map.html, the living map of what each tier's home
    screen shows. That page loads this file and reads the config straight from
@@ -1344,6 +1352,7 @@ async function tmmUpdateIfNewer(){
   return ok && !tmmLive();
 }
 function tmmRefresh(){
+  tmmAskFresh();
   return tmmUpdateIfNewer().then(took => took ? null : init());
 }
 /* Back on the home screen with sections still on their skeletons: the app
