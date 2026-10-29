@@ -94,7 +94,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v60 · 2026-10-29',
+  BUILD: 'v61 · 2026-10-29',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -1355,22 +1355,6 @@ function tmmRefresh(){
   tmmAskFresh();
   return tmmUpdateIfNewer().then(took => took ? null : init());
 }
-/* Back on the home screen with sections still on their skeletons: the app
-   paused the page mid-load (another screen opened over it). Load again. */
-let tmmReturnBusy = false;
-function tmmReloadIfStuck(){
-  if (document.visibilityState === 'hidden' || tmmReturnBusy || !tmmLive()) return;
-  const home = document.getElementById('tmmHome');
-  if (!home || !home.querySelector('.tmm-skel')) return;
-  tmmReturnBusy = true;
-  setTimeout(() => {
-    const still = document.getElementById('tmmHome')?.querySelector('.tmm-skel');
-    (still ? tmmRefresh() : Promise.resolve()).finally(() => { tmmReturnBusy = false; });
-  }, 1500);
-}
-document.addEventListener('visibilitychange', tmmReloadIfStuck);
-window.addEventListener('pageshow', tmmReloadIfStuck);
-window.addEventListener('focus', tmmReloadIfStuck);
 
 async function tmmStart(){
   if (await tmmUpdateIfNewer()) return;    // a newer build is running instead
