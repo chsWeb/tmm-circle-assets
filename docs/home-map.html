@@ -201,16 +201,46 @@
   const countPosts = (id, topicId) => count('post', id, topicId);
   const countUpcoming = (id) => count('event', id);
 
+  // A section reads one space (spaceId) or several (spaces: [{id}, ...]).
+  const secIds = (c) => c.spaces ? c.spaces.map(s => s.id) : [c.spaceId];
+  const secCount = async (c) => {
+    const ns = await Promise.all(secIds(c).map(id =>
+      c.space_type === 'event' ? countUpcoming(id) : countPosts(id, c.topicId)));
+    return ns.reduce((a, n) => a + (n || 0), 0);
+  };
+
   // Start every lookup at once, so the render below reads finished results.
   const warm = [];
   for (const key of Object.keys(cfg.TIERS)) {
     ((feat && feat.SPACES && feat.SPACES[key]) || []).forEach(id => warm.push(countPosts(id, feat.TOPIC_ID)));
     ['contentGrid','featuredEvent','postFeed','eventsGrid'].forEach(k => {
       const c = cfg.TIERS[key][k];
-      if (c) warm.push(c.space_type === 'event' ? countUpcoming(c.spaceId) : countPosts(c.spaceId, c.topicId));
+      if (c) warm.push(secCount(c));
     });
   }
   await Promise.all(warm);
+
+  /* Health check: every space the home screen is configured to read, checked
+     against Circle. A deleted or replaced space doesn't break the home screen,
+     it silently hides that section for every member, so it is flagged here at
+     the top where it can't be missed. */
+  const uses = new Map();
+  const use = (id, where) => { if (!uses.has(id)) uses.set(id, []); uses.get(id).push(where); };
+  for (const key of Object.keys(cfg.TIERS)) {
+    const t = cfg.TIERS[key], name = t.label || key;
+    ((feat && feat.SPACES && feat.SPACES[key]) || []).forEach(id => use(id, name + ' — ' + ((t.hero && t.hero.label) || 'top section')));
+    ['contentGrid','featuredEvent','postFeed','eventsGrid'].forEach(k => {
+      const c = t[k]; if (c) secIds(c).forEach(id => use(id, name + ' — ' + c.label));
+    });
+  }
+  ((cfg.QUICK_LINKS && cfg.QUICK_LINKS.links) || []).forEach(l => use(l.spaceId, 'Quick link — ' + l.title));
+  const missing = [...uses.keys()].filter(id => !spaces.has(id));
+  const health = missing.length
+    ? '<div class="err"><b>' + missing.length + ' space' + (missing.length === 1 ? '' : 's') +
+      ' on the home screen no longer exist' + (missing.length === 1 ? 's' : '') + ' in Circle.</b> ' +
+      'Members don\'t see an error; the section is simply hidden for everyone until home.js points at a space that exists.' +
+      missing.map(id => '<br>&bull; Space ' + id + ': ' + uses.get(id).map(esc).join('; ')).join('') + '</div>'
+    : '';
 
   const spaceLine = (id) => {
     const s = spaces.get(id);
@@ -243,11 +273,11 @@
       const c = t[pair[0]], n = pair[1];
       if (!c) { rows.push('<div class="sec is-hidden"><div class="sec-top"><span class="num">' + n + '</span><span class="lab lab--off">Not shown at this level</span></div><span class="pill pill--hidden">hidden on purpose</span></div>'); continue; }
       const isEvent = c.space_type === 'event';
-      const live = isEvent ? await countUpcoming(c.spaceId) : await countPosts(c.spaceId, c.topicId);
+      const live = await secCount(c);
       const empty = !live;
       rows.push('<div class="sec ' + (empty ? 'is-hidden' : '') + '">' +
         '<div class="sec-top"><span class="num">' + n + '</span><span class="lab">' + esc(c.label) + '</span></div>' +
-        spaceLine(c.spaceId) +
+        secIds(c).map(spaceLine).join('') +
         (c.topicId ? '<span class="pill pill--tag">posts tagged ' + TAG + '</span>' : '') +
         (empty ? '<span class="pill pill--hidden">hidden &mdash; ' + (isEvent ? 'no upcoming events' : 'nothing to show') + '</span>'
                : '<span class="pill pill--ok">' + live + ' ' + (isEvent ? 'upcoming' : 'post' + (live === 1 ? '' : 's')) + '</span>') +
@@ -264,7 +294,7 @@
       '<div class="tier-h"><b>' + esc(t.label || key) + '</b><em>' + esc(key) + '</em></div>' + rows.join('') + '</div>');
   }
 
-  app.innerHTML = '<div class="cols">' + cols.join('') + '</div>';
+  app.innerHTML = health + '<div class="cols">' + cols.join('') + '</div>';
 
   let gm = new Map();
   try { const d = await j('/access_groups?community_id=' + CID + '&per_page=100&page=1'); gm = new Map((d.records || []).map(g => [g.id, g.name.trim()])); } catch (e) {}
@@ -279,6 +309,7 @@
     'build ' + esc(cfg.BUILD || 'unknown'),
     tierOrder.length + ' levels',
     spaces.size + ' spaces in Circle',
+    missing.length ? '<b>' + missing.length + ' missing</b>' : 'all ' + uses.size + ' configured spaces found',
     'checked ' + new Date().toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
   ].map(s => '<span>' + s + '</span>').join('');
 

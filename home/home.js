@@ -50,13 +50,25 @@ const TMM_CONFIG = {
      and IDs survive that. Not member tags either — real members have none.
      Checked top to bottom; the first tier with a matching group wins, so a
      member in two tiers gets the one listed higher. No match -> Free.
-     Group IDs come from the proxy's /access_groups. */
+     Group IDs come from the proxy's /access_groups.
+
+     Order agreed with the owner (18 Nov 2026): the current memberships
+     (Expert Network, MotherHub) come first, the legacy ones (Inner Circle,
+     Foundry, The Vault) after. A MotherHub or Expert Network member who also
+     has a legacy membership gets that home plus QUICK_LINKS to the legacy
+     spaces. The Vault is listed last of the paid groups so it only decides
+     the home for members who have nothing else. */
   TIER_GROUPS: [
+    { tier:'expert_network', groups:[
+        132064,  // MotherHub Expert Network (was Matriarch Network)
+    ]},
+    { tier:'mother_hub',     groups:[
+        104172,  // MotherHub (was The Mother Hub)
+    ]},
     { tier:'inner_circle',   groups:[
         105821,  // Inner Circle
         74507,   // The Inner Circle 2026
-        23929,   // The Inner Circle
-        77964,   // The Vault                      <- CONFIRM: Vault members get the Inner Circle page?
+        23929,   // The Inner Circle (archived)
     ]},
     { tier:'foundry',        groups:[
         105820,  // Foundry
@@ -65,12 +77,11 @@ const TMM_CONFIG = {
         102378, 102661, 102662,  // Foundry Pod 1, 2, 3
         117122,  // Foundry Alumni Pod
     ]},
-    { tier:'expert_network', groups:[
-        132064,  // MotherHub Expert Network (was Matriarch Network)
-    ]},
-    { tier:'mother_hub',     groups:[
-        104172,  // MotherHub (was The Mother Hub)
-        78001,   // Founding Mother Access           <- CONFIRM
+    /* The Vault and Founding Mother Access ("18 months of The Vault") get the
+       Inner Circle home, but only when no group above matches. */
+    { tier:'inner_circle',   groups:[
+        77964,   // The Vault
+        78001,   // Founding Mother Access
     ]},
     /* The community is private and free members join through the Free access
        group. Listed explicitly so the mapping is documented; anyone matching
@@ -79,6 +90,25 @@ const TMM_CONFIG = {
         104197,  // Free
     ]},
   ],
+
+  /* "Your other memberships": a row of links at the bottom of the home for a
+     member whose home is MotherHub or Expert Network but who also has a
+     legacy membership (any group of a tier in `legacyTiers`). Each link shows
+     only if the member can open its space. Foundry ends after February 2027;
+     delete its links (and its tier) then. */
+  QUICK_LINKS: {
+    homeTiers:   ['mother_hub', 'expert_network'],
+    legacyTiers: ['inner_circle', 'foundry'],
+    label: 'Your other memberships',
+    links: [
+      { group:'Foundry',      title:'Foundry Announcements', spaceId:2349055, url:'https://members.themillionairemother.com/c/announcements-c79c49' },
+      { group:'Foundry',      title:'Foundry Celebrations',  spaceId:2349052, url:'https://members.themillionairemother.com/c/celebrations-f9f0b0' },
+      { group:'Foundry',      title:'Business Channel',      spaceId:2349045, url:'https://members.themillionairemother.com/c/coaching-q-a' },
+      { group:'Inner Circle', title:'Inside the Vault',      spaceId:2361522, url:'https://members.themillionairemother.com/c/mme-program-library' },
+      { group:'Inner Circle', title:'Masterclass Library',   spaceId:802277,  url:'https://members.themillionairemother.com/c/masterclass-library' },
+      { group:'Inner Circle', title:'Coaching Q&A',          spaceId:802279,  url:'https://members.themillionairemother.com/c/guest-experts' },
+    ],
+  },
 
   /* Logo/brand per tier: free → Millionaire Mother, all paid → Mother Hub */
   BRAND_BY_TIER: {
@@ -94,7 +124,7 @@ const TMM_CONFIG = {
      their own head snippet and their own cache, so one can be stale while
      the other is current. No stamp visible at all = old JS. Bump this when
      you bump ?v= in head.html. */
-  BUILD: 'v61 · 2026-10-29',
+  BUILD: 'v62 · 2026-11-21',
 
   /* Share card (section 6). Lives here rather than in body.html so it can
      be changed by deploy like the rest of the page. A tier can override any
@@ -201,7 +231,14 @@ const TMM_CONFIG = {
       hero:         { label:'Announcements', url:'https://members.themillionairemother.com/c/motherhood' },
       contentGrid:  { label:'Connect with vetted Experts', spaceId:2468301, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/the-expert-network', placeholders:'mark' },
       featuredEvent:{ label:'Coming Up', spaceId:2491518, space_type:'event', url:'https://members.themillionairemother.com/c/motherhub-events' },
-      postFeed:     { label:'From the community', spaceId:2823968, space_type:'basic', count:6, url:'https://members.themillionairemother.com/c/motherhub-conversations-d9bb26' },
+      /* The newest posts across the three Rooms. Was MotherHub Conversations
+         (2823968), which was deleted in Circle and left this section hidden
+         (found 21 Nov 2026). The MotherHub group opens all three Rooms. */
+      postFeed:     { label:'From the community', count:6,
+                      spaces:[ { id:2920793, space_type:'basic' },    // Home & Motherhood Room
+                               { id:2920794, space_type:'basic' },    // Business & Money Room
+                               { id:2920795, space_type:'basic' } ],  // Mind, Body & Spirit Room
+                      url:'https://members.themillionairemother.com/c/home-and-motherhood-room-216cca' },
       eventsGrid:   { label:'Upcoming Events', spaceId:2491518, space_type:'event', count:6, url:'https://members.themillionairemother.com/c/motherhub-events' },
     },
 
@@ -769,6 +806,42 @@ function renderShare(cfg){
     </div>`;
 }
 
+/* "Your other memberships" (TMM_CONFIG.QUICK_LINKS). Built here rather than
+   in body.html so no pasted body needs changing. Removed and rebuilt on every
+   init, so a retry or a tier switch never leaves a stale copy. Shown only
+   when the member's home is a current membership AND they hold a legacy
+   group; TEST_MODE has no member, so it shows every link for previewing. */
+function renderQuickLinks(tierKey, ctx, canSee){
+  document.getElementById('tmmQuickLinks')?.remove();
+  const q = TMM_CONFIG.QUICK_LINKS;
+  const root = document.getElementById('tmmHome');
+  if (!q || !root || !q.homeTiers.includes(tierKey)) return;
+  const legacyGroups = TMM_CONFIG.TIER_GROUPS
+    .filter(t => q.legacyTiers.includes(t.tier))
+    .flatMap(t => t.groups);
+  const hasLegacy = TMM_CONFIG.TEST_MODE ||
+    (ctx ? legacyGroups.some(id => ctx.groups.has(id)) : false);
+  if (!hasLegacy) return;
+  const links = q.links.filter(l => canSee(l.spaceId));
+  if (!links.length) return;
+  const sec = document.createElement('section');
+  sec.className = 'tmm-section';
+  sec.id = 'tmmQuickLinks';
+  sec.innerHTML = `
+    <div class="tmm-sec-head"><h2 class="tmm-sec-title">${esc(q.label)}</h2></div>
+    <div class="tmm-quick">
+      ${links.map(l => `
+        <a class="tmm-quick-link" href="${esc(l.url)}" target="_blank">
+          <span class="tmm-quick-text">
+            <span class="tmm-quick-group">${esc(l.group)}</span>
+            <span class="tmm-quick-title">${esc(l.title)}</span>
+          </span>
+          <span class="tmm-quick-arrow" aria-hidden="true">&rsaquo;</span>
+        </a>`).join('')}
+    </div>`;
+  root.appendChild(sec);
+}
+
 /* Section 3 as a shelf of posts, for tiers where it isn't an event:
    Inner Circle's Masterclass Library, Foundry's Inside the vault. Same card
    as the content grid, in section 3's container. */
@@ -1204,6 +1277,7 @@ async function init(overrideTierKey){
   /* Could not establish what this member may open. Show nothing rather than
      risk showing content they cannot. The share card is not gated content. */
   if (!bypass && !mySpaces){
+    document.getElementById('tmmQuickLinks')?.remove();
     ['tmmGrid','tmmFeat','tmmFeed','tmmEvents'].forEach(denySection);
     showSection('tmmHero', true);
     set('tmmS1Label', 'Your home');
@@ -1252,6 +1326,9 @@ async function init(overrideTierKey){
          tier.featuredEvent?.kind === 'posts' ? { titledOnly:true } : null);
   render(tier.postFeed,      renderFeed,        'tmmFeed');
   render(tier.eventsGrid,    renderEvents,      'tmmEvents');
+
+  try { renderQuickLinks(tierKey, ctx, canSee); }
+  catch(e){ console.error('quick links render error:', e); }
 
   /* Open the welcome screen only once the sections have rendered. v57 opened
      it straight after the member lookup, and the app stops this page's
